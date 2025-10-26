@@ -1,47 +1,173 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Analyse — MyMír</title>
-  <link rel="icon" href="assets/logo/favicon.ico">
   <link rel="stylesheet" href="css/style.css">
-</head>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Inter", sans-serif;
+      background: linear-gradient(180deg, #0b1220, #111827);
+      color: #fff;
+    }
 
+    .analyse-section {
+      max-width: 900px;
+      margin: 100px auto;
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px;
+      padding: 40px 60px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    }
+
+    h1 {
+      text-align: center;
+      color: #facc15;
+      margin-bottom: 15px;
+      font-size: 28px;
+    }
+
+    p.description {
+      text-align: center;
+      color: #cbd5e1;
+      margin-bottom: 30px;
+      font-size: 16px;
+    }
+
+    .upload-box {
+      border: 2px dashed rgba(250,204,21,0.4);
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+      transition: 0.3s;
+    }
+
+    .upload-box:hover {
+      background: rgba(250,204,21,0.05);
+      border-color: #facc15;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    label.file-label {
+      display: inline-block;
+      background: #facc15;
+      color: #000;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    label.file-label:hover {
+      background: #ffe55c;
+    }
+
+    .analyse-result {
+      margin-top: 40px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 30px;
+    }
+
+    .analyse-result h2 {
+      color: #facc15;
+      margin-bottom: 15px;
+    }
+
+    .analyse-result ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .analyse-result li {
+      background: rgba(250,204,21,0.1);
+      margin: 8px 0;
+      padding: 10px 16px;
+      border-radius: 8px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #64748b;
+      font-size: 14px;
+      margin-top: 100px;
+    }
+  </style>
+</head>
 <body>
+
+  <!-- Barre de navigation -->
   <header class="navbar">
     <div class="nav-left">
       <img src="assets/logo/favicon.ico" alt="Logo MyMír" class="logo">
       <span class="brand">MyMír</span>
     </div>
     <nav class="nav-links">
-    <a href="index.html">Accueil</a>
-    <a href="analyse.html">Analyse</a>
-    <a href="#">Aide</a>
-    <a href="#">Application</a>
-    <a href="login.html" class="login-btn">Connexion</a>
-  </nav>
-</header>
+      <a href="index.html">Accueil</a>
+      <a href="analyse.html" class="active">Analyse</a>
+      <a href="#">Aide</a>
+      <a href="#">Application</a>
+      <a href="login.html" class="login-btn">Connexion</a>
+    </nav>
+  </header>
 
-  <main class="container">
-    <h2>Analyse intelligente d’appel d’offre</h2>
-    <p>Importez votre fichier PDF ou Word, et laissez MyMír en extraire les critères essentiels.</p>
+  <!-- Section principale -->
+  <section class="analyse-section">
+    <h1>Analyse intelligente d’appel d’offre</h1>
+    <p class="description">
+      Importez un fichier PDF ou Word, et laissez MyMír en extraire les critères essentiels.
+    </p>
 
-    <form id="uploadForm">
-      <input type="file" id="fileInput" accept=".pdf,.doc,.docx" required>
-      <button type="submit" class="cta">Analyser le document</button>
-    </form>
-
-    <div id="result" class="result-box hidden">
-      <h3>Résultat de l’analyse :</h3>
-      <pre id="analysisOutput">Aucun document analysé pour le moment.</pre>
+    <div class="upload-box">
+      <form id="analyseForm">
+        <input type="file" id="fileInput" accept=".pdf,.doc,.docx" />
+        <label for="fileInput" class="file-label">Choisir un fichier</label>
+        <button type="submit" style="
+          margin-top: 20px;
+          background: #facc15;
+          border: none;
+          padding: 10px 22px;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+        ">Analyser le document</button>
+      </form>
     </div>
-  </main>
 
-  <footer>
-    <p>© 2025 MyMír — Tous droits réservés.</p>
-  </footer>
+    <div id="resultBox" class="analyse-result" style="display:none;">
+      <h2>Résultat de l’analyse :</h2>
+      <ul id="resultList"></ul>
+    </div>
+  </section>
 
-  <script src="js/analyse.js"></script>
+  <footer>© 2025 MyMír — Tous droits réservés.</footer>
+
+  <script>
+    const form = document.getElementById("analyseForm");
+    const resultBox = document.getElementById("resultBox");
+    const resultList = document.getElementById("resultList");
+
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      resultBox.style.display = "block";
+      resultList.innerHTML = "<li>Analyse du document en cours...</li>";
+
+      setTimeout(() => {
+        resultList.innerHTML = `
+          <li><strong>Type de marché :</strong> Fourniture de services</li>
+          <li><strong>Date limite :</strong> 18 novembre 2025</li>
+          <li><strong>Documents requis :</strong> DC1, DC2, Mémoire technique</li>
+          <li><strong>Niveau de complexité :</strong> Moyen</li>
+        `;
+      }, 2000);
+    });
+  </script>
+
 </body>
 </html>
