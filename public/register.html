@@ -131,11 +131,26 @@
   </div>
 
   <script>
-    document.getElementById("registerForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      alert("Compte créé avec succès !");
-      window.location.href = "app.html";
-    });
-  </script>
+  document.getElementById("registerForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const userData = {
+      company: document.getElementById("companyName").value,
+      manager: document.getElementById("managerName").value,
+      email: document.getElementById("email").value,
+      sector: document.getElementById("sector").value,
+      revenue: document.getElementById("revenue").value,
+      employees: document.getElementById("employees").value,
+      country: document.getElementById("country").value,
+      certifications: document.getElementById("certifications").value,
+      password: "demo" // mot de passe par défaut pour test
+    };
+
+    // Sauvegarde du compte dans le navigateur
+    localStorage.setItem("myMirUser", JSON.stringify(userData));
+    alert("Compte créé avec succès !");
+    window.location.href = "app.html";
+  });
+</script>
 </body>
 </html>

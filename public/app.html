@@ -40,6 +40,23 @@
       </div>
     </section>
   </main>
+<script>
+  const user = JSON.parse(localStorage.getItem("myMirUser"));
+  if (!user) {
+    window.location.href = "login.html";
+  } else {
+    const userNameEl = document.getElementById("userName");
+    if (userNameEl) userNameEl.textContent = user.company;
+  }
 
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem("myMirUser");
+      alert("Déconnexion réussie !");
+      window.location.href = "login.html";
+    });
+  }
+</script>
 </body>
 </html>

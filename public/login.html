@@ -94,13 +94,22 @@
     </div>
   </div>
 
-  <script>
-    document.getElementById("loginForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      // Simulation de connexion
+<script>
+  document.getElementById("loginForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const storedUser = JSON.parse(localStorage.getItem("myMirUser"));
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    if (storedUser && storedUser.email === email && password === "demo") {
       alert("Connexion réussie !");
       window.location.href = "app.html";
-    });
-  </script>
+    } else {
+      alert("Identifiants incorrects ou compte non trouvé.");
+    }
+  });
+</script>
+
 </body>
 </html>
