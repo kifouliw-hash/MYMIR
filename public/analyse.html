@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analyse — MyMír</title>
+  <link rel="icon" href="assets/logo/favicon.ico">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <header class="navbar">
+    <div class="nav-left">
+      <img src="assets/logo/favicon.ico" alt="Logo MyMír" class="logo">
+      <span class="brand">MyMír</span>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html">Accueil</a>
+      <a href="analyse.html" class="active">Analyse</a>
+      <a href="aide.html">Aide</a>
+      <a href="app.html">Application</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h2>Analyse intelligente d’appel d’offre</h2>
+    <p>Importez votre fichier PDF ou Word, et laissez MyMír en extraire les critères essentiels.</p>
+
+    <form id="uploadForm">
+      <input type="file" id="fileInput" accept=".pdf,.doc,.docx" required>
+      <button type="submit" class="cta">Analyser le document</button>
+    </form>
+
+    <div id="result" class="result-box hidden">
+      <h3>Résultat de l’analyse :</h3>
+      <pre id="analysisOutput">Aucun document analysé pour le moment.</pre>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 MyMír — Tous droits réservés.</p>
+  </footer>
+
+  <script src="js/analyse.js"></script>
+</body>
+</html>
