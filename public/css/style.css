@@ -207,3 +207,34 @@ footer {
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   margin-top: auto;
 }
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 8%;
+  background: #0b1220;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-links a {
+  color: #fff;
+  text-decoration: none;
+  margin-left: 24px;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.nav-links a:hover {
+  color: #facc15;
+}
+
+.login-btn {
+  background: #facc15;
+  color: #000;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+.login-btn:hover {
+  background: #ffe55c;
+}
