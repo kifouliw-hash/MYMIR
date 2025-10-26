@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tableau de bord – MyMír</title>
+  <link rel="icon" type="image/png" href="assets/logo/favicon.png" />
+  <link rel="stylesheet" href="css/app.css" />
+  <script defer src="js/app.js"></script>
+</head>
+<body>
+
+  <!-- === SIDEBAR === -->
+  <aside class="sidebar">
+    <div class="logo">🜂 MyMír</div>
+    <nav>
+      <a href="#" class="active" data-page="dashboard">🏠 Accueil</a>
+      <a href="#" data-page="analyse">📄 Analyse</a>
+      <a href="#" data-page="aide">💡 Aide à la réponse</a>
+      <a href="#" data-page="historique">🕓 Historique</a>
+      <a href="#" data-page="profil">👤 Profil</a>
+    </nav>
+  </aside>
+
+  <!-- === MAIN CONTENT === -->
+  <main class="main">
+    <header class="topbar">
+      <h1 id="pageTitle">Tableau de bord</h1>
+      <div class="user-info">
+        <span id="userName">Entreprise Démo</span>
+        <button id="logoutBtn">Déconnexion</button>
+      </div>
+    </header>
+
+    <!-- === CONTENU DYNAMIQUE === -->
+    <section id="contentArea">
+      <div class="welcome">
+        <h2>Bienvenue sur votre espace MyMír</h2>
+        <p>Sélectionnez un module dans le menu pour commencer.</p>
+      </div>
+    </section>
+  </main>
+
+</body>
+</html>

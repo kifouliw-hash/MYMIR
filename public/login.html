@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connexion — MyMír</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Inter", sans-serif;
+      background: linear-gradient(180deg, #0b1220, #111827);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .login-container {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 40px;
+      border-radius: 16px;
+      width: 380px;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+
+    .login-container h1 {
+      color: #facc15;
+      margin-bottom: 24px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 15px;
+    }
+
+    input::placeholder {
+      color: #94a3b8;
+    }
+
+    button {
+      background: #facc15;
+      border: none;
+      color: #000;
+      font-weight: 600;
+      padding: 12px 20px;
+      width: 100%;
+      border-radius: 8px;
+      margin-top: 15px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    button:hover {
+      background: #ffe55c;
+    }
+
+    .links {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #94a3b8;
+    }
+
+    .links a {
+      color: #facc15;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .links a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1>Connexion MyMír</h1>
+    <form id="loginForm">
+      <input type="email" id="email" placeholder="Adresse e-mail" required />
+      <input type="password" id="password" placeholder="Mot de passe" required />
+      <button type="submit">Se connecter</button>
+    </form>
+
+    <div class="links">
+      <p>Pas encore de compte ? <a href="register.html">Créer un compte</a></p>
+      <p><a href="index.html">← Retour à l'accueil</a></p>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      // Simulation de connexion
+      alert("Connexion réussie !");
+      window.location.href = "app.html";
+    });
+  </script>
+</body>
+</html>
