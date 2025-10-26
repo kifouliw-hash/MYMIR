@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Connexion — MyMír</title>
+  <title>Mot de passe oublié — MyMír</title>
   <link rel="stylesheet" href="css/style.css" />
   <style>
     body {
@@ -17,7 +17,7 @@
       height: 100vh;
     }
 
-    .login-container {
+    .forgot-container {
       background: rgba(255, 255, 255, 0.05);
       padding: 40px;
       border-radius: 16px;
@@ -26,7 +26,7 @@
       box-shadow: 0 10px 40px rgba(0,0,0,0.3);
     }
 
-    .login-container h1 {
+    .forgot-container h1 {
       color: #facc15;
       margin-bottom: 24px;
     }
@@ -42,10 +42,6 @@
       font-size: 15px;
     }
 
-    input::placeholder {
-      color: #94a3b8;
-    }
-
     button {
       background: #facc15;
       border: none;
@@ -58,9 +54,7 @@
       cursor: pointer;
       transition: 0.2s;
     }
-    button:hover {
-      background: #ffe55c;
-    }
+    button:hover { background: #ffe55c; }
 
     .links {
       margin-top: 20px;
@@ -74,40 +68,38 @@
       font-weight: 500;
     }
 
-    .links a:hover {
-      text-decoration: underline;
-    }
+    .links a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
-  <div class="login-container">
-    <h1>Connexion MyMír</h1>
-    <form id="loginForm">
-      <input type="email" id="email" placeholder="Adresse e-mail" required />
-      <input type="password" id="password" placeholder="Mot de passe" required />
-      <button type="submit">Se connecter</button>
+  <div class="forgot-container">
+    <h1>Mot de passe oublié</h1>
+    <form id="forgotForm">
+      <input type="email" id="email" placeholder="Votre adresse e-mail" required />
+      <input type="password" id="newPassword" placeholder="Nouveau mot de passe" required />
+      <button type="submit">Réinitialiser le mot de passe</button>
     </form>
 
-   <div class="links">
-  <p><a href="forgot.html">Mot de passe oublié ?</a></p>
-  <p>Pas encore de compte ? <a href="register.html">Créer un compte</a></p>
-  <p><a href="index.html">← Retour à l'accueil</a></p>
-</div>
+    <div class="links">
+      <p><a href="login.html">← Retour à la connexion</a></p>
+    </div>
   </div>
 
   <script>
-    document.getElementById("loginForm").addEventListener("submit", function(e) {
+    document.getElementById("forgotForm").addEventListener("submit", function(e) {
       e.preventDefault();
 
       const storedUser = JSON.parse(localStorage.getItem("myMirUser"));
       const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+      const newPassword = document.getElementById("newPassword").value;
 
-      if (storedUser && storedUser.email === email && storedUser.password === password) {
-        alert("Connexion réussie !");
-        window.location.href = "app.html";
+      if (storedUser && storedUser.email === email) {
+        storedUser.password = newPassword;
+        localStorage.setItem("myMirUser", JSON.stringify(storedUser));
+        alert("Mot de passe réinitialisé avec succès !");
+        window.location.href = "login.html";
       } else {
-        alert("Identifiants incorrects ou compte non trouvé.");
+        alert("Aucun compte trouvé avec cet email.");
       }
     });
   </script>
