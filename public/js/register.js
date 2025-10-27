@@ -71,28 +71,73 @@ if (autoFillBtn) {
   });
 }
 
-// === Simulation création de compte ===
+// === 🚀 Création de compte réelle (connexion Render PostgreSQL) ===
 const form = document.getElementById("registerForm");
 if (form) {
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
+
     const btn = form.querySelector("button[type='submit']");
     btn.textContent = "Création du compte...";
     btn.disabled = true;
 
-    setTimeout(() => {
-      btn.textContent = "Compte créé ✅";
-      btn.style.background = "#4ADE80";
+    const managerName = document.getElementById("managerName").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-      // Stocker les infos localement (version test)
-      const user = {
-        company: document.getElementById("companyName").value,
-        email: document.getElementById("email").value,
-        country: document.getElementById("country").value
-      };
-      localStorage.setItem("myMirUser", JSON.stringify(user));
+    const companyId = document.getElementById("companyId").value.trim();
+    const companyName = document.getElementById("companyName").value.trim();
+    const sector = document.getElementById("sector").value;
+    const revenue = document.getElementById("revenue").value;
+    const employees = document.getElementById("employees").value;
+    const country = document.getElementById("country").value;
+    const certifications = document.getElementById("certifications").value.trim();
 
-      setTimeout(() => { window.location.href = "app.html"; }, 1000);
-    }, 1500);
+    if (!managerName || !email || !password) {
+      alert("Veuillez remplir les champs essentiels : nom, email, mot de passe.");
+      btn.textContent = "Créer le compte";
+      btn.disabled = false;
+      return;
+    }
+
+    try {
+      const response = await fetch("https://mymir.onrender.com/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: managerName,
+          email,
+          password,
+          metadata: {
+            companyId,
+            companyName,
+            sector,
+            revenue,
+            employees,
+            country,
+            certifications
+          }
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        btn.textContent = "Compte créé ✅";
+        btn.style.background = "#4ADE80";
+        localStorage.setItem("myMirUser", JSON.stringify(data.user));
+        setTimeout(() => (window.location.href = "login.html"), 1000);
+      } else {
+        alert(data.message || "Erreur lors de la création du compte.");
+        btn.textContent = "Créer le compte";
+        btn.disabled = false;
+      }
+
+    } catch (error) {
+      console.error("❌ Erreur réseau :", error);
+      alert("Impossible de se connecter au serveur.");
+      btn.textContent = "Créer le compte";
+      btn.disabled = false;
+    }
   });
 }
