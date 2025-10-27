@@ -116,6 +116,33 @@ app.post("/login", async (req, res) => {
   }
 });
 // ==========================
+// ❌ Suppression d’un utilisateur (admin)
+// ==========================
+app.delete("/users/:id", async (req, res) => {
+  try {
+    const adminKey = req.query.key;
+    if (adminKey !== process.env.ADMIN_KEY) {
+      return res.status(403).json({ success: false, message: "Accès non autorisé" });
+    }
+
+    const userId = req.params.id;
+    const result = await pool.query("DELETE FROM users WHERE id = $1 RETURNING id, email;", [userId]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: "Utilisateur introuvable." });
+    }
+
+    res.json({
+      success: true,
+      message: `Utilisateur supprimé (${result.rows[0].email})`
+    });
+  } catch (err) {
+    console.error("❌ Erreur suppression:", err);
+    res.status(500).json({ success: false, message: "Erreur serveur lors de la suppression." });
+  }
+});
+
+// ==========================
 // 👁️ Route admin : liste des utilisateurs
 // ==========================
 app.get("/users", async (req, res) => {
