@@ -190,6 +190,38 @@ app.get("/users", async (req, res) => {
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
+// =======================================
+// 🔧 Vérification & mise à jour de la table "users"
+// =======================================
+(async () => {
+  try {
+    // Crée la table si elle n'existe pas
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Ajoute la colonne "name" si manquante
+    await pool.query(`
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS name TEXT;
+    `);
+
+    // Ajoute la colonne "metadata" si manquante
+    await pool.query(`
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
+    `);
+
+    console.log("🧱 Table 'users' vérifiée et à jour ✅");
+  } catch (err) {
+    console.error("⚠️ Erreur vérification table users:", err);
+  }
+})();
 
 // ==========================
 // 🚀 Lancement du serveur
