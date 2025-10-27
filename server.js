@@ -24,3 +24,18 @@ const PORT = 3000;
 app.listen(PORT, () =>
   console.log(`✅ Serveur MyMír opérationnel sur http://localhost:${PORT}`)
 );
+import express from "express";
+import cors from "cors";
+import siretRoute from "./backend/routes/siretRoute.js";
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use(express.static("public"));
+
+// === Route SIRET ===
+app.use("/api/siret", siretRoute);
+
+// === Lancer serveur ===
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`✅ MyMír Server lancé sur le port ${PORT}`));
