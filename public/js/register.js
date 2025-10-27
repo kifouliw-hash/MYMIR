@@ -32,6 +32,45 @@ if (countrySelect) {
   });
 }
 
+// === 🔍 Auto-remplissage via API SIRET ===
+const companyIdInput = document.getElementById("companyId");
+
+if (autoFillBtn) {
+  autoFillBtn.addEventListener("click", async () => {
+    const siret = companyIdInput.value.trim();
+    if (!siret || siret.length !== 14) {
+      alert("Veuillez entrer un SIRET valide (14 chiffres).");
+      return;
+    }
+
+    autoFillBtn.textContent = "Recherche...";
+    autoFillBtn.disabled = true;
+
+    try {
+      const response = await fetch("/api/siret/lookup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ siret }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.message || "Erreur serveur");
+
+      // ✅ Auto-remplissage
+      document.getElementById("companyName").value = data.company || "";
+      document.getElementById("country").value = data.country || "France";
+      document.getElementById("certifications").value = `Code NAF : ${data.naf || "—"}`;
+      alert("✅ Informations d’entreprise récupérées !");
+    } catch (err) {
+      alert("Impossible de trouver ce SIRET.");
+      console.error(err);
+    } finally {
+      autoFillBtn.textContent = "Auto-remplir";
+      autoFillBtn.disabled = false;
+    }
+  });
+}
+
 // === Simulation création de compte ===
 const form = document.getElementById("registerForm");
 if (form) {
@@ -40,9 +79,11 @@ if (form) {
     const btn = form.querySelector("button[type='submit']");
     btn.textContent = "Création du compte...";
     btn.disabled = true;
+
     setTimeout(() => {
       btn.textContent = "Compte créé ✅";
       btn.style.background = "#4ADE80";
+
       // Stocker les infos localement (version test)
       const user = {
         company: document.getElementById("companyName").value,
@@ -50,6 +91,7 @@ if (form) {
         country: document.getElementById("country").value
       };
       localStorage.setItem("myMirUser", JSON.stringify(user));
+
       setTimeout(() => { window.location.href = "app.html"; }, 1000);
     }, 1500);
   });
