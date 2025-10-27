@@ -20,7 +20,6 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      backdrop-filter: blur(6px);
       border-bottom: 1px solid rgba(255,255,255,0.1);
     }
 
@@ -70,6 +69,22 @@
       font-size: 0.9rem;
     }
 
+    button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn-delete {
+      background: #ef4444;
+      color: #fff;
+    }
+    .btn-delete:hover {
+      background: #dc2626;
+    }
+
     .count {
       margin-bottom: 25px;
       font-weight: 500;
@@ -86,35 +101,27 @@
       width: 300px;
     }
 
-    button {
-      padding: 10px 16px;
-      border: none;
-      border-radius: 8px;
+    .btn-primary {
       background: #facc15;
       font-weight: 600;
-      cursor: pointer;
+      color: #000;
     }
 
-    button:hover {
+    .btn-primary:hover {
       background: #ffe55c;
-    }
-
-    .meta {
-      color: #94a3b8;
-      font-size: 0.8rem;
     }
   </style>
 </head>
 <body>
   <header>
     <h1>👁️ Admin MyMír</h1>
-    <button id="reloadBtn">🔄 Actualiser</button>
+    <button id="reloadBtn" class="btn-primary">🔄 Actualiser</button>
   </header>
 
   <main>
     <div>
       <input type="text" id="adminKey" placeholder="Entrez votre clé admin..." />
-      <button id="loadUsers">Charger les utilisateurs</button>
+      <button id="loadUsers" class="btn-primary">Charger les utilisateurs</button>
     </div>
 
     <p id="count" class="count"></p>
@@ -129,6 +136,7 @@
           <th>Pays</th>
           <th>Secteur</th>
           <th>CA</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -136,13 +144,15 @@
   </main>
 
   <script>
-    const loadUsers = async () => {
+    const apiBase = "https://mymir.onrender.com";
+
+    async function loadUsers() {
       const key = document.getElementById("adminKey").value.trim();
       if (!key) return alert("Entrez votre clé admin pour accéder aux utilisateurs.");
 
       try {
-        const response = await fetch(`https://mymir.onrender.com/users?key=${key}`);
-        const data = await response.json();
+        const res = await fetch(`${apiBase}/users?key=${key}`);
+        const data = await res.json();
 
         if (!data.success) {
           alert(data.message || "Erreur d'accès");
@@ -164,15 +174,40 @@
             <td>${meta.country || "—"}</td>
             <td>${meta.sector || "—"}</td>
             <td>${meta.revenue || "—"}</td>
+            <td><button class="btn-delete" data-id="${user.id}">🗑️ Supprimer</button></td>
           `;
           tbody.appendChild(tr);
+        });
+
+        // === Gestion suppression ===
+        document.querySelectorAll(".btn-delete").forEach(btn => {
+          btn.addEventListener("click", async (e) => {
+            const id = e.target.getAttribute("data-id");
+            if (!confirm("Supprimer cet utilisateur ?")) return;
+
+            try {
+              const res = await fetch(`${apiBase}/users/${id}?key=${key}`, {
+                method: "DELETE"
+              });
+              const data = await res.json();
+              if (data.success) {
+                alert("Utilisateur supprimé !");
+                loadUsers();
+              } else {
+                alert(data.message || "Erreur lors de la suppression.");
+              }
+            } catch (err) {
+              console.error(err);
+              alert("Erreur réseau lors de la suppression.");
+            }
+          });
         });
 
       } catch (err) {
         console.error(err);
         alert("Erreur de connexion au serveur.");
       }
-    };
+    }
 
     document.getElementById("loadUsers").addEventListener("click", loadUsers);
     document.getElementById("reloadBtn").addEventListener("click", loadUsers);
