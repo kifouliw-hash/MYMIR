@@ -115,6 +115,26 @@ app.post("/login", async (req, res) => {
     res.status(500).json({ success: false, message: "Erreur serveur." });
   }
 });
+// ==========================
+// 👁️ Route admin : liste des utilisateurs
+// ==========================
+app.get("/users", async (req, res) => {
+  try {
+    // Clé d’accès simple (à améliorer plus tard)
+    const adminKey = req.query.key;
+    if (adminKey !== process.env.ADMIN_KEY) {
+      return res.status(403).json({ success: false, message: "Accès non autorisé" });
+    }
+
+    const result = await pool.query(
+      "SELECT id, name, email, metadata, created_at FROM users ORDER BY id DESC;"
+    );
+    res.json({ success: true, count: result.rows.length, users: result.rows });
+  } catch (err) {
+    console.error("❌ Erreur /users:", err);
+    res.status(500).json({ success: false, message: "Erreur serveur" });
+  }
+});
 
 // ==========================
 // 🌍 Route fallback — renvoyer ton index.html
