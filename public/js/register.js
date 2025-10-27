@@ -56,7 +56,6 @@ if (autoFillBtn) {
 
       if (!response.ok) throw new Error(data.message || "Erreur serveur");
 
-      // ✅ Auto-remplissage
       document.getElementById("companyName").value = data.company || "";
       document.getElementById("country").value = data.country || "France";
       document.getElementById("certifications").value = `Code NAF : ${data.naf || "—"}`;
@@ -81,61 +80,47 @@ if (form) {
     btn.textContent = "Création du compte...";
     btn.disabled = true;
 
-    const managerName = document.getElementById("managerName").value.trim();
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
+    const data = {
+      companyName: document.getElementById("companyName").value.trim(),
+      managerName: document.getElementById("managerName").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      sector: document.getElementById("sector").value,
+      revenue: document.getElementById("revenue").value,
+      employees: document.getElementById("employees").value,
+      country: document.getElementById("country").value,
+      certifications: document.getElementById("certifications").value.trim(),
+      password: document.getElementById("password").value.trim(),
+    };
 
-    const companyId = document.getElementById("companyId").value.trim();
-    const companyName = document.getElementById("companyName").value.trim();
-    const sector = document.getElementById("sector").value;
-    const revenue = document.getElementById("revenue").value;
-    const employees = document.getElementById("employees").value;
-    const country = document.getElementById("country").value;
-    const certifications = document.getElementById("certifications").value.trim();
-
-    if (!managerName || !email || !password) {
-      alert("Veuillez remplir les champs essentiels : nom, email, mot de passe.");
+    if (!data.managerName || !data.email || !data.password) {
+      alert("Veuillez remplir au minimum le nom, l’email et le mot de passe.");
       btn.textContent = "Créer le compte";
       btn.disabled = false;
       return;
     }
 
     try {
-      const response = await fetch("https://mymir.on***REMOVED***/register", {
+      const res = await fetch("https://mymir.on***REMOVED***/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: managerName,
-          email,
-          password,
-          metadata: {
-            companyId,
-            companyName,
-            sector,
-            revenue,
-            employees,
-            country,
-            certifications
-          }
-        })
+        body: JSON.stringify(data),
       });
 
-      const data = await response.json();
+      const result = await res.json();
 
-      if (data.success) {
+      if (result.success) {
         btn.textContent = "Compte créé ✅";
         btn.style.background = "#4ADE80";
-        localStorage.setItem("myMirUser", JSON.stringify(data.user));
+        alert("✅ Compte créé avec succès !");
         setTimeout(() => (window.location.href = "login.html"), 1000);
       } else {
-        alert(data.message || "Erreur lors de la création du compte.");
+        alert(result.message || "Erreur lors de l’inscription.");
         btn.textContent = "Créer le compte";
         btn.disabled = false;
       }
-
-    } catch (error) {
-      console.error("❌ Erreur réseau :", error);
-      alert("Impossible de se connecter au serveur.");
+    } catch (err) {
+      console.error("❌ Erreur réseau :", err);
+      alert("Erreur de connexion au serveur.");
       btn.textContent = "Créer le compte";
       btn.disabled = false;
     }
