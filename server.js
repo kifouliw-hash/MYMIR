@@ -45,42 +45,63 @@ app.use(express.static(path.join(__dirname, "public")));
 })();
 
 // ==========================
-// 📝 Route d’inscription (enregistrement complet)
+// 📝 Route d’inscription complète MyMír
 // ==========================
 app.post("/register", async (req, res) => {
   try {
-    const { name, email, password, metadata } = req.body;
+    const {
+      companyName,
+      managerName,
+      email,
+      sector,
+      revenue,
+      employees,
+      country,
+      certifications,
+      password
+    } = req.body;
 
-    if (!name || !email || !password) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Champs manquants." });
-    }
+    if (!email || !password || !companyName || !managerName)
+      return res.status(400).json({ success: false, message: "Champs obligatoires manquants." });
 
     const hashed = await bcrypt.hash(password, 10);
 
-    // ✅ Insertion avec métadonnées JSON
+    // Vérifie/Crée la table complète si besoin
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        metadata JSONB DEFAULT '{}'::jsonb,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Ajoute l'utilisateur avec ses métadonnées
     const result = await pool.query(
       `INSERT INTO users (name, email, password, metadata)
        VALUES ($1, $2, $3, $4)
-       RETURNING id, name, email, metadata`,
-      [name, email, hashed, metadata || {}]
+       RETURNING id, name, email, metadata;`,
+      [
+        managerName,
+        email,
+        hashed,
+        {
+          companyName,
+          sector,
+          revenue,
+          employees,
+          country,
+          certifications,
+        },
+      ]
     );
 
     res.status(201).json({ success: true, user: result.rows[0] });
   } catch (err) {
     console.error("❌ Erreur inscription:", err);
-
-    // Gestion du cas email déjà existant
-    if (err.message.includes("duplicate key value")) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Un compte existe déjà avec cet e-mail." });
-    }
-
-    res
-      .status(400)
-      .json({ success: false, message: "Erreur lors de l’inscription." });
+    res.status(400).json({ success: false, message: "Erreur lors de l’inscription." });
   }
 });
 
