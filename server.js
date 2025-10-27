@@ -25,7 +25,7 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 // ==========================
-// 🧱 Création table utilisateurs
+// 🧱 Création table utilisateurs (avec métadonnées JSON)
 // ==========================
 (async () => {
   try {
@@ -34,7 +34,8 @@ app.use(express.static(path.join(__dirname, "public")));
         id SERIAL PRIMARY KEY,
         name TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL
+        password TEXT NOT NULL,
+        metadata JSONB DEFAULT '{}'  -- ✅ nouvelles données entreprise
       );
     `);
     console.log("🧱 Table 'users' prête ✅");
@@ -44,11 +45,11 @@ app.use(express.static(path.join(__dirname, "public")));
 })();
 
 // ==========================
-// 📝 Route d’inscription
+// 📝 Route d’inscription (enregistrement complet)
 // ==========================
 app.post("/register", async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, metadata } = req.body;
 
     if (!name || !email || !password) {
       return res
@@ -57,14 +58,26 @@ app.post("/register", async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
+
+    // ✅ Insertion avec métadonnées JSON
     const result = await pool.query(
-      "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email",
-      [name, email, hashed]
+      `INSERT INTO users (name, email, password, metadata)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, name, email, metadata`,
+      [name, email, hashed, metadata || {}]
     );
 
     res.status(201).json({ success: true, user: result.rows[0] });
   } catch (err) {
     console.error("❌ Erreur inscription:", err);
+
+    // Gestion du cas email déjà existant
+    if (err.message.includes("duplicate key value")) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Un compte existe déjà avec cet e-mail." });
+    }
+
     res
       .status(400)
       .json({ success: false, message: "Erreur lors de l’inscription." });
@@ -78,22 +91,25 @@ app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const result = await pool.query("SELECT * FROM users WHERE email = $1", [
-      email,
-    ]);
+    const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
     if (result.rows.length === 0)
-      return res
-        .status(400)
-        .json({ success: false, message: "Utilisateur introuvable." });
+      return res.status(400).json({ success: false, message: "Utilisateur introuvable." });
 
     const user = result.rows[0];
     const valid = await bcrypt.compare(password, user.password);
     if (!valid)
-      return res
-        .status(400)
-        .json({ success: false, message: "Mot de passe incorrect." });
+      return res.status(400).json({ success: false, message: "Mot de passe incorrect." });
 
-    res.json({ success: true, user: { id: user.id, name: user.name, email: user.email } });
+    // ✅ Retourne aussi les métadonnées de l'utilisateur
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        metadata: user.metadata || {}
+      }
+    });
   } catch (err) {
     console.error("❌ Erreur connexion:", err);
     res.status(500).json({ success: false, message: "Erreur serveur." });
