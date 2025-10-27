@@ -42,5 +42,9 @@ router.post("/lookup", async (req, res) => {
     res.status(500).json({ message: "Erreur serveur ou API SIRENE indisponible." });
   }
 });
+// === Route GET de test simple ===
+router.get("/test", (req, res) => {
+  res.json({ message: "✅ Route SIRET opérationnelle sur Render" });
+});
 
 export default router;
