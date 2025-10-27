@@ -1,156 +1,104 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Créer un compte — MyMír</title>
-  <link rel="stylesheet" href="css/style.css" />
-  <style>
-    body {
-      margin: 0;
-      font-family: "Inter", sans-serif;
-      background: linear-gradient(180deg, #0b1220, #111827);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-
-    .register-container {
-      background: rgba(255, 255, 255, 0.05);
-      padding: 40px;
-      border-radius: 16px;
-      width: 460px;
-      text-align: center;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-    }
-
-    .register-container h1 {
-      color: #facc15;
-      margin-bottom: 24px;
-    }
-
-    .form-group {
-      display: flex;
-      gap: 10px;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-      font-size: 15px;
-    }
-
-    select option {
-      background: #0b1220;
-    }
-
-    input::placeholder {
-      color: #94a3b8;
-    }
-
-    button {
-      background: #facc15;
-      border: none;
-      color: #000;
-      font-weight: 600;
-      padding: 12px 20px;
-      width: 100%;
-      border-radius: 8px;
-      margin-top: 15px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    button:hover {
-      background: #ffe55c;
-    }
-
-    .links {
-      margin-top: 20px;
-      font-size: 14px;
-      color: #94a3b8;
-    }
-
-    .links a {
-      color: #facc15;
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .links a:hover {
-      text-decoration: underline;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Créer un compte MyMír</title>
+  <link rel="icon" type="image/png" href="assets/logo/favicon.png" />
+  <link rel="stylesheet" href="css/register.css">
+  <script defer src="js/register.js"></script>
 </head>
 <body>
-  <div class="register-container">
-    <h1>Créer un compte MyMír</h1>
+
+  <header class="navbar">
+    <div class="nav-left">
+      <img src="assets/logo/favicon.png" alt="Logo MyMír" class="logo">
+      <span class="brand">MyMír</span>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html">Accueil</a>
+      <a href="analyse.html">Analyse</a>
+      <a href="aide.html">Aide</a>
+      <a href="app.html">Application</a>
+      <a href="login.html" class="login-btn">Connexion</a>
+    </nav>
+  </header>
+
+  <main class="register-container">
     <form id="registerForm">
-      <input type="text" id="companyName" placeholder="Nom de l’entreprise" required />
-      <input type="text" id="managerName" placeholder="Nom du responsable" required />
-      <input type="email" id="email" placeholder="Email professionnel" required />
-      <div class="form-group">
+      <h2>Créer un compte MyMír</h2>
+
+      <!-- 🌍 Identifiant entreprise (SIRET / RCCM / etc.) -->
+      <div class="siret-block">
+        <label id="companyIdLabel" for="companyId">Identifiant entreprise (SIRET, RCCM...)</label>
+        <div class="siret-row">
+          <input id="companyId" type="text" placeholder="Ex : 12345678901234" />
+          <button type="button" id="autoFillBtn">Auto-remplir</button>
+        </div>
+        <small id="helpText">Fournir votre SIRET (France) permet un remplissage automatique. Pour les autres pays, remplissez manuellement.</small>
+      </div>
+
+      <input id="companyName" placeholder="Nom de l’entreprise" required>
+      <input id="managerName" placeholder="Nom du responsable" required>
+      <input id="email" type="email" placeholder="Email professionnel" required>
+
+      <div class="row">
         <select id="sector" required>
           <option value="">Secteur d’activité</option>
-          <option>Construction</option>
-          <option>Informatique</option>
-          <option>Conseil</option>
-          <option>Autre</option>
+          <option>Construction / BTP</option>
+          <option>Industrie</option>
+          <option>Énergie / Environnement</option>
+          <option>Informatique / Numérique</option>
+          <option>Commerce / Distribution</option>
+          <option>Services aux entreprises</option>
+          <option>Transport / Logistique</option>
+          <option>Finance / Assurance</option>
+          <option>Autres</option>
         </select>
+
         <select id="revenue" required>
-          <option value="">Chiffre d’affaires</option>
-          <option>&lt; 100k€</option>
-          <option>100k€ – 1M€</option>
-          <option>&gt; 1M€</option>
+          <option value="">Chiffre d’affaires annuel</option>
+          <option>Moins de 100 000 €</option>
+          <option>100 000 € – 500 000 €</option>
+          <option>500 000 € – 2 M€</option>
+          <option>2 M€ – 10 M€</option>
+          <option>Plus de 10 M€</option>
         </select>
       </div>
-      <div class="form-group">
+
+      <div class="row">
         <select id="employees" required>
           <option value="">Effectif</option>
-          <option>1–5</option>
-          <option>6–20</option>
-          <option>21–50</option>
-          <option>+50</option>
+          <option>1 – 5 employés</option>
+          <option>6 – 20 employés</option>
+          <option>21 – 50 employés</option>
+          <option>51 – 200 employés</option>
+          <option>+ 200 employés</option>
         </select>
-        <input type="text" id="country" placeholder="Pays / région principale" required />
+
+        <select id="country" required>
+          <option value="">Pays / région principale</option>
+          <option>France</option>
+          <option>Belgique</option>
+          <option>Côte d’Ivoire</option>
+          <option>Sénégal</option>
+          <option>Maroc</option>
+          <option>Canada</option>
+          <option>Autre</option>
+        </select>
       </div>
-      <input type="text" id="certifications" placeholder="Certifications (ISO, Qualibat...)" />
-      <input type="password" id="password" placeholder="Mot de passe" required />
-      <button type="submit">Créer le compte</button>
+
+      <input id="certifications" placeholder="Certifications (ISO, Qualibat...)">
+      <input id="password" type="password" placeholder="Mot de passe" required>
+
+      <button type="submit" class="btn-primary">Créer le compte</button>
+
+      <p class="footer-text">
+        Déjà un compte ? <a href="login.html">Se connecter</a><br>
+        ← <a href="index.html">Retour à l'accueil</a>
+      </p>
     </form>
+  </main>
 
-    <div class="links">
-      <p>Déjà un compte ? <a href="login.html">Se connecter</a></p>
-      <p><a href="index.html">← Retour à l'accueil</a></p>
-    </div>
-  </div>
-
-  <script>
-    document.getElementById("registerForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-
-      const userData = {
-        company: document.getElementById("companyName").value,
-        manager: document.getElementById("managerName").value,
-        email: document.getElementById("email").value,
-        sector: document.getElementById("sector").value,
-        revenue: document.getElementById("revenue").value,
-        employees: document.getElementById("employees").value,
-        country: document.getElementById("country").value,
-        certifications: document.getElementById("certifications").value,
-        password: document.getElementById("password").value
-      };
-
-      localStorage.setItem("myMirUser", JSON.stringify(userData));
-      alert("Compte créé avec succès !");
-      window.location.href = "app.html";
-    });
-  </script>
 </body>
 </html>
