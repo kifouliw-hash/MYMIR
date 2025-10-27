@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin — Utilisateurs MyMír</title>
+  <title>Admin — MyMír</title>
   <link rel="icon" type="image/png" href="assets/logo/favicon.png" />
   <style>
     body {
@@ -12,6 +12,56 @@
       background: linear-gradient(180deg, #0b1220, #111827);
       color: #f7f7f7;
       min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* === Écran de verrouillage === */
+    .lock-screen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(180deg, #0b1220, #111827);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 10;
+      text-align: center;
+    }
+
+    .lock-screen h2 {
+      color: #facc15;
+      margin-bottom: 20px;
+    }
+
+    .lock-screen input {
+      padding: 12px 16px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      width: 280px;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .lock-screen button {
+      background: #facc15;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .lock-screen button:hover {
+      background: #ffe55c;
+    }
+
+    /* === Contenu admin (caché au départ) === */
+    #adminPanel {
+      display: none;
+      animation: fadeIn 0.5s ease forwards;
     }
 
     header {
@@ -85,67 +135,85 @@
       background: #dc2626;
     }
 
+    .btn-primary {
+      background: #facc15;
+      font-weight: 600;
+      color: #000;
+    }
+    .btn-primary:hover {
+      background: #ffe55c;
+    }
+
     .count {
       margin-bottom: 25px;
       font-weight: 500;
       color: #a5b4fc;
     }
 
-    input {
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: none;
-      margin-right: 10px;
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-      width: 300px;
-    }
-
-    .btn-primary {
-      background: #facc15;
-      font-weight: 600;
-      color: #000;
-    }
-
-    .btn-primary:hover {
-      background: #ffe55c;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>👁️ Admin MyMír</h1>
-    <button id="reloadBtn" class="btn-primary">🔄 Actualiser</button>
-  </header>
+  <!-- 🔐 Écran de verrouillage -->
+  <div class="lock-screen" id="lockScreen">
+    <h2>🔒 Accès sécurisé MyMír</h2>
+    <input type="password" id="accessPassword" placeholder="Mot de passe admin" />
+    <button id="unlockBtn">Se connecter</button>
+    <p style="margin-top:10px;color:#94a3b8;font-size:0.85rem;">Accès réservé aux administrateurs MyMír</p>
+  </div>
 
-  <main>
-    <div>
-      <input type="text" id="adminKey" placeholder="Entrez votre clé admin..." />
-      <button id="loadUsers" class="btn-primary">Charger les utilisateurs</button>
-    </div>
+  <!-- 👁️ Tableau admin caché -->
+  <div id="adminPanel">
+    <header>
+      <h1>👁️ Panneau Admin MyMír</h1>
+      <button id="reloadBtn" class="btn-primary">🔄 Actualiser</button>
+    </header>
 
-    <p id="count" class="count"></p>
+    <main>
+      <div>
+        <input type="text" id="adminKey" placeholder="Entrez votre clé admin..." />
+        <button id="loadUsers" class="btn-primary">Charger les utilisateurs</button>
+      </div>
 
-    <table id="usersTable">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Nom</th>
-          <th>Email</th>
-          <th>Entreprise</th>
-          <th>Pays</th>
-          <th>Secteur</th>
-          <th>CA</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </main>
+      <p id="count" class="count"></p>
+
+      <table id="usersTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Entreprise</th>
+            <th>Pays</th>
+            <th>Secteur</th>
+            <th>CA</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </main>
+  </div>
 
   <script>
     const apiBase = "https://mymir.on***REMOVED***";
+    const adminAccessPassword = "Admin2025!"; // ✅ à modifier (mot de passe local)
 
+    // === Sécurité d’accès ===
+    document.getElementById("unlockBtn").addEventListener("click", () => {
+      const input = document.getElementById("accessPassword").value.trim();
+      if (input === adminAccessPassword) {
+        document.getElementById("lockScreen").style.display = "none";
+        document.getElementById("adminPanel").style.display = "block";
+      } else {
+        alert("Mot de passe incorrect.");
+      }
+    });
+
+    // === Chargement utilisateurs ===
     async function loadUsers() {
       const key = document.getElementById("adminKey").value.trim();
       if (!key) return alert("Entrez votre clé admin pour accéder aux utilisateurs.");
@@ -174,21 +242,19 @@
             <td>${meta.country || "—"}</td>
             <td>${meta.sector || "—"}</td>
             <td>${meta.revenue || "—"}</td>
-            <td><button class="btn-delete" data-id="${user.id}">🗑️ Supprimer</button></td>
+            <td><button class="btn-delete" data-id="${user.id}">🗑️</button></td>
           `;
           tbody.appendChild(tr);
         });
 
-        // === Gestion suppression ===
+        // === Suppression utilisateur ===
         document.querySelectorAll(".btn-delete").forEach(btn => {
           btn.addEventListener("click", async (e) => {
             const id = e.target.getAttribute("data-id");
             if (!confirm("Supprimer cet utilisateur ?")) return;
 
             try {
-              const res = await fetch(`${apiBase}/users/${id}?key=${key}`, {
-                method: "DELETE"
-              });
+              const res = await fetch(`${apiBase}/users/${id}?key=${key}`, { method: "DELETE" });
               const data = await res.json();
               if (data.success) {
                 alert("Utilisateur supprimé !");
