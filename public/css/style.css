@@ -238,3 +238,42 @@ footer {
 .login-btn:hover {
   background: #ffe55c;
 }
+body {
+  background: radial-gradient(circle at top center, #1b2340 0%, #121829 80%);
+  color: #EAEFF7;
+  overflow-x: hidden;
+}
+
+/* 🌊 Animation douce de fond */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 216, 77, 0.06), rgba(100, 150, 255, 0.04));
+  background-size: 400% 400%;
+  animation: bgWave 12s ease-in-out infinite alternate;
+  z-index: -1;
+}
+
+@keyframes bgWave {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+/* Boutons */
+button, .login-btn {
+  background: linear-gradient(135deg, #FFD84D, #FFCE2B);
+  color: #000;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+button:hover, .login-btn:hover {
+  background: linear-gradient(135deg, #FFE98F, #FFD84D);
+  transform: translateY(-1px);
+}
+
+/* Titres et labels */
+h2, label {
+  color: #FFD84D;
+}
+
