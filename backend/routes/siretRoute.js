@@ -1,45 +1,46 @@
+// === Route API : Recherche SIRET ===
 import express from "express";
-import fetch from "node-fetch"; // utile si Node <18 (Render l’a souvent inclus)
+import fetch from "node-fetch";
 
 const router = express.Router();
 
-// === Recherche entreprise via SIRET ===
+// Route POST : /api/siret/lookup
 router.post("/lookup", async (req, res) => {
   try {
     const { siret } = req.body;
-    if (!siret) {
-      return res.status(400).json({ message: "SIRET manquant." });
+
+    if (!siret || siret.length !== 14) {
+      return res.status(400).json({ message: "SIRET invalide (14 chiffres requis)." });
     }
 
-    const apiUrl = `https://entreprise.data.gouv.fr/api/sirene/v3/etablissements/${siret}`;
-    const r = await fetch(apiUrl);
-    if (!r.ok) {
-      return res.status(404).json({ message: "Aucune entreprise trouvée pour ce SIRET." });
+    // Requête vers l'API publique SIRENE
+    const url = `https://entreprise.data.gouv.fr/api/sirene/v3/etablissements/${siret}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    // Vérification des résultats
+    if (!data || !data.etablissement) {
+      return res.status(404).json({ message: "Aucun établissement trouvé pour ce SIRET." });
     }
 
-    const data = await r.json();
     const etab = data.etablissement;
+    const companyName = etab.unite_legale?.denomination || etab.unite_legale?.nom || "Entreprise inconnue";
+    const naf = etab.unite_legale?.activite_principale || "Non renseigné";
+    const city = etab.libelle_commune || "—";
+    const country = "France";
 
-    const result = {
-      company: etab.unite_legale?.denomination || etab.unite_legale?.nom || "Entreprise inconnue",
-      address: [
-        etab.numero_voie,
-        etab.type_voie,
-        etab.libelle_voie,
-        etab.code_postal,
-        etab.libelle_commune,
-      ].filter(Boolean).join(" "),
-      naf: etab.unite_legale?.activite_principale || "",
-      employees: etab.unite_legale?.tranche_effectifs || "",
-      country: "France",
-    };
+    // ✅ Réponse simplifiée
+    res.json({
+      company: companyName,
+      naf,
+      city,
+      country
+    });
 
-    res.json(result);
-  } catch (error) {
-    console.error("Erreur API SIRET:", error);
-    res.status(500).json({ message: "Erreur interne lors de la recherche SIRET." });
+  } catch (err) {
+    console.error("Erreur API SIRET :", err);
+    res.status(500).json({ message: "Erreur serveur ou API SIRENE indisponible." });
   }
 });
 
 export default router;
-
