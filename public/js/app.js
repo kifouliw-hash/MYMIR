@@ -1,4 +1,4 @@
-// === Navigation entre les sections ===
+// === Navigation entre sections ===
 document.querySelectorAll(".nav-link").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".nav-link").forEach(b => b.classList.remove("active"));
@@ -9,7 +9,15 @@ document.querySelectorAll(".nav-link").forEach(btn => {
   });
 });
 
-// === Récupération utilisateur connecté ===
+// === Redirection accueil → analyse ===
+document.querySelectorAll("[data-section='analyse']").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
+    document.getElementById("analyse").classList.add("active");
+  });
+});
+
+// === Récupération utilisateur ===
 window.addEventListener("DOMContentLoaded", () => {
   const user = JSON.parse(localStorage.getItem("myMirUser"));
   if (!user) window.location.href = "login.html";
@@ -27,13 +35,14 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
   window.location.href = "login.html";
 });
 
-// === Zone d’upload (simulation) ===
+// === Upload simulation ===
 const uploadArea = document.getElementById("uploadArea");
 const fileInput = document.getElementById("fileInput");
+const loading = document.getElementById("loading");
 const resultArea = document.getElementById("resultArea");
 
 uploadArea.addEventListener("click", () => fileInput.click());
-fileInput.addEventListener("change", () => showResults());
+fileInput.addEventListener("change", simulateAnalysis);
 uploadArea.addEventListener("dragover", e => {
   e.preventDefault();
   uploadArea.style.background = "rgba(255,255,255,0.15)";
@@ -44,10 +53,20 @@ uploadArea.addEventListener("dragleave", e => {
 });
 uploadArea.addEventListener("drop", e => {
   e.preventDefault();
-  showResults();
+  simulateAnalysis();
 });
 
-function showResults() {
+function simulateAnalysis() {
   uploadArea.classList.add("hidden");
-  resultArea.classList.remove("hidden");
+  loading.classList.remove("hidden");
+  setTimeout(() => {
+    loading.classList.add("hidden");
+    resultArea.classList.remove("hidden");
+  }, 2500);
 }
+
+// === Nouvelle analyse ===
+document.getElementById("newAnalyse").addEventListener("click", () => {
+  resultArea.classList.add("hidden");
+  uploadArea.classList.remove("hidden");
+});
