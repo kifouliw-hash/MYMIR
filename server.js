@@ -73,17 +73,22 @@ app.post("/register", async (req, res) => {
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
 
-    if (result.rows.length === 0)
+    // Vérifie si l’utilisateur existe
+    const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+    if (result.rows.length === 0) {
       return res.status(400).json({ success: false, message: "Utilisateur introuvable." });
+    }
 
     const user = result.rows[0];
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid)
-      return res.status(400).json({ success: false, message: "Mot de passe incorrect." });
 
-    // ✅ Génère le JWT
+    // Vérifie le mot de passe
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) {
+      return res.status(400).json({ success: false, message: "Mot de passe incorrect." });
+    }
+
+    // ✅ Génère le token JWT
     const token = jwt.sign(
       { id: user.id, email: user.email },
       process.env.JWT_SECRET || "fallbackSecret",
@@ -92,15 +97,17 @@ app.post("/login", async (req, res) => {
 
     console.log("✅ Token généré pour:", user.email);
 
+    // ✅ Envoie bien le token dans la réponse
     return res.json({
       success: true,
+      message: "Connexion réussie",
+      token, // <= très important !
       user: {
         id: user.id,
         name: user.name,
         email: user.email,
-        metadata: user.metadata || {}
+        metadata: user.metadata || {},
       },
-      token
     });
   } catch (err) {
     console.error("❌ Erreur connexion:", err);
