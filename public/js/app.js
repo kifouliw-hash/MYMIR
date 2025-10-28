@@ -1,85 +1,110 @@
-// =============================
-//  Navigation dynamique
-// =============================
-const links = document.querySelectorAll(".sidebar nav a");
-const contentArea = document.getElementById("contentArea");
-const pageTitle = document.getElementById("pageTitle");
+// 🌐 BACKEND CONFIG
+const API_BASE = "https://mymir.on***REMOVED***";
+const ADMIN_KEY = "mir-admin-2025";
 
-links.forEach(link => {
-  link.addEventListener("click", e => {
-    e.preventDefault();
-    links.forEach(l => l.classList.remove("active"));
-    link.classList.add("active");
-    const page = link.getAttribute("data-page");
-    loadPage(page);
+// ===============================
+// 🎨 EFFET DE FOND DYNAMIQUE
+// ===============================
+const canvas = document.getElementById("bgCanvas");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let waveOffset = 0;
+function drawWave() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  gradient.addColorStop(0, "#ffe259");
+  gradient.addColorStop(1, "#ffa751");
+  ctx.fillStyle = gradient;
+
+  ctx.beginPath();
+  ctx.moveTo(0, canvas.height / 2);
+  for (let x = 0; x < canvas.width; x++) {
+    const y = Math.sin((x + waveOffset) * 0.01) * 20 + canvas.height / 2;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(canvas.width, canvas.height);
+  ctx.lineTo(0, canvas.height);
+  ctx.closePath();
+  ctx.fill();
+
+  waveOffset += 2;
+  requestAnimationFrame(drawWave);
+}
+drawWave();
+
+// ===============================
+// ⚙️ NAVIGATION ENTRE SECTIONS
+// ===============================
+const sections = document.querySelectorAll(".section");
+document.querySelectorAll("aside nav li").forEach(btn => {
+  btn.addEventListener("click", () => {
+    sections.forEach(s => s.classList.add("hidden"));
+    const target = btn.id.replace("Btn", "");
+    document.getElementById(target).classList.remove("hidden");
+    document.getElementById("pageTitle").textContent = btn.textContent.trim();
   });
 });
 
-function loadPage(page) {
-  pageTitle.textContent = page.charAt(0).toUpperCase() + page.slice(1);
+// ===============================
+// 👤 PROFIL UTILISATEUR
+// ===============================
+async function loadUserProfile() {
+  const user = JSON.parse(localStorage.getItem("myMirUser"));
+  if (!user || !user.email) return;
 
-  if (page === "dashboard") {
-    contentArea.innerHTML = `
-      <div class="welcome">
-        <h2>Bienvenue sur votre tableau de bord</h2>
-        <p>Sélectionnez un module pour commencer votre analyse.</p>
-      </div>`;
-  }
+  const res = await fetch(`${API_BASE}/users?key=${ADMIN_KEY}`);
+  const data = await res.json();
 
-  if (page === "analyse") {
-    contentArea.innerHTML = `
-      <div class="module">
-        <h2>Module d'analyse intelligente</h2>
-        <p>Importez un appel d'offre (PDF) pour lancer l'analyse.</p>
-        <input type="file" id="fileInput" accept=".pdf" />
-        <button onclick="startAnalyse()">Analyser</button>
-        <div id="analyseResult"></div>
-      </div>`;
-  }
+  const current = data.users.find(u => u.email === user.email);
+  if (!current) return;
 
-  if (page === "aide") {
-    contentArea.innerHTML = `
-      <div class="module">
-        <h2>Aide à la réponse</h2>
-        <p>Recommandations IA pour rédiger vos dossiers d'appel d'offre.</p>
-      </div>`;
-  }
-
-  if (page === "historique") {
-    contentArea.innerHTML = `
-      <div class="module">
-        <h2>Historique</h2>
-        <p>Visualisez les analyses et dossiers précédents.</p>
-      </div>`;
-  }
-
-  if (page === "profil") {
-    contentArea.innerHTML = `
-      <div class="module">
-        <h2>Profil de l'entreprise</h2>
-        <p>Nom : <strong>Entreprise Démo</strong></p>
-        <p>Statut : <strong>Compte gratuit</strong></p>
-      </div>`;
-  }
+  const meta = current.metadata || {};
+  document.getElementById("pCompany").textContent = meta.companyName || "—";
+  document.getElementById("pManager").textContent = current.name || "—";
+  document.getElementById("pEmail").textContent = current.email || "—";
+  document.getElementById("pSector").textContent = meta.sector || "—";
+  document.getElementById("pRevenue").textContent = meta.revenue || "—";
+  document.getElementById("pEmployees").textContent = meta.employees || "—";
+  document.getElementById("pCountry").textContent = meta.country || "—";
+  document.getElementById("pCertifications").textContent = meta.certifications || "—";
 }
+loadUserProfile();
 
-// Simule le logout
+// ===============================
+// 🚪 DÉCONNEXION
+// ===============================
 document.getElementById("logoutBtn").addEventListener("click", () => {
-  alert("Déconnexion réussie !");
-  window.location.href = "index.html";
+  localStorage.removeItem("myMirUser");
+  window.location.href = "login.html";
 });
 
-// Simulation d’analyse (placeholder)
-function startAnalyse() {
-  const result = document.getElementById("analyseResult");
-  result.innerHTML = "<p>Analyse en cours...</p>";
-  setTimeout(() => {
-    result.innerHTML = `
-      <h3>Résultats :</h3>
-      <ul>
-        <li>Type de marché : Fourniture de services</li>
-        <li>Date limite : 18/11/2025</li>
-        <li>Documents requis : DC1, DC2, Mémoire technique</li>
-      </ul>`;
-  }, 2000);
+// ===============================
+// 📊 CHART D'ANALYSE (simulé pour test)
+// ===============================
+const analyseCanvas = document.getElementById("analyseChart");
+if (analyseCanvas) {
+  new Chart(analyseCanvas, {
+    type: "doughnut",
+    data: {
+      labels: ["Techniques", "Financières", "Administratives"],
+      datasets: [{
+        data: [45, 35, 20],
+        backgroundColor: ["#ffd700", "#ff9f43", "#48dbfb"],
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: "bottom", labels: { color: "#fff" } },
+        title: {
+          display: true,
+          text: "Répartition des critères d’analyse",
+          color: "#fff"
+        }
+      }
+    }
+  });
 }
