@@ -17,26 +17,28 @@ if (form) {
     }
 
     try {
-      const res = await fetch("/login", {
+      // ✅ Chemin absolu (Render)
+      const res = await fetch("https://mymir.onrender.com/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
+      console.log("📡 Réponse /login :", data);
 
-      if (data.success) {
+      if (data.success && data.token) {
         // ✅ Stocker le token JWT pour garder la session
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
 
-        alert("Connexion réussie 🎉");
+        alert("Connexion réussie !");
         window.location.href = "app.html"; // Redirige vers ton tableau de bord
       } else {
         alert(data.message || "Erreur de connexion.");
       }
     } catch (err) {
-      console.error(err);
+      console.error("❌ Erreur serveur :", err);
       alert("Erreur serveur, veuillez réessayer.");
     }
   });
