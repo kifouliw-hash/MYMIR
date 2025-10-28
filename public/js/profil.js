@@ -1,39 +1,45 @@
-// ===============================
-// 👤 PROFIL UTILISATEUR — MyMír
-// ===============================
+// ==========================
+// 🔐 Connexion MyMír (Frontend)
+// ==========================
 
-window.addEventListener("DOMContentLoaded", async () => {
-  const token = localStorage.getItem("token");
+const form = document.getElementById("loginForm");
 
-  if (!token) {
-    window.location.href = "login.html";
-    return;
-  }
+if (form) {
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  try {
-    const res = await fetch("https://mymir.onrender.com/auth/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-    if (data.success) {
-      const user = data.user;
-
-      // Affichage dynamique
-      document.querySelector(".sidebar-company").textContent =
-        user.metadata.companyName || "Entreprise";
-      document.getElementById("emailField").textContent = user.email;
-      document.getElementById("countryField").textContent =
-        user.metadata.country || "—";
-      document.getElementById("sectorField").textContent =
-        user.metadata.sector || "—";
-    } else {
-      localStorage.removeItem("token");
-      window.location.href = "login.html";
+    if (!email || !password) {
+      alert("Veuillez remplir tous les champs.");
+      return;
     }
-  } catch (err) {
-    console.error("Erreur profil:", err);
-    localStorage.removeItem("token");
-    window.location.href = "login.html";
-  }
-});
+
+    const API_BASE = window.location.origin;
+
+    try {
+      const res = await fetch(`${API_BASE}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        // ✅ Stocker le token JWT pour garder la session
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        alert("Connexion réussie 🎉");
+        window.location.href = "app.html"; // Redirige vers le tableau de bord
+      } else {
+        alert(data.message || "Erreur de connexion.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Erreur serveur, veuillez réessayer.");
+    }
+  });
+}
