@@ -3,182 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin — MyMír</title>
-  <link rel="icon" type="image/png" href="assets/logo/favicon.png" />
-  <style>
-    body {
-      margin: 0;
-      font-family: "Inter", sans-serif;
-      background: linear-gradient(180deg, #0b1220, #111827);
-      color: #f7f7f7;
-      min-height: 100vh;
-      overflow: hidden;
-    }
-
-    /* === Écran de verrouillage === */
-    .lock-screen {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: linear-gradient(180deg, #0b1220, #111827);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      z-index: 10;
-      text-align: center;
-    }
-
-    .lock-screen h2 {
-      color: #facc15;
-      margin-bottom: 20px;
-    }
-
-    .lock-screen input {
-      padding: 12px 16px;
-      border: none;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.1);
-      color: #fff;
-      width: 280px;
-      text-align: center;
-      margin-bottom: 10px;
-    }
-
-    .lock-screen button {
-      background: #facc15;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .lock-screen button:hover {
-      background: #ffe55c;
-    }
-
-    /* === Contenu admin (caché au départ) === */
-    #adminPanel {
-      display: none;
-      animation: fadeIn 0.5s ease forwards;
-    }
-
-    header {
-      background: rgba(255, 255, 255, 0.05);
-      padding: 20px 40px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-
-    header h1 {
-      color: #facc15;
-      font-size: 1.4rem;
-    }
-
-    main {
-      padding: 40px;
-      max-width: 1200px;
-      margin: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-    }
-
-    th, td {
-      padding: 12px 16px;
-      text-align: left;
-    }
-
-    th {
-      background: rgba(255, 255, 255, 0.08);
-      color: #facc15;
-      text-transform: uppercase;
-      font-size: 0.85rem;
-      letter-spacing: 0.5px;
-    }
-
-    tr:nth-child(even) {
-      background: rgba(255, 255, 255, 0.03);
-    }
-
-    tr:hover {
-      background: rgba(255, 255, 255, 0.1);
-      transition: background 0.2s ease;
-    }
-
-    td {
-      font-size: 0.9rem;
-    }
-
-    button {
-      padding: 8px 12px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .btn-delete {
-      background: #ef4444;
-      color: #fff;
-    }
-    .btn-delete:hover {
-      background: #dc2626;
-    }
-
-    .btn-primary {
-      background: #facc15;
-      font-weight: 600;
-      color: #000;
-    }
-    .btn-primary:hover {
-      background: #ffe55c;
-    }
-
-    .count {
-      margin-bottom: 25px;
-      font-weight: 500;
-      color: #a5b4fc;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+  <title>MyMír Admin Panel</title>
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/xlsx.full.min.js"></script>
 </head>
 <body>
-  <!-- 🔐 Écran de verrouillage -->
-  <div class="lock-screen" id="lockScreen">
-    <h2>🔒 Accès sécurisé MyMír</h2>
-    <input type="password" id="accessPassword" placeholder="Mot de passe admin" />
-    <button id="unlockBtn">Se connecter</button>
-    <p style="margin-top:10px;color:#94a3b8;font-size:0.85rem;">Accès réservé aux administrateurs MyMír</p>
-  </div>
+  <!-- === Écran de verrouillage === -->
+  <section id="lockScreen">
+    <div class="lock-box">
+      <h1>🔐 Accès sécurisé MyMír</h1>
+      <input type="password" id="accessPassword" placeholder="Mot de passe admin">
+      <button id="unlockBtn">Se connecter</button>
+    </div>
+  </section>
 
-  <!-- 👁️ Tableau admin caché -->
-  <div id="adminPanel">
+  <!-- === Tableau de bord === -->
+  <section id="adminPanel" style="display:none;">
     <header>
-      <h1>👁️ Panneau Admin MyMír</h1>
-      <button id="reloadBtn" class="btn-primary">🔄 Actualiser</button>
+      <h1>📊 Tableau de bord — MyMír</h1>
+      <div class="header-actions">
+        <button id="reloadBtn">🔄 Rafraîchir</button>
+        <button id="exportBtn">📥 Exporter en Excel</button>
+      </div>
     </header>
 
     <main>
-      <div>
-        <input type="text" id="adminKey" placeholder="Entrez votre clé admin..." />
-        <button id="loadUsers" class="btn-primary">Charger les utilisateurs</button>
+      <div class="stats">
+        <div class="card">
+          <h3>Total utilisateurs</h3>
+          <p id="count">0</p>
+        </div>
+        <div class="card">
+          <h3>Pays principaux</h3>
+          <canvas id="countryChart"></canvas>
+        </div>
       </div>
-
-      <p id="count" class="count"></p>
 
       <table id="usersTable">
         <thead>
@@ -190,93 +50,14 @@
             <th>Pays</th>
             <th>Secteur</th>
             <th>CA</th>
-            <th>Actions</th>
+            <th>🗑️</th>
           </tr>
         </thead>
         <tbody></tbody>
       </table>
     </main>
-  </div>
+  </section>
 
-  <script>
-    const apiBase = "https://mymir.on***REMOVED***";
-    const adminAccessPassword = "mir-admin-2025"; // ✅ à modifier (mot de passe local)
-
-    // === Sécurité d’accès ===
-    document.getElementById("unlockBtn").addEventListener("click", () => {
-      const input = document.getElementById("accessPassword").value.trim();
-      if (input === adminAccessPassword) {
-        document.getElementById("lockScreen").style.display = "none";
-        document.getElementById("adminPanel").style.display = "block";
-      } else {
-        alert("Mot de passe incorrect.");
-      }
-    });
-
-    // === Chargement utilisateurs ===
-    async function loadUsers() {
-      const key = document.getElementById("adminKey").value.trim();
-      if (!key) return alert("Entrez votre clé admin pour accéder aux utilisateurs.");
-
-      try {
-        const res = await fetch(`${apiBase}/users?key=${key}`);
-        const data = await res.json();
-
-        if (!data.success) {
-          alert(data.message || "Erreur d'accès");
-          return;
-        }
-
-        const tbody = document.querySelector("#usersTable tbody");
-        tbody.innerHTML = "";
-        document.getElementById("count").textContent = `👤 ${data.count} utilisateurs enregistrés`;
-
-        data.users.forEach(user => {
-          const meta = user.metadata || {};
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${user.id}</td>
-            <td>${user.name}</td>
-            <td>${user.email}</td>
-            <td>${meta.companyName || "—"}</td>
-            <td>${meta.country || "—"}</td>
-            <td>${meta.sector || "—"}</td>
-            <td>${meta.revenue || "—"}</td>
-            <td><button class="btn-delete" data-id="${user.id}">🗑️</button></td>
-          `;
-          tbody.appendChild(tr);
-        });
-
-        // === Suppression utilisateur ===
-        document.querySelectorAll(".btn-delete").forEach(btn => {
-          btn.addEventListener("click", async (e) => {
-            const id = e.target.getAttribute("data-id");
-            if (!confirm("Supprimer cet utilisateur ?")) return;
-
-            try {
-              const res = await fetch(`${apiBase}/users/${id}?key=${key}`, { method: "DELETE" });
-              const data = await res.json();
-              if (data.success) {
-                alert("Utilisateur supprimé !");
-                loadUsers();
-              } else {
-                alert(data.message || "Erreur lors de la suppression.");
-              }
-            } catch (err) {
-              console.error(err);
-              alert("Erreur réseau lors de la suppression.");
-            }
-          });
-        });
-
-      } catch (err) {
-        console.error(err);
-        alert("Erreur de connexion au serveur.");
-      }
-    }
-
-    document.getElementById("loadUsers").addEventListener("click", loadUsers);
-    document.getElementById("reloadBtn").addEventListener("click", loadUsers);
-  </script>
+  <script src="js/admin.js"></script>
 </body>
 </html>
