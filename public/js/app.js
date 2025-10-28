@@ -15,6 +15,17 @@ navLinks.forEach(link => {
     document.getElementById(link.dataset.section).classList.add("active");
   });
 });
+// Masquer la carte bienvenue sur les autres pages
+navLinks.forEach(link => {
+  link.addEventListener("click", () => {
+    const isHome = link.dataset.section === "home";
+    const welcomeCard = document.getElementById("welcomeCard");
+    if (welcomeCard) {
+      welcomeCard.style.display = isHome ? "flex" : "none";
+    }
+  });
+});
+
 
 // ================================
 // 🔐 Authentification utilisateur
