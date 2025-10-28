@@ -11,14 +11,14 @@
 </head>
 <body>
 
-  <!-- 🌊 Animation de fond dynamique -->
+  <!-- 🌅 Arrière-plan animé -->
   <div class="background-waves"></div>
 
   <div class="dashboard">
     <!-- Barre latérale -->
     <aside class="sidebar">
       <div class="logo-section">
-        <img src="assets/logo/favicon.png" alt="Logo MyMír" class="logo">
+        <img src="/logo/mymir-logo.png" alt="Logo MyMír" class="logo">
         <h1>MyMír</h1>
       </div>
 
@@ -40,20 +40,30 @@
     <!-- Contenu principal -->
     <main class="content">
       
-      <!-- Accueil -->
-      <section id="home" class="section active">
-        <h2>Bienvenue sur MyMír 👋</h2>
-        <p>Commencez dès maintenant à analyser vos appels d’offres et à optimiser vos réponses.</p>
-        <button class="primary-btn" data-section="analyse">Lancer une analyse</button>
+      <!-- ACCUEIL -->
+      <section id="home" class="section active home-section">
+        <div class="welcome-box">
+          <h2>Bienvenue sur <span class="gold">MyMír</span> 👋</h2>
+          <p>Commencez dès maintenant à analyser vos appels d’offres<br>et à optimiser vos réponses.</p>
+          <button class="primary-btn" data-section="analyse">Lancer une analyse</button>
+        </div>
       </section>
 
-      <!-- Analyse -->
+      <!-- ANALYSE -->
       <section id="analyse" class="section">
         <h2>📊 Analyse de vos opportunités</h2>
         <div class="upload-area" id="uploadArea">
           <p>Glissez votre dossier DCE ici ou cliquez pour le sélectionner.</p>
           <input type="file" id="fileInput" hidden>
         </div>
+
+        <!-- Animation de chargement -->
+        <div class="loading hidden" id="loading">
+          <div class="spinner"></div>
+          <p>Analyse du dossier en cours...</p>
+        </div>
+
+        <!-- Résultat -->
         <div class="result-area hidden" id="resultArea">
           <h3>🧾 Synthèse du projet</h3>
           <ul>
@@ -71,12 +81,12 @@
 
           <div class="action-buttons">
             <button class="secondary-btn">💾 Télécharger le rapport</button>
-            <button class="secondary-btn">🔁 Nouvelle analyse</button>
+            <button class="secondary-btn" id="newAnalyse">🔁 Nouvelle analyse</button>
           </div>
         </div>
       </section>
 
-      <!-- Aide à la réponse -->
+      <!-- AIDE À LA RÉPONSE -->
       <section id="aide" class="section">
         <h2>💡 Aide à la réponse</h2>
         <p>Optimisez vos documents de réponse grâce à nos recommandations expertes.</p>
@@ -100,7 +110,7 @@
         </div>
       </section>
 
-      <!-- Historique -->
+      <!-- HISTORIQUE -->
       <section id="historique" class="section">
         <h2>📁 Historique de vos analyses</h2>
         <table class="history-table">
@@ -113,7 +123,7 @@
         </table>
       </section>
 
-      <!-- Profil -->
+      <!-- PROFIL -->
       <section id="profil" class="section">
         <h2>👤 Profil de l’entreprise</h2>
         <div class="profile-card">
