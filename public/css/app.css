@@ -347,4 +347,33 @@
   background: #ffe45c;
   transform: scale(1.03);
 }
+/* Sidebar améliorée */
+.sidebar {
+  width: 200px;
+  background: #0b1220;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 25px 20px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 15px 0; /* plus d’espace entre les éléments */
+  font-size: 15px;
+}
+
+.nav-item i {
+  font-size: 18px;
+}
+
+.nav-item.active {
+  background: #facc15;
+  color: #000;
+  border-radius: 8px;
+  padding: 8px 10px;
+  transition: 0.2s;
+}
 
