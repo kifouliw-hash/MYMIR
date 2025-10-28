@@ -88,29 +88,51 @@ function updateCharts(countryCount) {
   const labels = Object.keys(countryCount);
   const values = Object.values(countryCount);
 
-  new Chart(ctx, {
+  if (window.countryChartInstance) {
+    window.countryChartInstance.destroy(); // évite le cumul de graphes
+  }
+
+  window.countryChartInstance = new Chart(ctx, {
     type: "bar",
     data: {
-      labels,
+      labels: labels, // ✅ noms de pays
       datasets: [{
         label: "Inscriptions par pays",
         data: values,
-        backgroundColor: "rgba(250, 204, 21, 0.8)",
+        backgroundColor: labels.map(() => "rgba(250, 204, 21, 0.7)"),
         borderColor: "#facc15",
-        borderWidth: 2,
-      }],
+        borderWidth: 1.5,
+        borderRadius: 6,
+        hoverBackgroundColor: "#fde047"
+      }]
     },
     options: {
+      indexAxis: "y",
+      scales: {
+        x: {
+          ticks: { color: "#fff" },
+          grid: { color: "rgba(255,255,255,0.1)" }
+        },
+        y: {
+          ticks: { color: "#fff" },
+          grid: { color: "rgba(255,255,255,0.1)" }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        title: {
+          display: true,
+          text: "Répartition des utilisateurs par pays",
+          color: "#facc15",
+          font: { size: 16, family: "Inter" }
+        }
+      },
       animation: {
         duration: 1500,
-        easing: "easeOutElastic",
-      },
-      scales: {
-        x: { ticks: { color: "#fff" } },
-        y: { ticks: { color: "#fff" } }
-      },
-      plugins: { legend: { display: false } },
+        easing: "easeOutElastic"
+      }
     }
   });
 }
+
 
