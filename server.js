@@ -1,7 +1,3 @@
-// =======================================
-// 🌐 server.js — Serveur MyMír avec Express + PostgreSQL
-// =======================================
-
 import express from "express";
 import bodyParser from "body-parser";
 import pool from "./db.js";
@@ -14,63 +10,42 @@ import { fileURLToPath } from "url";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// === Setup paths (utile sur Render)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// === Middleware
 app.use(cors());
 app.use(bodyParser.json());
-
-// === Servir le frontend (ton dossier public/)
 app.use(express.static(path.join(__dirname, "public")));
 
-
-// ==========================
-// 📝 Route d’inscription complète MyMír
-// ==========================
-app.post("/register", async (req, res) => {
-  try {
-    const {
-      companyName,
-      managerName,
-      email,
-      sector,
-      revenue,
-      employees,
-      country,
-      certifications,
-      password
-    } = req.body;
-
-    if (!email || !password || !companyName || !managerName)
-      return res.status(400).json({ success: false, message: "Champs obligatoires manquants." });
-
-    const hashed = await bcrypt.hash(password, 10);
-
-    // =======================================
-// 🔧 Vérification de la table "users"
-// =======================================
+// ✅ Vérifie la table users au démarrage
 (async () => {
   try {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
-        name TEXT NOT NULL,
+        name TEXT,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
         metadata JSONB DEFAULT '{}'::jsonb,
         created_at TIMESTAMP DEFAULT NOW()
       );
     `);
-    console.log("🧱 Table 'users' vérifiée ou créée ✅");
+    console.log("🧱 Table 'users' vérifiée et prête ✅");
   } catch (err) {
-    console.error("⚠️ Erreur lors de la création de la table users:", err);
+    console.error("⚠️ Erreur vérification table users:", err);
   }
 })();
 
+// ✅ INSCRIPTION
+app.post("/register", async (req, res) => {
+  try {
+    const { companyName, managerName, email, sector, revenue, employees, country, certifications, password } = req.body;
 
-    // Ajoute l'utilisateur avec ses métadonnées
+    if (!email || !password || !companyName || !managerName)
+      return res.status(400).json({ success: false, message: "Champs obligatoires manquants." });
+
+    const hashed = await bcrypt.hash(password, 10);
+
     const result = await pool.query(
       `INSERT INTO users (name, email, password, metadata)
        VALUES ($1, $2, $3, $4)
@@ -79,14 +54,7 @@ app.post("/register", async (req, res) => {
         managerName,
         email,
         hashed,
-        {
-          companyName,
-          sector,
-          revenue,
-          employees,
-          country,
-          certifications,
-        },
+        { companyName, sector, revenue, employees, country, certifications },
       ]
     );
 
@@ -97,13 +65,10 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// ==========================
-// 🔐 Route de connexion
-// ==========================
+// ✅ CONNEXION
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-
     const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
     if (result.rows.length === 0)
       return res.status(400).json({ success: false, message: "Utilisateur introuvable." });
@@ -113,111 +78,40 @@ app.post("/login", async (req, res) => {
     if (!valid)
       return res.status(400).json({ success: false, message: "Mot de passe incorrect." });
 
-    // ✅ Retourne aussi les métadonnées de l'utilisateur
-    res.json({
+    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "2h" });
+
+    return res.json({
       success: true,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        metadata: user.metadata || {}
-      }
+      user: { id: user.id, name: user.name, email: user.email, metadata: user.metadata || {} },
+      token
     });
   } catch (err) {
     console.error("❌ Erreur connexion:", err);
     res.status(500).json({ success: false, message: "Erreur serveur." });
   }
 });
-// ==========================
-// ❌ Suppression d’un utilisateur (admin)
-// ==========================
-app.delete("/users/:id", async (req, res) => {
+
+// ✅ VERIFICATION TOKEN
+app.get("/auth/me", async (req, res) => {
   try {
-    const adminKey = req.query.key;
-    if (adminKey !== process.env.ADMIN_KEY) {
-      return res.status(403).json({ success: false, message: "Accès non autorisé" });
-    }
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ message: "Non autorisé" });
 
-    const userId = req.params.id;
-    const result = await pool.query("DELETE FROM users WHERE id = $1 RETURNING id, email;", [userId]);
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (result.rowCount === 0) {
-      return res.status(404).json({ success: false, message: "Utilisateur introuvable." });
-    }
+    const result = await pool.query("SELECT id, name, email, metadata FROM users WHERE id = $1", [decoded.id]);
+    if (result.rows.length === 0) return res.status(404).json({ message: "Utilisateur introuvable" });
 
-    res.json({
-      success: true,
-      message: `Utilisateur supprimé (${result.rows[0].email})`
-    });
+    res.json({ success: true, user: result.rows[0] });
   } catch (err) {
-    console.error("❌ Erreur suppression:", err);
-    res.status(500).json({ success: false, message: "Erreur serveur lors de la suppression." });
+    console.error("Erreur /auth/me:", err);
+    res.status(401).json({ message: "Token invalide ou expiré" });
   }
 });
 
-// ==========================
-// 👁️ Route admin : liste des utilisateurs
-// ==========================
-app.get("/users", async (req, res) => {
-  try {
-    // Clé d’accès simple (à améliorer plus tard)
-    const adminKey = req.query.key;
-    if (adminKey !== process.env.ADMIN_KEY) {
-      return res.status(403).json({ success: false, message: "Accès non autorisé" });
-    }
-
-    const result = await pool.query(
-      "SELECT id, name, email, metadata, created_at FROM users ORDER BY id DESC;"
-    );
-    res.json({ success: true, count: result.rows.length, users: result.rows });
-  } catch (err) {
-    console.error("❌ Erreur /users:", err);
-    res.status(500).json({ success: false, message: "Erreur serveur" });
-  }
-});
-
-// ==========================
-// 🌍 Route fallback — renvoyer ton index.html
-// ==========================
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
-// =======================================
-// 🔧 Vérification & mise à jour de la table "users"
-// =======================================
-(async () => {
-  try {
-    // Crée la table si elle n'existe pas
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT NOW()
-      );
-    `);
 
-    // Ajoute la colonne "name" si manquante
-    await pool.query(`
-      ALTER TABLE users
-      ADD COLUMN IF NOT EXISTS name TEXT;
-    `);
-
-    // Ajoute la colonne "metadata" si manquante
-    await pool.query(`
-      ALTER TABLE users
-      ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
-    `);
-
-    console.log("🧱 Table 'users' vérifiée et à jour ✅");
-  } catch (err) {
-    console.error("⚠️ Erreur vérification table users:", err);
-  }
-})();
-
-// ==========================
-// 🚀 Lancement du serveur
-// ==========================
-app.listen(PORT, () =>
-  console.log(`✅ Serveur MyMír en ligne sur le port ${PORT}`)
-);
+app.listen(PORT, () => console.log(`✅ Serveur MyMír en ligne sur le port ${PORT}`));
