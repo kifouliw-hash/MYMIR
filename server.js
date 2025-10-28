@@ -24,25 +24,28 @@ app.use(bodyParser.json());
 // === Servir le frontend (ton dossier public/)
 app.use(express.static(path.join(__dirname, "public")));
 
-// ==========================
-// 🧱 Création table utilisateurs (avec métadonnées JSON)
-// ==========================
+// =======================================
+// 🔧 Vérification & (Re)création de la table "users"
+// =======================================
 (async () => {
   try {
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS users (
+      DROP TABLE IF EXISTS users CASCADE;
+      CREATE TABLE users (
         id SERIAL PRIMARY KEY,
         name TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
-        metadata JSONB DEFAULT '{}'  -- ✅ nouvelles données entreprise
+        metadata JSONB DEFAULT '{}'::jsonb,
+        created_at TIMESTAMP DEFAULT NOW()
       );
     `);
-    console.log("🧱 Table 'users' prête ✅");
+    console.log("🧱 Table 'users' recréée proprement ✅");
   } catch (err) {
-    console.error("❌ Erreur création table users:", err);
+    console.error("⚠️ Erreur lors de la création de la table users:", err);
   }
 })();
+
 
 // ==========================
 // 📝 Route d’inscription complète MyMír
