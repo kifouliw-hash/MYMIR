@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard MyMír</title>
+  <title>Tableau de bord - MyMír</title>
   <link rel="icon" type="image/png" href="assets/logo/favicon.png">
   <link rel="stylesheet" href="css/app.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -11,80 +11,89 @@
 </head>
 
 <body>
-  <!-- 🌊 Arrière-plan dynamique -->
   <canvas id="bgCanvas"></canvas>
 
-  <!-- === Barre latérale === -->
   <aside class="sidebar">
     <div class="logo">
-      <img src="assets/logo/favicon.png" alt="Logo MyMír">
+      <img src="assets/logo/favicon.png" alt="MyMír">
       <span class="brand">MyMír</span>
     </div>
-    <nav>
-      <ul>
-        <li id="homeBtn">🏠 Accueil</li>
-        <li id="analyseBtn">📊 Analyse</li>
-        <li id="aideBtn">💡 Aide à la réponse</li>
-        <li id="historyBtn">🕓 Historique</li>
-        <li id="profilBtn">👤 Profil</li>
-      </ul>
-    </nav>
-    <button id="logoutBtn" class="logout">Déconnexion</button>
+    <ul class="menu">
+      <li data-section="accueil" class="active">🏠 Accueil</li>
+      <li data-section="analyse">📊 Analyse</li>
+      <li data-section="aide">💡 Aide à la réponse</li>
+      <li data-section="historique">🕓 Historique</li>
+      <li data-section="profil">👤 Profil</li>
+    </ul>
+    <button id="logout" class="logout">Déconnexion</button>
   </aside>
 
-  <!-- === Contenu principal === -->
   <main class="content">
-    <header>
-      <h1 id="pageTitle">Dashboard</h1>
-    </header>
+    <h1 id="sectionTitle">Tableau de bord</h1>
 
-    <!-- 🏠 Accueil -->
-    <section id="home" class="section active">
-      <div class="welcome">
-        <h2>Bienvenue sur votre espace MyMír</h2>
-        <p>Gérez vos appels d’offres, suivez vos analyses et centralisez vos actions en un seul endroit.</p>
-        <button id="startAnalyse" class="cta">Lancer une analyse</button>
+    <!-- === ACCUEIL === -->
+    <section id="accueil" class="section active">
+      <div class="cards">
+        <div class="card glass" id="cardAnalyse">
+          <h3>📊 Analyse</h3>
+          <p>Examinez vos appels d’offres et identifiez les points forts de votre dossier.</p>
+          <button class="cta">Lancer une analyse</button>
+        </div>
+
+        <div class="card glass" id="cardAide">
+          <h3>💡 Aide à la réponse</h3>
+          <p>Accédez à des modèles et conseils pour rédiger vos réponses plus efficacement.</p>
+          <button class="cta">Explorer les outils</button>
+        </div>
+
+        <div class="card glass" id="cardHistorique">
+          <h3>🕓 Historique</h3>
+          <p>Consultez vos analyses passées et comparez vos performances.</p>
+          <button class="cta">Voir l’historique</button>
+        </div>
+
+        <div class="card glass" id="cardProfil">
+          <h3>👤 Profil entreprise</h3>
+          <p>Gérez les informations de votre société et vos préférences.</p>
+          <button class="cta">Afficher le profil</button>
+        </div>
       </div>
     </section>
 
-    <!-- 📊 Analyse -->
+    <!-- === ANALYSE === -->
     <section id="analyse" class="section hidden">
       <h2>Analyse de vos opportunités</h2>
-      <div class="analyse-zone">
-        <canvas id="analyseChart"></canvas>
-      </div>
+      <canvas id="analyseChart"></canvas>
     </section>
 
-    <!-- 💡 Aide -->
+    <!-- === AIDE === -->
     <section id="aide" class="section hidden">
       <h2>Outils d’aide à la réponse</h2>
-      <p>Retrouvez ici des recommandations personnalisées et des modèles types adaptés à votre secteur.</p>
-      <div class="tips">
-        <div class="tip">📄 Exemple de mémoire technique</div>
-        <div class="tip">🧩 Liste de contrôle avant dépôt</div>
-        <div class="tip">💬 Conseils pour améliorer la note technique</div>
+      <div class="tips-grid">
+        <div class="tip glass">📄 Modèle de mémoire technique</div>
+        <div class="tip glass">🧩 Liste de contrôle avant dépôt</div>
+        <div class="tip glass">💬 Conseils d’amélioration</div>
       </div>
     </section>
 
-    <!-- 🕓 Historique -->
+    <!-- === HISTORIQUE === -->
     <section id="historique" class="section hidden">
       <h2>Historique des analyses</h2>
-      <p>Vos dernières actions apparaîtront ici une fois vos analyses effectuées.</p>
-      <ul class="history-list"></ul>
+      <ul id="historyList" class="glass"></ul>
     </section>
 
-    <!-- 👤 Profil -->
+    <!-- === PROFIL === -->
     <section id="profil" class="section hidden">
       <h2>Profil de votre entreprise</h2>
-      <div class="profil-info">
-        <p><strong>Nom de l’entreprise :</strong> <span id="pCompany"></span></p>
-        <p><strong>Responsable :</strong> <span id="pManager"></span></p>
-        <p><strong>Email :</strong> <span id="pEmail"></span></p>
-        <p><strong>Secteur d’activité :</strong> <span id="pSector"></span></p>
-        <p><strong>Chiffre d’affaires :</strong> <span id="pRevenue"></span></p>
-        <p><strong>Effectif :</strong> <span id="pEmployees"></span></p>
-        <p><strong>Pays / région principale :</strong> <span id="pCountry"></span></p>
-        <p><strong>Certifications :</strong> <span id="pCertifications"></span></p>
+      <div class="profile glass">
+        <p><strong>Entreprise :</strong> <span id="pCompany">—</span></p>
+        <p><strong>Responsable :</strong> <span id="pManager">—</span></p>
+        <p><strong>Email :</strong> <span id="pEmail">—</span></p>
+        <p><strong>Secteur :</strong> <span id="pSector">—</span></p>
+        <p><strong>Chiffre d’affaires :</strong> <span id="pRevenue">—</span></p>
+        <p><strong>Effectif :</strong> <span id="pEmployees">—</span></p>
+        <p><strong>Pays :</strong> <span id="pCountry">—</span></p>
+        <p><strong>Certifications :</strong> <span id="pCertifications">—</span></p>
       </div>
     </section>
   </main>
