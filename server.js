@@ -69,7 +69,11 @@ app.post("/register", async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
 
-    // Vérifie/Crée la table complète si besoin
+    // =======================================
+// 🔧 Vérification de la table "users"
+// =======================================
+(async () => {
+  try {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -80,6 +84,12 @@ app.post("/register", async (req, res) => {
         created_at TIMESTAMP DEFAULT NOW()
       );
     `);
+    console.log("🧱 Table 'users' vérifiée ou créée ✅");
+  } catch (err) {
+    console.error("⚠️ Erreur lors de la création de la table users:", err);
+  }
+})();
+
 
     // Ajoute l'utilisateur avec ses métadonnées
     const result = await pool.query(
