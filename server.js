@@ -36,7 +36,9 @@ app.use(express.static(path.join(__dirname, "public")));
   }
 })();
 
-// ✅ INSCRIPTION
+// ============================
+// 🚀 INSCRIPTION
+// ============================
 app.post("/register", async (req, res) => {
   try {
     const { companyName, managerName, email, sector, revenue, employees, country, certifications, password } = req.body;
@@ -65,11 +67,14 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// ✅ CONNEXION
+// ============================
+// 🔐 CONNEXION
+// ============================
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+
     if (result.rows.length === 0)
       return res.status(400).json({ success: false, message: "Utilisateur introuvable." });
 
@@ -78,11 +83,23 @@ app.post("/login", async (req, res) => {
     if (!valid)
       return res.status(400).json({ success: false, message: "Mot de passe incorrect." });
 
-    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "2h" });
+    // ✅ Génère le JWT
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET || "fallbackSecret",
+      { expiresIn: "2h" }
+    );
+
+    console.log("✅ Token généré pour:", user.email);
 
     return res.json({
       success: true,
-      user: { id: user.id, name: user.name, email: user.email, metadata: user.metadata || {} },
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        metadata: user.metadata || {}
+      },
       token
     });
   } catch (err) {
@@ -91,17 +108,36 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// ✅ VERIFICATION TOKEN
+// ============================
+// 🧠 VERIFICATION TOKEN
+// ============================
 app.get("/auth/me", async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ message: "Non autorisé" });
+    console.log("🔑 Header reçu:", authHeader);
+
+    if (!authHeader) {
+      return res.status(401).json({ message: "Non autorisé — aucun header" });
+    }
 
     const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!token) return res.status(401).json({ message: "Token manquant" });
 
-    const result = await pool.query("SELECT id, name, email, metadata FROM users WHERE id = $1", [decoded.id]);
-    if (result.rows.length === 0) return res.status(404).json({ message: "Utilisateur introuvable" });
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
+    } catch (err) {
+      console.error("❌ Erreur de vérification JWT:", err.message);
+      return res.status(401).json({ message: "Token invalide ou expiré" });
+    }
+
+    const result = await pool.query(
+      "SELECT id, name, email, metadata FROM users WHERE id = $1",
+      [decoded.id]
+    );
+
+    if (result.rows.length === 0)
+      return res.status(404).json({ message: "Utilisateur introuvable" });
 
     res.json({ success: true, user: result.rows[0] });
   } catch (err) {
@@ -110,8 +146,13 @@ app.get("/auth/me", async (req, res) => {
   }
 });
 
+// ============================
+// 🌍 PAGE PAR DÉFAUT
+// ============================
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-app.listen(PORT, () => console.log(`✅ Serveur MyMír en ligne sur le port ${PORT}`));
+app.listen(PORT, () =>
+  console.log(`✅ Serveur MyMír en ligne sur le port ${PORT}`)
+);
