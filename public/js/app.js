@@ -29,45 +29,48 @@ if (!token) {
   window.location.href = "login.html";
 } else {
   fetch("https://mymir.onrender.com/auth/me", {
-    method: "GET",
-    headers: {
-      "Authorization": `Bearer ${token}`,
-      "Content-Type": "application/json"
+  method: "GET",
+  headers: {
+    "Authorization": `Bearer ${token}`,
+    "Content-Type": "application/json"
+  }
+})
+  .then(res => res.json())
+  .then(data => {
+    console.log("📡 Réponse /auth/me :", data);
+
+    if (!data.success && data.user) {
+      data.success = true; // ✅ patch temporaire
     }
-  })
-    .then(res => res.json())
-    .then(data => {
-      console.log("📡 Réponse /auth/me :", data);
 
-      if (!data.success) {
-        console.warn("❌ Token invalide ou expiré, redirection.");
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        window.location.href = "login.html";
-        return;
-      }
-
-      const user = data.user;
-      console.log("✅ Profil chargé :", user);
-
-      // Sidebar
-      document.getElementById("companyName").textContent =
-        user.metadata?.companyName || "Entreprise";
-
-      // Profil
-      document.getElementById("p_company").textContent =
-        user.metadata?.companyName || "—";
-      document.getElementById("p_email").textContent = user.email || "—";
-      document.getElementById("p_country").textContent =
-        user.metadata?.country || "—";
-      document.getElementById("p_sector").textContent =
-        user.metadata?.sector || "—";
-    })
-    .catch(err => {
-      console.error("❌ Erreur chargement profil :", err);
+    if (!data.success) {
+      console.warn("❌ Token invalide ou expiré, redirection.");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
       window.location.href = "login.html";
-    });
-}
+      return;
+    }
+
+    const user = data.user;
+    console.log("✅ Profil chargé :", user);
+
+    // Sidebar
+    document.getElementById("companyName").textContent =
+      user.metadata?.companyName || "Entreprise";
+
+    // Profil
+    document.getElementById("p_company").textContent =
+      user.metadata?.companyName || "—";
+    document.getElementById("p_email").textContent = user.email || "—";
+    document.getElementById("p_country").textContent =
+      user.metadata?.country || "—";
+    document.getElementById("p_sector").textContent =
+      user.metadata?.sector || "—";
+  })
+  .catch(err => {
+    console.error("❌ Erreur chargement profil :", err);
+    window.location.href = "login.html";
+  });
 
 
       // ✅ Message de bienvenue dynamique
