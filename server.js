@@ -154,12 +154,27 @@ app.get("/auth/me", async (req, res) => {
 });
 
 // ============================
-// 🌍 PAGE PAR DÉFAUT
+// 🌍 ROUTES FRONTEND — FIX Render
 // ============================
-app.get("*", (req, res) => {
+
+import fs from "fs";
+
+// ✅ Ce bloc vient APRÈS les routes API
+app.get("/*", (req, res) => {
+  const filePath = path.join(__dirname, "public", req.path);
+
+  // Si le fichier existe vraiment dans /public, on le renvoie
+  if (fs.existsSync(filePath) && fs.lstatSync(filePath).isFile()) {
+    return res.sendFile(filePath);
+  }
+
+  // Sinon, on renvoie index.html (page d'accueil)
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
+// ============================
+// 🚀 LANCEMENT DU SERVEUR
+// ============================
 app.listen(PORT, () =>
   console.log(`✅ Serveur MyMír en ligne sur le port ${PORT}`)
 );
