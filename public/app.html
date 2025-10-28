@@ -1,182 +1,92 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tableau de bord – MyMír</title>
-  <link rel="icon" type="image/png" href="assets/logo/favicon.png" />
-  <link rel="stylesheet" href="css/app.css" />
-  <script defer src="js/app.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard MyMír</title>
+  <link rel="icon" type="image/png" href="assets/logo/favicon.png">
+  <link rel="stylesheet" href="css/app.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/app.js" defer></script>
 </head>
-<body>
 
-  <!-- === SIDEBAR === -->
+<body>
+  <!-- 🌊 Arrière-plan dynamique -->
+  <canvas id="bgCanvas"></canvas>
+
+  <!-- === Barre latérale === -->
   <aside class="sidebar">
-    <div class="logo-area">
-      <img src="assets/logo/favicon.png" alt="MyMír Logo" class="logo-img">
-      <span class="logo-text">MyMír</span>
+    <div class="logo">
+      <img src="assets/logo/favicon.png" alt="Logo MyMír">
+      <span class="brand">MyMír</span>
     </div>
     <nav>
-      <a href="#" class="active" data-page="dashboard">🏠 Accueil</a>
-      <a href="#" data-page="analyse">📄 Analyse</a>
-      <a href="#" data-page="aide">💡 Aide à la réponse</a>
-      <a href="#" data-page="historique">🕓 Historique</a>
-      <a href="#" data-page="profil">👤 Profil</a>
+      <ul>
+        <li id="homeBtn">🏠 Accueil</li>
+        <li id="analyseBtn">📊 Analyse</li>
+        <li id="aideBtn">💡 Aide à la réponse</li>
+        <li id="historyBtn">🕓 Historique</li>
+        <li id="profilBtn">👤 Profil</li>
+      </ul>
     </nav>
+    <button id="logoutBtn" class="logout">Déconnexion</button>
   </aside>
 
-  <!-- === MAIN CONTENT === -->
-  <main class="main">
-    <header class="topbar">
+  <!-- === Contenu principal === -->
+  <main class="content">
+    <header>
       <h1 id="pageTitle">Dashboard</h1>
-      <div class="user-info">
-        <span id="userName">Entreprise Démo</span>
-        <button id="logoutBtn">Déconnexion</button>
-      </div>
     </header>
 
-    <!-- === CONTENU DYNAMIQUE === -->
-    <section id="contentArea">
-
-<!-- 🟡 Tableau de bord par défaut -->
-<div id="dashboard" class="welcome visible">
-  <h2>Bienvenue sur votre tableau de bord</h2>
-  <p>Sélectionnez un module pour commencer votre analyse.</p>
-
-  <div class="stats-container">
-    <div class="stat-card fade-in">
-      <h3>📊 Analyses réalisées</h3>
-      <p>12</p>
-    </div>
-    <div class="stat-card fade-in">
-      <h3>🧠 Recommandations IA</h3>
-      <p>36</p>
-    </div>
-    <div class="stat-card fade-in">
-      <h3>🏗️ Appels d’offres suivis</h3>
-      <p>8</p>
-    </div>
-  </div>
-
-  <!-- === 🔍 SIMULATION IA === -->
-  <div class="ai-section">
-    <h3>Analyse intelligente (version démo)</h3>
-    <p>Déposez un fichier pour lancer une simulation d’analyse.</p>
-
-    <form id="aiForm">
-      <input type="file" id="aiFile" accept=".pdf,.doc,.docx" />
-      <button type="submit">Lancer l’analyse IA</button>
-    </form>
-
-    <div id="aiResult" class="ai-result hidden">
-      <div id="aiLoading" class="ai-loading">
-        <div class="spinner"></div>
-        <p>MyMír réfléchit à votre document...</p>
+    <!-- 🏠 Accueil -->
+    <section id="home" class="section active">
+      <div class="welcome">
+        <h2>Bienvenue sur votre espace MyMír</h2>
+        <p>Gérez vos appels d’offres, suivez vos analyses et centralisez vos actions en un seul endroit.</p>
+        <button id="startAnalyse" class="cta">Lancer une analyse</button>
       </div>
+    </section>
 
-      <div id="aiOutput" class="ai-output hidden">
-        <h4>Résultat de l’analyse :</h4>
-        <ul>
-          <li><strong>Type d’appel d’offre :</strong> Marché public – Fournitures</li>
-          <li><strong>Date limite :</strong> 18 novembre 2025</li>
-          <li><strong>Documents requis :</strong> DC1, DC2, mémoire technique</li>
-          <li><strong>Niveau de risque :</strong> Modéré</li>
-        </ul>
+    <!-- 📊 Analyse -->
+    <section id="analyse" class="section hidden">
+      <h2>Analyse de vos opportunités</h2>
+      <div class="analyse-zone">
+        <canvas id="analyseChart"></canvas>
       </div>
-    </div>
-  </div>
-</div>
+    </section>
 
-      <!-- 👤 Page Profil -->
-      <div id="profil" class="profil-page hidden">
-        <h2>Profil de votre entreprise</h2>
-        <div class="profil-info">
-          <p><strong>Nom de l’entreprise :</strong> <span id="pCompany"></span></p>
-          <p><strong>Responsable :</strong> <span id="pManager"></span></p>
-          <p><strong>Email :</strong> <span id="pEmail"></span></p>
-          <p><strong>Secteur d’activité :</strong> <span id="pSector"></span></p>
-          <p><strong>Chiffre d’affaires :</strong> <span id="pRevenue"></span></p>
-          <p><strong>Effectif :</strong> <span id="pEmployees"></span></p>
-          <p><strong>Pays / région principale :</strong> <span id="pCountry"></span></p>
-          <p><strong>Certifications :</strong> <span id="pCertifications"></span></p>
-        </div>
+    <!-- 💡 Aide -->
+    <section id="aide" class="section hidden">
+      <h2>Outils d’aide à la réponse</h2>
+      <p>Retrouvez ici des recommandations personnalisées et des modèles types adaptés à votre secteur.</p>
+      <div class="tips">
+        <div class="tip">📄 Exemple de mémoire technique</div>
+        <div class="tip">🧩 Liste de contrôle avant dépôt</div>
+        <div class="tip">💬 Conseils pour améliorer la note technique</div>
       </div>
+    </section>
 
+    <!-- 🕓 Historique -->
+    <section id="historique" class="section hidden">
+      <h2>Historique des analyses</h2>
+      <p>Vos dernières actions apparaîtront ici une fois vos analyses effectuées.</p>
+      <ul class="history-list"></ul>
+    </section>
+
+    <!-- 👤 Profil -->
+    <section id="profil" class="section hidden">
+      <h2>Profil de votre entreprise</h2>
+      <div class="profil-info">
+        <p><strong>Nom de l’entreprise :</strong> <span id="pCompany"></span></p>
+        <p><strong>Responsable :</strong> <span id="pManager"></span></p>
+        <p><strong>Email :</strong> <span id="pEmail"></span></p>
+        <p><strong>Secteur d’activité :</strong> <span id="pSector"></span></p>
+        <p><strong>Chiffre d’affaires :</strong> <span id="pRevenue"></span></p>
+        <p><strong>Effectif :</strong> <span id="pEmployees"></span></p>
+        <p><strong>Pays / région principale :</strong> <span id="pCountry"></span></p>
+        <p><strong>Certifications :</strong> <span id="pCertifications"></span></p>
+      </div>
     </section>
   </main>
-
-  <script>
-    // === Vérifie la connexion ===
-    const user = JSON.parse(localStorage.getItem("myMirUser"));
-    if (!user) {
-      window.location.href = "login.html";
-    } else {
-      document.getElementById("userName").textContent = user.company;
-    }
-
-    // === Déconnexion ===
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-      localStorage.removeItem("myMirUser");
-      alert("Déconnexion réussie !");
-      window.location.href = "login.html";
-    });
-
-    // === Navigation dynamique ===
-    const links = document.querySelectorAll(".sidebar nav a");
-    const sections = document.querySelectorAll("#contentArea > div");
-
-    links.forEach(link => {
-      link.addEventListener("click", () => {
-        links.forEach(l => l.classList.remove("active"));
-        link.classList.add("active");
-        const page = link.dataset.page;
-
-        sections.forEach(sec => sec.classList.add("hidden"));
-        document.getElementById(page).classList.remove("hidden");
-
-        if (page === "dashboard") {
-          document.getElementById("pageTitle").textContent = "Dashboard";
-        } else if (page === "profil") {
-          document.getElementById("pageTitle").textContent = "Profil";
-          loadProfil();
-        } else {
-          document.getElementById("pageTitle").textContent = link.textContent.trim();
-        }
-      });
-    });
-
-    // === Remplit la page profil avec les données locales ===
-    function loadProfil() {
-      document.getElementById("pCompany").textContent = user.company;
-      document.getElementById("pManager").textContent = user.manager;
-      document.getElementById("pEmail").textContent = user.email;
-      document.getElementById("pSector").textContent = user.sector;
-      document.getElementById("pRevenue").textContent = user.revenue;
-      document.getElementById("pEmployees").textContent = user.employees;
-      document.getElementById("pCountry").textContent = user.country;
-      document.getElementById("pCertifications").textContent = user.certifications;
-    }
-    // === IA Simulation ===
-const aiForm = document.getElementById("aiForm");
-const aiResult = document.getElementById("aiResult");
-const aiLoading = document.getElementById("aiLoading");
-const aiOutput = document.getElementById("aiOutput");
-
-if (aiForm) {
-  aiForm.addEventListener("submit", e => {
-    e.preventDefault();
-    aiResult.classList.remove("hidden");
-    aiLoading.classList.remove("hidden");
-    aiOutput.classList.add("hidden");
-
-    // Simulation d'analyse
-    setTimeout(() => {
-      aiLoading.classList.add("hidden");
-      aiOutput.classList.remove("hidden");
-    }, 3000);
-  });
-}
-  </script>
-
 </body>
 </html>
