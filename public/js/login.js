@@ -17,7 +17,6 @@ if (form) {
     }
 
     try {
-      // ✅ Utiliser l'URL absolue du backend sur Render
       const res = await fetch("https://mymir.onrender.com/login", {
         method: "POST",
         headers: {
@@ -25,29 +24,24 @@ if (form) {
           "Accept": "application/json",
         },
         body: JSON.stringify({ email, password }),
-        credentials: "include", // 🔑 pour garantir la bonne gestion des cookies & domaine
       });
 
-      // ✅ Forcer la lecture JSON
       const data = await res.json();
       console.log("📡 Réponse /login :", data);
 
-      // ✅ Vérifie que tout est bien reçu
-      if (data && data.success && data.token) {
+      if (data.success && data.token) {
         console.log("🟢 Token reçu :", data.token);
 
-        // ✅ Stockage persistant
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
 
         alert("Connexion réussie 🎉");
         window.location.href = "app.html";
       } else {
-        console.warn("⚠️ Réponse inattendue :", data);
         alert(data.message || "Erreur de connexion.");
       }
     } catch (err) {
-      console.error("❌ Erreur réseau :", err);
+      console.error("❌ Erreur serveur :", err);
       alert("Erreur serveur, veuillez réessayer.");
     }
   });
