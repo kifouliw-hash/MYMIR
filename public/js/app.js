@@ -22,15 +22,23 @@ navLinks.forEach(link => {
 const API_BASE = window.location.origin;
 const token = localStorage.getItem("token");
 
+console.log("🔑 Token lu dans localStorage :", token);
+
 if (!token) {
   console.warn("⚠️ Aucun token trouvé, redirection vers la page de connexion.");
   window.location.href = "login.html";
 } else {
-  fetch(`${API_BASE}/auth/me`, {
-    headers: { Authorization: `Bearer ${token}` },
+  fetch("https://mymir.on***REMOVED***/auth/me", {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json"
+    }
   })
     .then(res => res.json())
     .then(data => {
+      console.log("📡 Réponse /auth/me :", data);
+
       if (!data.success) {
         console.warn("❌ Token invalide ou expiré, redirection.");
         localStorage.removeItem("token");
@@ -54,6 +62,13 @@ if (!token) {
         user.metadata?.country || "—";
       document.getElementById("p_sector").textContent =
         user.metadata?.sector || "—";
+    })
+    .catch(err => {
+      console.error("❌ Erreur chargement profil :", err);
+      window.location.href = "login.html";
+    });
+}
+
 
       // ✅ Message de bienvenue dynamique
       const welcomeMsg = document.getElementById("welcomeMessage");
