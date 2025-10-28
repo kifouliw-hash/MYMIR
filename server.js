@@ -8,6 +8,7 @@ import pool from "./db.js";
 import bcrypt from "bcrypt";
 import cors from "cors";
 import path from "path";
+import jwt from "jsonwebtoken";
 import { fileURLToPath } from "url";
 
 const app = express();
