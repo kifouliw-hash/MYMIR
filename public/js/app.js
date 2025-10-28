@@ -1,72 +1,98 @@
-// === Navigation entre sections ===
-document.querySelectorAll(".nav-link").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".nav-link").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
+// ================================
+// 🧠 app.js — Tableau de bord MyMír
+// ================================
 
-    document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
-    document.getElementById(btn.dataset.section).classList.add("active");
+// Gestion du menu latéral
+const sections = document.querySelectorAll(".section");
+const navLinks = document.querySelectorAll(".nav-link");
+
+navLinks.forEach(link => {
+  link.addEventListener("click", () => {
+    navLinks.forEach(l => l.classList.remove("active"));
+    link.classList.add("active");
+
+    sections.forEach(section => section.classList.remove("active"));
+    document.getElementById(link.dataset.section).classList.add("active");
   });
 });
 
-// === Redirection accueil → analyse ===
-document.querySelectorAll("[data-section='analyse']").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
-    document.getElementById("analyse").classList.add("active");
-  });
-});
+// ================================
+// 🔐 Authentification utilisateur
+// ================================
 
-// === Récupération utilisateur ===
-window.addEventListener("DOMContentLoaded", () => {
-  const user = JSON.parse(localStorage.getItem("myMirUser"));
-  if (!user) window.location.href = "login.html";
+const API_BASE = window.location.origin; // fonctionne sur Render aussi
+const token = localStorage.getItem("token");
 
-  document.getElementById("companyName").textContent = user.company || "Entreprise";
-  document.getElementById("p_company").textContent = user.company || "—";
-  document.getElementById("p_email").textContent = user.email || "—";
-  document.getElementById("p_country").textContent = user.country || "—";
-  document.getElementById("p_sector").textContent = user.sector || "—";
-});
+if (!token) {
+  console.warn("⚠️ Aucun token trouvé, redirection vers la page de connexion.");
+  window.location.href = "login.html";
+} else {
+  fetch(`${API_BASE}/auth/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (!data.success) {
+        console.warn("❌ Token invalide ou expiré, redirection.");
+        localStorage.removeItem("token");
+        window.location.href = "login.html";
+        return;
+      }
 
-// === Déconnexion ===
+      const user = data.user;
+      console.log("✅ Profil chargé :", user);
+
+      // Sidebar
+      document.getElementById("companyName").textContent =
+        user.metadata?.companyName || "Entreprise";
+
+      // Profil
+      document.getElementById("p_company").textContent =
+        user.metadata?.companyName || "—";
+      document.getElementById("p_email").textContent = user.email || "—";
+      document.getElementById("p_country").textContent =
+        user.metadata?.country || "—";
+      document.getElementById("p_sector").textContent =
+        user.metadata?.sector || "—";
+    })
+    .catch(err => {
+      console.error("Erreur chargement profil :", err);
+      window.location.href = "login.html";
+    });
+}
+
+// ================================
+// 🚪 Déconnexion
+// ================================
 document.getElementById("logoutBtn").addEventListener("click", () => {
-  localStorage.removeItem("myMirUser");
+  localStorage.removeItem("token");
   window.location.href = "login.html";
 });
 
-// === Upload simulation ===
+// ================================
+// 📊 Simulation d’analyse (test UI)
+// ================================
 const uploadArea = document.getElementById("uploadArea");
 const fileInput = document.getElementById("fileInput");
 const loading = document.getElementById("loading");
 const resultArea = document.getElementById("resultArea");
 
-uploadArea.addEventListener("click", () => fileInput.click());
-fileInput.addEventListener("change", simulateAnalysis);
-uploadArea.addEventListener("dragover", e => {
-  e.preventDefault();
-  uploadArea.style.background = "rgba(255,255,255,0.15)";
-});
-uploadArea.addEventListener("dragleave", e => {
-  e.preventDefault();
-  uploadArea.style.background = "rgba(255,255,255,0.08)";
-});
-uploadArea.addEventListener("drop", e => {
-  e.preventDefault();
-  simulateAnalysis();
-});
+if (uploadArea && fileInput) {
+  uploadArea.addEventListener("click", () => fileInput.click());
+  fileInput.addEventListener("change", simulateAnalysis);
+}
 
 function simulateAnalysis() {
   uploadArea.classList.add("hidden");
   loading.classList.remove("hidden");
+
   setTimeout(() => {
     loading.classList.add("hidden");
     resultArea.classList.remove("hidden");
-  }, 2500);
+  }, 2000);
 }
 
-// === Nouvelle analyse ===
-document.getElementById("newAnalyse").addEventListener("click", () => {
+document.getElementById("newAnalyse")?.addEventListener("click", () => {
   resultArea.classList.add("hidden");
   uploadArea.classList.remove("hidden");
 });
