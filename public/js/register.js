@@ -19,7 +19,8 @@ if (countrySelect) {
     if (country === "France") {
       companyIdLabel.textContent = "SIRET (France)";
       autoFillBtn.style.display = "inline-block";
-      helpText.textContent = "En France, le SIRET permet d'auto-remplir vos informations via data.gouv.fr.";
+      helpText.textContent =
+        "En France, le SIRET permet d'auto-remplir vos informations via data.gouv.fr.";
     } else if (country === "Belgique") {
       companyIdLabel.textContent = "Numéro d’entreprise (BCE)";
       autoFillBtn.style.display = "none";
@@ -32,9 +33,8 @@ if (countrySelect) {
   });
 }
 
-// === 🔍 Auto-remplissage via API SIRET ===
+// === 🔍 Auto-remplissage via API SIRET (optionnel) ===
 const companyIdInput = document.getElementById("companyId");
-
 if (autoFillBtn) {
   autoFillBtn.addEventListener("click", async () => {
     const siret = companyIdInput.value.trim();
@@ -70,7 +70,7 @@ if (autoFillBtn) {
   });
 }
 
-// === 🚀 Création de compte réelle (connexion Render PostgreSQL) ===
+// === 🚀 Création de compte réelle (Render PostgreSQL + auto login) ===
 const form = document.getElementById("registerForm");
 if (form) {
   form.addEventListener("submit", async (e) => {
@@ -79,6 +79,8 @@ if (form) {
     const btn = form.querySelector("button[type='submit']");
     btn.textContent = "Création du compte...";
     btn.disabled = true;
+
+    const API_BASE = window.location.origin;
 
     const data = {
       companyName: document.getElementById("companyName").value.trim(),
@@ -99,8 +101,15 @@ if (form) {
       return;
     }
 
+    if (data.password.length < 6) {
+      alert("Le mot de passe doit contenir au moins 6 caractères.");
+      btn.textContent = "Créer le compte";
+      btn.disabled = false;
+      return;
+    }
+
     try {
-      const res = await fetch("https://mymir.on***REMOVED***/register", {
+      const res = await fetch(`${API_BASE}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -109,10 +118,20 @@ if (form) {
       const result = await res.json();
 
       if (result.success) {
+        // ✅ Si le backend renvoie un token (cas futur)
+        if (result.token) {
+          localStorage.setItem("token", result.token);
+          localStorage.setItem("user", JSON.stringify(result.user));
+          alert("✅ Compte créé et connecté !");
+          window.location.href = "app.html";
+        } else {
+          // Sinon redirige vers login classique
+          alert("✅ Compte créé avec succès !");
+          setTimeout(() => (window.location.href = "login.html"), 800);
+        }
+
         btn.textContent = "Compte créé ✅";
         btn.style.background = "#4ADE80";
-        alert("✅ Compte créé avec succès !");
-        setTimeout(() => (window.location.href = "login.html"), 1000);
       } else {
         alert(result.message || "Erreur lors de l’inscription.");
         btn.textContent = "Créer le compte";
