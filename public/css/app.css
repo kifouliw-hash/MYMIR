@@ -510,4 +510,13 @@
   font-size: 1rem;
   border-radius: 12px;
 }
+.logo {
+  width: 120px;
+  height: 120px;
+  border: 3px solid red !important;
+  display: block !important;
+  background: none !important;
+  margin: 0 auto !important;
+  z-index: 1000 !important;
+}
 
