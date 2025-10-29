@@ -45,44 +45,49 @@
   color: var(--text-light);
 }
 
-/* === Sidebar === */
+/* ==============================
+   🧭 SIDEBAR MODERNE
+   ============================== */
 .sidebar {
-  width: 240px;
-  background: rgba(10, 15, 28, 0.92);
-  backdrop-filter: blur(15px);
-  padding: 20px;
+  width: 230px;
+  background: #0b1220;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 35px 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.logo-section {
-  text-align: center;
+.sidebar .nav-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.logo {
-  width: 65px;
-  height: auto;
-  margin-bottom: 10px;
-  filter: drop-shadow(0 0 8px rgba(245, 184, 65, 0.4));
-  transition: var(--transition);
-}
-.logo:hover {
-  transform: scale(1.05);
-}
-
-.logo-section h1 {
-  color: var(--gold);
-  font-size: 22px;
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 25px;
+  font-size: 1.05rem;
+  color: #e2e8f0;
+  border-radius: 12px;
+  margin: 4px 12px;
+  transition: all 0.25s ease;
 }
 
-.user-info {
-  text-align: center;
-  margin-top: 15px;
+.nav-item:hover {
+  background: rgba(250, 204, 21, 0.15);
+  color: #facc15;
+  transform: translateX(4px);
+}
+
+.nav-item.active {
+  background: #facc15;
+  color: #111;
   font-weight: 600;
-  color: var(--text-dim);
 }
+
 
 /* === Navigation === */
 .nav-link {
@@ -288,6 +293,58 @@
   transform: translateY(-4px);
   background: rgba(255, 255, 255, 0.15);
 }
+/* ==============================
+   💡 AIDE À LA RÉPONSE — DESIGN AMÉLIORÉ
+   ============================== */
+.help-container {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  padding: 20px 40px;
+}
+
+.help-card {
+  background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.1));
+  border-radius: 16px;
+  padding: 25px 30px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  transition: all 0.3s ease;
+}
+
+.help-card:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.help-card h3 {
+  font-size: 1.3rem;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+
+.help-card p {
+  color: var(--text-dim);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.help-card button {
+  background: var(--gold);
+  color: #111;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.help-card button:hover {
+  background: var(--gold-light);
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(250, 204, 21, 0.4);
+}
+
 
 /* ==============================
    📜 TABLEAU HISTORIQUE
@@ -375,5 +432,31 @@
   border-radius: 8px;
   padding: 8px 10px;
   transition: 0.2s;
+}
+.welcome-box {
+  text-align: left;
+  padding: 60px;
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(30,41,59,0.9), rgba(15,23,42,0.9));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.welcome-box h2 {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  color: #fff;
+}
+
+.welcome-box p {
+  color: rgba(255,255,255,0.8);
+  font-size: 1.05rem;
+}
+
+.welcome-btn {
+  padding: 16px 32px;
+  font-size: 1rem;
+  border-radius: 12px;
 }
 
