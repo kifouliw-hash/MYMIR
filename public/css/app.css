@@ -46,33 +46,59 @@
 }
 
 /* ==============================
-   🧭 SIDEBAR MODERNE
+   🧭 SIDEBAR MODERNE (VERSION FINALE)
    ============================== */
 .sidebar {
-  width: 230px;
+  width: 250px;
   background: #0b1220;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 35px 0;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 30px 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.sidebar .nav-section {
+/* --- Logo --- */
+.logo-section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.logo-section .logo {
+  width: 85px;
+  height: 85px;
+  object-fit: contain;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.1), transparent);
+}
+
+.logo-section h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+}
+
+/* --- Navigation --- */
+.nav-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 20px;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px 25px;
-  font-size: 1.05rem;
-  color: #e2e8f0;
+  padding: 16px 35px;
+  font-size: 1.15rem;
+  color: #e5e7eb;
   border-radius: 12px;
-  margin: 4px 12px;
+  margin: 4px 10px;
   transition: all 0.25s ease;
 }
 
@@ -87,6 +113,31 @@
   color: #111;
   font-weight: 600;
 }
+
+/* --- Bouton Déconnexion --- */
+.logout-section {
+  padding: 25px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.logout-section button {
+  width: 80%;
+  background: #facc15;
+  color: #000;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.logout-section button:hover {
+  background: #fde047;
+  transform: scale(1.05);
+}
+
 
 
 /* === Navigation === */
