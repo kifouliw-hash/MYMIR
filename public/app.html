@@ -15,28 +15,30 @@
   <div class="background-waves"></div>
 
   <div class="dashboard">
-    <!-- Barre latérale -->
-    <aside class="sidebar">
-      <div class="logo-section">
-  <img src="assets/logo/logo-mymir.png" alt="Logo MyMír" class="logo" /> <!-- ✅ sans le slash -->
-  <h1>MyMír</h1>
-</div>
+ <!-- Barre latérale -->
+<aside class="sidebar">
+  <div class="logo-section">
+    <img src="assets/logo/logo-mymir.png" alt="Logo MyMír" class="logo" />
+    <h1>MyMír</h1>
+  </div>
 
+  <div class="user-info">
+    <p id="companyName">Chargement...</p>
+  </div>
 
-      <div class="user-info">
-        <p id="companyName">Chargement...</p>
-      </div>
+  <div class="nav-section">
+    <button class="nav-link active" data-section="home">🏠 Accueil</button>
+    <button class="nav-link" data-section="analyse">📊 Analyse</button>
+    <button class="nav-link" data-section="aide">💡 Aide à la réponse</button>
+    <button class="nav-link" data-section="historique">📜 Historique</button>
+    <button class="nav-link" data-section="profil">👤 Profil</button>
+  </div>
 
-      <nav class="menu">
-        <button class="nav-link active" data-section="home">🏠 Accueil</button>
-        <button class="nav-link" data-section="analyse">📊 Analyse</button>
-        <button class="nav-link" data-section="aide">💡 Aide à la réponse</button>
-        <button class="nav-link" data-section="historique">📁 Historique</button>
-        <button class="nav-link" data-section="profil">👤 Profil</button>
-      </nav>
+  <div class="logout-section">
+    <button class="logout-btn" id="logoutBtn">🚪 Déconnexion</button>
+  </div>
+</aside>
 
-      <button class="logout-btn" id="logoutBtn">🚪 Déconnexion</button>
-    </aside>
 
     <!-- Contenu principal -->
     <main class="content">
@@ -45,7 +47,7 @@
 <section id="home" class="section active">
   <div id="welcomeCard" class="welcome-card">
     <h1 id="welcomeMessage">Bienvenue <span style="color:#facc15;">!Will 👋</span></h1>
-    <p id="welcomeSubtext">Heureux de vous revoir sur MyMír — prêt à optimiser vos appels d’offres ?</p>
+    <p id="welcomeSubtext">Heureux de vous revoir sur MyMír, vous êtes prêt à optimiser vos appels d’offres ?</p>
     <button id="launchAnalyseBtn" class="welcome-btn">Lancer une analyse</button>
   </div>
 </section>
