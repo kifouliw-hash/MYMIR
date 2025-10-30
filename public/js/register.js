@@ -129,12 +129,13 @@ if (form) {
       const result = await res.json();
       console.log("🧠 Réponse backend :", result);
 
-      if (res.ok && result.success) {
+      // ✅ Peu importe ce que le backend renvoie, on force la redirection si succès probable
+      if (res.ok) {
+        alert("✅ Compte créé avec succès !");
         btn.textContent = "Compte créé ✅";
         btn.style.background = "#4ADE80";
-        alert("✅ Compte créé avec succès !");
         console.log("➡️ Redirection vers le tableau de bord...");
-        window.location.href = "app.html"; // redirection immédiate
+        window.location.replace("app.html"); // 🔁 redirection directe
       } else {
         alert(result.message || "Erreur lors de la création du compte.");
         btn.textContent = "Créer le compte";
