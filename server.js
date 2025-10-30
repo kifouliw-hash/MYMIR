@@ -6,7 +6,7 @@ import cors from "cors";
 import path from "path";
 import jwt from "jsonwebtoken";
 import { fileURLToPath } from "url";
-import siretRoutes from "./routes/siretRoute.js";
+import siretRoutes from "./backend/routes/siretRoute.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
