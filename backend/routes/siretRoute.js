@@ -1,47 +1,42 @@
-// === Route API : Recherche SIRET ===
 import express from "express";
 import fetch from "node-fetch";
 
 const router = express.Router();
 
-// ✅ Test route (pour vérifier Render)
+// ✅ Test route (Render ok)
 router.get("/test", (req, res) => {
-  res.json({ message: "✅ Route SIRET opérationnelle sur Render" });
+  res.json({ message: "✅ Route SIRET opérationnelle via Proxy" });
 });
 
-// ✅ Route POST : /api/siret/lookup
+// ✅ Route principale avec Proxy pour Render
 router.post("/lookup", async (req, res) => {
   try {
     const { siret } = req.body;
-
     if (!siret || siret.length !== 14) {
       return res.status(400).json({ message: "SIRET invalide (14 chiffres requis)." });
     }
 
-    const url = `https://entreprise.data.gouv.fr/api/sirene/v3/etablissements/${siret}`;
+    // 🔄 On passe par un proxy relais (hébergé sur serveur public fiable)
+    const proxyURL = `https://api.allorigins.win/get?url=${encodeURIComponent(
+      `https://entreprise.data.gouv.fr/api/sirene/v3/etablissements/${siret}`
+    )}`;
 
-    console.log("🔍 Requête API SIRENE envoyée à :", url);
+    console.log("🌐 Requête proxy envoyée à :", proxyURL);
 
-    const response = await fetch(url, {
-  method: "GET",
-  headers: {
-    "Accept": "application/json",
-    "User-Agent": "MyMirApp/1.0 (contact@mymir.com)"
-  },
-});
-
-
-    if (!response.ok) {
-      console.error("⚠️ API SIRENE a renvoyé une erreur :", response.status, response.statusText);
-      return res.status(502).json({
-        message: `Erreur côté API SIRENE (${response.status})`,
-      });
+    const proxyRes = await fetch(proxyURL);
+    if (!proxyRes.ok) {
+      return res.status(502).json({ message: `Erreur proxy (${proxyRes.status})` });
     }
 
-    const data = await response.json();
+    const proxyData = await proxyRes.json();
+
+    if (!proxyData || !proxyData.contents) {
+      return res.status(502).json({ message: "Réponse proxy invalide." });
+    }
+
+    const data = JSON.parse(proxyData.contents);
 
     if (!data || !data.etablissement) {
-      console.warn("⚠️ Aucun établissement trouvé pour ce SIRET.");
       return res.status(404).json({ message: "Aucun établissement trouvé pour ce SIRET." });
     }
 
@@ -57,11 +52,10 @@ router.post("/lookup", async (req, res) => {
       city,
       country,
     });
-
   } catch (err) {
-    console.error("❌ Erreur API SIRET détaillée :", err);
+    console.error("❌ Erreur API SIRET via proxy :", err);
     res.status(500).json({
-      message: "Erreur serveur ou API SIRENE indisponible.",
+      message: "Erreur serveur ou proxy indisponible.",
       details: err.message,
     });
   }
