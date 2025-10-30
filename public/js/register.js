@@ -104,6 +104,7 @@ if (form) {
       password: document.getElementById("password").value.trim(),
     };
 
+    // Vérification minimale
     if (!data.managerName || !data.email || !data.password) {
       alert("Veuillez remplir au minimum le nom, l’email et le mot de passe.");
       btn.textContent = "Créer le compte";
@@ -126,33 +127,25 @@ if (form) {
       });
 
       const result = await res.json();
+      console.log("🧠 Réponse backend :", result);
 
-      try {
-  const res = await fetch(`${API_BASE}/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
+      if (res.ok && result.success) {
+        btn.textContent = "Compte créé ✅";
+        btn.style.background = "#4ADE80";
+        alert("✅ Compte créé avec succès !");
+        console.log("➡️ Redirection vers le tableau de bord...");
+        window.location.href = "app.html"; // redirection immédiate
+      } else {
+        alert(result.message || "Erreur lors de la création du compte.");
+        btn.textContent = "Créer le compte";
+        btn.disabled = false;
+      }
+
+    } catch (err) {
+      console.error("❌ Erreur réseau :", err);
+      alert("Erreur de connexion au serveur.");
+      btn.textContent = "Créer le compte";
+      btn.disabled = false;
+    }
   });
-
-  const result = await res.json();
-  console.log("Réponse backend :", result);
-
-  if (res.ok) {
-    btn.textContent = "Compte créé ✅";
-    btn.style.background = "#4ADE80";
-    alert("✅ Compte créé avec succès !");
-    // 🔁 Redirection directe vers le tableau de bord
-    setTimeout(() => {
-      window.location.href = "app.html";
-    }, 1000);
-  } else {
-    alert(result.message || "Erreur lors de la création du compte.");
-    btn.textContent = "Créer le compte";
-    btn.disabled = false;
-  }
-} catch (err) {
-  console.error("❌ Erreur réseau :", err);
-  alert("Erreur de connexion au serveur.");
-  btn.textContent = "Créer le compte";
-  btn.disabled = false;
 }
