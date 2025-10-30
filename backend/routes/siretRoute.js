@@ -4,7 +4,12 @@ import fetch from "node-fetch";
 
 const router = express.Router();
 
-// Route POST : /api/siret/lookup
+// ✅ Test route (pour vérifier Render)
+router.get("/test", (req, res) => {
+  res.json({ message: "✅ Route SIRET opérationnelle sur Render" });
+});
+
+// ✅ Route POST : /api/siret/lookup
 router.post("/lookup", async (req, res) => {
   try {
     const { siret } = req.body;
@@ -13,13 +18,25 @@ router.post("/lookup", async (req, res) => {
       return res.status(400).json({ message: "SIRET invalide (14 chiffres requis)." });
     }
 
-    // Requête vers l'API publique SIRENE
     const url = `https://entreprise.data.gouv.fr/api/sirene/v3/etablissements/${siret}`;
-    const response = await fetch(url);
+
+    console.log("🔍 Requête API SIRENE envoyée à :", url);
+
+    const response = await fetch(url, {
+      headers: { "Accept": "application/json" },
+    });
+
+    if (!response.ok) {
+      console.error("⚠️ API SIRENE a renvoyé une erreur :", response.status, response.statusText);
+      return res.status(502).json({
+        message: `Erreur côté API SIRENE (${response.status})`,
+      });
+    }
+
     const data = await response.json();
 
-    // Vérification des résultats
     if (!data || !data.etablissement) {
+      console.warn("⚠️ Aucun établissement trouvé pour ce SIRET.");
       return res.status(404).json({ message: "Aucun établissement trouvé pour ce SIRET." });
     }
 
@@ -29,22 +46,20 @@ router.post("/lookup", async (req, res) => {
     const city = etab.libelle_commune || "—";
     const country = "France";
 
-    // ✅ Réponse simplifiée
     res.json({
       company: companyName,
       naf,
       city,
-      country
+      country,
     });
 
   } catch (err) {
-    console.error("Erreur API SIRET :", err);
-    res.status(500).json({ message: "Erreur serveur ou API SIRENE indisponible." });
+    console.error("❌ Erreur API SIRET détaillée :", err);
+    res.status(500).json({
+      message: "Erreur serveur ou API SIRENE indisponible.",
+      details: err.message,
+    });
   }
-});
-// === Route GET de test simple ===
-router.get("/test", (req, res) => {
-  res.json({ message: "✅ Route SIRET opérationnelle sur Render" });
 });
 
 export default router;
