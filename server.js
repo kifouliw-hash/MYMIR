@@ -187,7 +187,8 @@ app.get("/auth/me", async (req, res) => {
 // ============================
 // 🤖 ROUTE D'ANALYSE IA (MyMír V2 modulaire)
 // ============================
-import multer from "multer";
+import pkg from "multer";
+const multer = pkg.default;
 import { analyzeTender } from "./ai/analyzeTender.js";
 
 // 📂 Config de stockage temporaire
@@ -234,4 +235,4 @@ app.get("/*", (req, res) => {
 app.listen(PORT, () =>
   console.log(`✅ Serveur MyMír en ligne sur le port ${PORT}`)
 );
-
+  
