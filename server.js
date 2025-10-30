@@ -40,17 +40,35 @@ app.use("/api/siret", siretRoutes);
 })();
 
 // ============================
-// 🚀 INSCRIPTION
+// 🚀 INSCRIPTION (version finale)
 // ============================
 app.post("/register", async (req, res) => {
   try {
-    const { companyName, managerName, email, sector, revenue, employees, country, certifications, password } = req.body;
+    const {
+      companyName,
+      managerName,
+      email,
+      sector,
+      revenue,
+      employees,
+      country,
+      certifications,
+      password,
+    } = req.body;
 
     if (!email || !password || !companyName || !managerName)
       return res.status(400).json({ success: false, message: "Champs obligatoires manquants." });
 
+    // Vérifie si l’utilisateur existe déjà
+    const existing = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+    if (existing.rows.length > 0) {
+      return res.status(409).json({ success: false, message: "Cet email est déjà enregistré." });
+    }
+
+    // Hash du mot de passe
     const hashed = await bcrypt.hash(password, 10);
 
+    // Insertion dans la table
     const result = await pool.query(
       `INSERT INTO users (name, email, password, metadata)
        VALUES ($1, $2, $3, $4)
@@ -59,14 +77,20 @@ app.post("/register", async (req, res) => {
         managerName,
         email,
         hashed,
-        { companyName, sector, revenue, employees, country, certifications },
+        JSON.stringify({ companyName, sector, revenue, employees, country, certifications }),
       ]
     );
 
-    res.status(201).json({ success: true, user: result.rows[0] });
+    console.log("✅ Nouveau compte créé :", email);
+
+    res.status(200).json({
+      success: true,
+      message: "Compte créé avec succès",
+      user: result.rows[0],
+    });
   } catch (err) {
     console.error("❌ Erreur inscription:", err);
-    res.status(400).json({ success: false, message: "Erreur lors de l’inscription." });
+    res.status(500).json({ success: false, message: "Erreur interne lors de la création du compte." });
   }
 });
 
