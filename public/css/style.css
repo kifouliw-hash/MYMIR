@@ -481,4 +481,22 @@ body {
   background-size: 400% 400%;
   animation: lightWave 18s ease-in-out infinite alternate;
 }
+/* =============================
+   🌕 LOGO MYMÍR — VERSION RONDE (INDEX)
+   ============================= */
+.nav-left .logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, #141c34 0%, #0b1020 100%);
+  padding: 6px;
+  box-shadow: 0 0 12px rgba(245, 184, 65, 0.3);
+  object-fit: contain;
+  transition: transform 0.3s ease, box-shadow 0.4s ease;
+}
+
+.nav-left .logo:hover {
+  transform: scale(1.06);
+  box-shadow: 0 0 18px rgba(245, 184, 65, 0.5);
+}
 
