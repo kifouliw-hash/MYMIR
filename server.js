@@ -6,6 +6,7 @@ import cors from "cors";
 import path from "path";
 import jwt from "jsonwebtoken";
 import { fileURLToPath } from "url";
+import siretRoutes from "./routes/siretRoute.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,6 +17,8 @@ const __dirname = path.dirname(__filename);
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
+app.use("/api/siret", siretRoutes); 
+
 
 // ✅ Vérifie la table users au démarrage
 (async () => {
