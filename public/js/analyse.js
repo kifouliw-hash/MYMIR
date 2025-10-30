@@ -1,25 +1,74 @@
-document.getElementById("uploadForm").addEventListener("submit", (e) => {
-  e.preventDefault();
+const fileInput = document.getElementById("fileInput");
+const uploadArea = document.getElementById("uploadArea");
+const resultBox = document.getElementById("resultBox");
 
-  const fileInput = document.getElementById("fileInput");
-  const resultBox = document.getElementById("result");
-  const output = document.getElementById("analysisOutput");
-
-  if (!fileInput.files.length) {
-    alert("Veuillez choisir un fichier avant de lancer l'analyse.");
-    return;
-  }
-
+// Détection du choix de fichier
+fileInput.addEventListener("change", async () => {
   const file = fileInput.files[0];
-  output.textContent = `Analyse en cours du fichier : ${file.name}...`;
+  if (!file) return;
 
-  // Simulation d'analyse
-  setTimeout(() => {
-    output.textContent = `✅ Analyse terminée.\n
-    Nom du fichier : ${file.name}\n
-    Type : ${file.type || 'Inconnu'}\n
-    Taille : ${(file.size / 1024).toFixed(2)} Ko\n
-    Résumé : Ce document semble contenir des informations exploitables.`;
-    resultBox.classList.remove("hidden");
-  }, 2000);
+  uploadArea.innerHTML = `<p>📄 Analyse en cours de ${file.name}...</p>`;
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const response = await fetch("/analyze", {
+      method: "POST",
+      body: formData,
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      uploadArea.style.display = "none";
+      resultBox.classList.remove("hidden");
+      resultBox.innerHTML = `
+        <h3>🧠 Résultat de l’analyse</h3>
+        <pre style="white-space:pre-wrap;">${result.analysis}</pre>
+        <div class="analysis-btns">
+          <button class="analysis-btn" onclick="resetAnalysis()">🔁 Nouvelle analyse</button>
+        </div>
+      `;
+    } else {
+      uploadArea.innerHTML = `<p>❌ Erreur : ${result.message}</p>`;
+    }
+  } catch (error) {
+    console.error("Erreur:", error);
+    uploadArea.innerHTML = `<p>❌ Erreur de connexion au serveur.</p>`;
+  }
 });
+
+function resetAnalysis() {
+  resultBox.classList.add("hidden");
+  uploadArea.style.display = "block";
+  uploadArea.innerHTML = `
+    <p>Glissez votre dossier DCE ici ou cliquez pour le sélectionner.</p>
+    <input type="file" id="fileInput" accept=".pdf,.doc,.docx" hidden />
+    <button class="analysis-btn" onclick="document.getElementById('fileInput').click()">
+      Choisir un fichier
+    </button>
+  `;
+  document.getElementById("fileInput").addEventListener("change", async () => {
+  const newFile = document.getElementById("fileInput").files[0];
+  if (newFile) {
+    uploadArea.innerHTML = `<p>📄 Analyse en cours de ${newFile.name}...</p>`;
+    const formData = new FormData();
+    formData.append("file", newFile);
+    const response = await fetch("/analyze", { method: "POST", body: formData });
+    const result = await response.json();
+    if (result.success) {
+      uploadArea.style.display = "none";
+      resultBox.classList.remove("hidden");
+      resultBox.innerHTML = `
+        <h3>🧠 Résultat de l’analyse</h3>
+        <pre style="white-space:pre-wrap;">${result.analysis}</pre>
+        <div class="analysis-btns">
+          <button class="analysis-btn" onclick="resetAnalysis()">🔁 Nouvelle analyse</button>
+        </div>`;
+    } else {
+      uploadArea.innerHTML = `<p>❌ Erreur : ${result.message}</p>`;
+    }
+  }
+});
+}

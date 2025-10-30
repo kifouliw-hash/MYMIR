@@ -77,16 +77,6 @@ if (!token) {
         user.metadata?.country || "—";
       document.getElementById("p_sector").textContent =
         user.metadata?.sector || "—";
-        // Champs supplémentaires du profil
-document.getElementById("p_revenue").textContent =
-  user.metadata?.revenue || "—";
-document.getElementById("p_size").textContent =
-  user.metadata?.size || "—";
-document.getElementById("p_cert").textContent =
-  user.metadata?.certifications || "—";
-document.getElementById("p_site").textContent =
-  user.metadata?.website || "—";
-
 
       // ✅ Message de bienvenue dynamique
       const welcomeMsg = document.getElementById("welcomeMessage");

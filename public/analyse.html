@@ -68,35 +68,8 @@
     </main>
   </div>
 
-  <script>
-    const uploadArea = document.getElementById("uploadArea");
-    const fileInput = document.getElementById("fileInput");
-    const resultBox = document.getElementById("resultBox");
-
-    uploadArea.addEventListener("click", () => fileInput.click());
-    fileInput.addEventListener("change", () => simulateAnalysis());
-
-    function simulateAnalysis() {
-      uploadArea.innerHTML = "<p>Analyse du document en cours...</p>";
-      setTimeout(() => {
-        uploadArea.style.display = "none";
-        resultBox.classList.remove("hidden");
-      }, 2000);
-    }
-
-    function resetAnalysis() {
-      resultBox.classList.add("hidden");
-      uploadArea.style.display = "block";
-      uploadArea.innerHTML = `
-        <p>Glissez votre dossier DCE ici ou cliquez pour le sélectionner.</p>
-        <input type="file" id="fileInput" accept=".pdf,.doc,.docx" hidden />
-        <button class="analysis-btn" onclick="document.getElementById('fileInput').click()">
-          Choisir un fichier
-        </button>
-      `;
-      document.getElementById("fileInput").addEventListener("change", simulateAnalysis);
-    }
-  </script>
+ 
+<script src="js/analyse.js"></script>
 
 </body>
 </html>

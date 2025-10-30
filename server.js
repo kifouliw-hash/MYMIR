@@ -7,6 +7,7 @@ import path from "path";
 import jwt from "jsonwebtoken";
 import { fileURLToPath } from "url";
 import siretRoutes from "./backend/routes/siretRoute.js";
+import "dotenv/config";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -69,29 +70,33 @@ app.post("/register", async (req, res) => {
     const hashed = await bcrypt.hash(password, 10);
 
     // Insertion dans la table
-    const result = await pool.query(
-      `INSERT INTO users (name, email, password, metadata)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, name, email, metadata;`,
-      [
-        managerName,
-        email,
-        hashed,
-        JSON.stringify({ companyName, sector, revenue, employees, country, certifications }),
-      ]
-    );
+const result = await pool.query(
+  `INSERT INTO users (name, email, password, metadata)
+   VALUES ($1, $2, $3, $4)
+   RETURNING id, name, email, metadata;`,
+  [
+    managerName,
+    email,
+    hashed,
+    JSON.stringify({ companyName, sector, revenue, employees, country, certifications }),
+  ]
+);
 
-    console.log("✅ Nouveau compte créé :", email);
+// ✅ Crée un token immédiatement après inscription
+const user = result.rows[0];
+const token = jwt.sign(
+  { id: user.id, email: user.email },
+  process.env.JWT_SECRET || "fallbackSecret",
+  { expiresIn: "2h" }
+);
 
-    res.status(200).json({
-      success: true,
-      message: "Compte créé avec succès",
-      user: result.rows[0],
-    });
-  } catch (err) {
-    console.error("❌ Erreur inscription:", err);
-    res.status(500).json({ success: false, message: "Erreur interne lors de la création du compte." });
-  }
+console.log("✅ Nouveau compte créé et connecté :", email);
+
+res.status(200).json({
+  success: true,
+  message: "Compte créé avec succès et connecté",
+  token,
+  user,
 });
 
 // ============================
@@ -177,6 +182,30 @@ app.get("/auth/me", async (req, res) => {
   } catch (err) {
     console.error("Erreur /auth/me:", err);
     res.status(401).json({ message: "Token invalide ou expiré" });
+  }
+});
+// ============================
+// 🤖 ROUTE D'ANALYSE IA (MyMír V2 modulaire)
+// ============================
+import multer from "multer";
+import { analyzeTender } from "./ai/analyzeTender.js";
+
+// 📂 Config de stockage temporaire
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, "public/uploads/"),
+  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
+});
+const upload = multer({ storage });
+
+// 📍 Route principale
+app.post("/analyze", upload.single("file"), async (req, res) => {
+  try {
+    const filePath = req.file.path;
+    const result = await analyzeTender(filePath);
+    res.json(result);
+  } catch (err) {
+    console.error("❌ Erreur /analyze :", err);
+    res.status(500).json({ success: false, message: "Erreur lors de l'analyse." });
   }
 });
 
