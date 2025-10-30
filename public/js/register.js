@@ -127,31 +127,32 @@ if (form) {
 
       const result = await res.json();
 
-      if (result.success) {
-        // ✅ Si le backend renvoie un token (cas futur)
-        if (result.token) {
-          localStorage.setItem("token", result.token);
-          localStorage.setItem("user", JSON.stringify(result.user));
-          alert("✅ Compte créé et connecté !");
-          window.location.href = "app.html";
-        } else {
-          // Sinon redirige vers login classique
-          alert("✅ Compte créé avec succès !");
-          setTimeout(() => (window.location.href = "login.html"), 800);
-        }
-
-        btn.textContent = "Compte créé ✅";
-        btn.style.background = "#4ADE80";
-      } else {
-        alert(result.message || "Erreur lors de l’inscription.");
-        btn.textContent = "Créer le compte";
-        btn.disabled = false;
-      }
-    } catch (err) {
-      console.error("❌ Erreur réseau :", err);
-      alert("Erreur de connexion au serveur.");
-      btn.textContent = "Créer le compte";
-      btn.disabled = false;
-    }
+      try {
+  const res = await fetch(`${API_BASE}/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
   });
+
+  const result = await res.json();
+  console.log("Réponse backend :", result);
+
+  if (res.ok) {
+    btn.textContent = "Compte créé ✅";
+    btn.style.background = "#4ADE80";
+    alert("✅ Compte créé avec succès !");
+    // 🔁 Redirection directe vers le tableau de bord
+    setTimeout(() => {
+      window.location.href = "app.html";
+    }, 1000);
+  } else {
+    alert(result.message || "Erreur lors de la création du compte.");
+    btn.textContent = "Créer le compte";
+    btn.disabled = false;
+  }
+} catch (err) {
+  console.error("❌ Erreur réseau :", err);
+  alert("Erreur de connexion au serveur.");
+  btn.textContent = "Créer le compte";
+  btn.disabled = false;
 }
