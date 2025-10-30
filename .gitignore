@@ -1,0 +1,16 @@
+# Fichier .gitignore de MyMír
+# Empêche les fichiers sensibles et inutiles d'être poussés sur GitHub
+
+# 🔐 Fichiers de configuration sensibles
+.env
+*.env
+
+# 📦 Dépendances
+node_modules/
+
+# 🧱 Fichiers temporaires
+public/uploads/
+*.log
+
+# ⚙️ Cache système
+.DS_Store
