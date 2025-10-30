@@ -7,80 +7,7 @@ document.querySelectorAll('input, select, button').forEach((el, i) => {
   }, i * 80);
 });
 
-// === Gestion du pays et du champ identifiant ===
-const countrySelect = document.getElementById("country");
-const companyIdLabel = document.getElementById("companyIdLabel");
-const autoFillBtn = document.getElementById("autoFillBtn");
-const helpText = document.getElementById("helpText");
-
-if (countrySelect) {
-  countrySelect.addEventListener("change", () => {
-    const country = countrySelect.value;
-    if (country === "France") {
-      companyIdLabel.textContent = "SIRET (France)";
-      autoFillBtn.style.display = "inline-block";
-      helpText.textContent =
-        "En France, le SIRET permet d'auto-remplir vos informations via data.gouv.fr.";
-    } else if (country === "Belgique") {
-      companyIdLabel.textContent = "Numéro d’entreprise (BCE)";
-      autoFillBtn.style.display = "none";
-      helpText.textContent = "Saisissez votre numéro BCE (sans espaces).";
-    } else {
-      companyIdLabel.textContent = "Identifiant entreprise / N° fiscal";
-      autoFillBtn.style.display = "none";
-      helpText.textContent = "Saisissez manuellement les informations de votre entreprise.";
-    }
-  });
-}
-
-// === 🔍 Auto-remplissage via API SIRET (optionnel) ===
-const companyIdInput = document.getElementById("companyId");
-if (autoFillBtn) {
-  autoFillBtn.addEventListener("click", async () => {
-    const siret = companyIdInput.value.trim();
-    if (!siret || siret.length !== 14) {
-      alert("Veuillez entrer un SIRET valide (14 chiffres).");
-      return;
-    }
-
-    autoFillBtn.textContent = "Recherche...";
-    autoFillBtn.disabled = true;
-
-    try {
-      console.log("🔍 Envoi au backend MyMír avec SIRET :", siret);
-      const response = await fetch("/api/siret/lookup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ siret }),
-      });
-
-      console.log("📡 Statut réponse backend :", response.status);
-
-      const data = await response.json().catch(() => ({}));
-      console.log("📦 Réponse JSON brute :", data);
-
-      if (!response.ok) {
-        alert(`⚠️ Erreur côté serveur (${response.status}) : ${data.message || "Erreur inconnue"}`);
-        return;
-      }
-
-      // ✅ Si on a reçu des données correctes
-      document.getElementById("companyName").value = data.company || "";
-      document.getElementById("country").value = data.country || "France";
-      document.getElementById("certifications").value = `Code NAF : ${data.naf || "—"}`;
-      alert(`✅ Informations récupérées : ${data.company || "Entreprise inconnue"} (${data.city || "-"})`);
-    } catch (err) {
-      console.error("💥 Erreur JS ou API :", err);
-      alert("Erreur lors de la récupération des données (voir console).");
-    } finally {
-      autoFillBtn.textContent = "Auto-remplir";
-      autoFillBtn.disabled = false;
-    }
-  });
-}
-
-
-// === 🚀 Création de compte réelle (Render PostgreSQL + auto login) ===
+// === 🚀 Création de compte réelle ===
 const form = document.getElementById("registerForm");
 if (form) {
   form.addEventListener("submit", async (e) => {
@@ -97,14 +24,13 @@ if (form) {
       managerName: document.getElementById("managerName").value.trim(),
       email: document.getElementById("email").value.trim(),
       sector: document.getElementById("sector").value,
-      revenue: document.getElementById("revenue").value,
+      revenue: document.getElementById("revenue") ? document.getElementById("revenue").value : "",
       employees: document.getElementById("employees").value,
       country: document.getElementById("country").value,
       certifications: document.getElementById("certifications").value.trim(),
       password: document.getElementById("password").value.trim(),
     };
 
-    // Vérification minimale
     if (!data.managerName || !data.email || !data.password) {
       alert("Veuillez remplir au minimum le nom, l’email et le mot de passe.");
       btn.textContent = "Créer le compte";
@@ -112,36 +38,30 @@ if (form) {
       return;
     }
 
-    if (data.password.length < 6) {
-      alert("Le mot de passe doit contenir au moins 6 caractères.");
-      btn.textContent = "Créer le compte";
-      btn.disabled = false;
-      return;
-    }
-
     try {
-      const res = await fetch(`${API_BASE}/register`, {
+      const response = await fetch(`${API_BASE}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 
-      const result = await res.json();
+      const result = await response.json();
       console.log("🧠 Réponse backend :", result);
 
-      // ✅ Peu importe ce que le backend renvoie, on force la redirection si succès probable
-      if (res.ok) {
-        alert("✅ Compte créé avec succès !");
+      if (response.ok && result.success) {
         btn.textContent = "Compte créé ✅";
         btn.style.background = "#4ADE80";
-        console.log("➡️ Redirection vers le tableau de bord...");
-        window.location.replace("app.html"); // 🔁 redirection directe
+        alert("✅ Compte créé avec succès !");
+
+        // 🔁 Attendre une demi-seconde avant redirection (Safari safe)
+        setTimeout(() => {
+          window.location.href = "app.html";
+        }, 800);
       } else {
         alert(result.message || "Erreur lors de la création du compte.");
         btn.textContent = "Créer le compte";
         btn.disabled = false;
       }
-
     } catch (err) {
       console.error("❌ Erreur réseau :", err);
       alert("Erreur de connexion au serveur.");
