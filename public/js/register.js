@@ -47,28 +47,38 @@ if (autoFillBtn) {
     autoFillBtn.disabled = true;
 
     try {
+      console.log("🔍 Envoi au backend MyMír avec SIRET :", siret);
       const response = await fetch("/api/siret/lookup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ siret }),
       });
-      const data = await response.json();
 
-      if (!response.ok) throw new Error(data.message || "Erreur serveur");
+      console.log("📡 Statut réponse backend :", response.status);
 
+      const data = await response.json().catch(() => ({}));
+      console.log("📦 Réponse JSON brute :", data);
+
+      if (!response.ok) {
+        alert(`⚠️ Erreur côté serveur (${response.status}) : ${data.message || "Erreur inconnue"}`);
+        return;
+      }
+
+      // ✅ Si on a reçu des données correctes
       document.getElementById("companyName").value = data.company || "";
       document.getElementById("country").value = data.country || "France";
       document.getElementById("certifications").value = `Code NAF : ${data.naf || "—"}`;
-      alert("✅ Informations d’entreprise récupérées !");
+      alert(`✅ Informations récupérées : ${data.company || "Entreprise inconnue"} (${data.city || "-"})`);
     } catch (err) {
-      alert("Impossible de trouver ce SIRET.");
-      console.error(err);
+      console.error("💥 Erreur JS ou API :", err);
+      alert("Erreur lors de la récupération des données (voir console).");
     } finally {
       autoFillBtn.textContent = "Auto-remplir";
       autoFillBtn.disabled = false;
     }
   });
 }
+
 
 // === 🚀 Création de compte réelle (Render PostgreSQL + auto login) ===
 const form = document.getElementById("registerForm");
