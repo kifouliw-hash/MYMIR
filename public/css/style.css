@@ -448,4 +448,37 @@ header {
     transform: rotate(-45deg) translate(5px, -5px);
   }
 }
+/* =============================
+   🪶 DÉTAILS VISUELS MYMÍR
+   ============================= */
+
+/* Éclat doré doux sous le logo sur la navbar */
+.logo {
+  filter: drop-shadow(0 0 10px rgba(245, 184, 65, 0.6));
+  transition: transform 0.3s ease, filter 0.4s ease;
+}
+.logo:hover {
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 18px rgba(245, 184, 65, 0.8));
+}
+
+/* Effet léger sur le texte MyMír dans la navbar */
+.brand {
+  color: var(--gold);
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-shadow: 0 0 14px rgba(245, 184, 65, 0.3);
+  transition: all 0.3s ease;
+}
+.brand:hover {
+  text-shadow: 0 0 20px rgba(245, 184, 65, 0.6);
+  transform: scale(1.02);
+}
+
+/* Accentuation du fond animé */
+body {
+  background: radial-gradient(circle at 50% 50%, #1b2446 0%, #0b1020 90%);
+  background-size: 400% 400%;
+  animation: lightWave 18s ease-in-out infinite alternate;
+}
 
