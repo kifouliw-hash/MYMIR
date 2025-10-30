@@ -1,6 +1,7 @@
 // ai/analyzeTender.js
 import fs from "fs";
-import pdfParse from "pdf-parse";
+import pkg from "pdf-parse";
+const pdfParse = pkg.default || pkg; // ✅ compatibilité ESM / CommonJS
 import OpenAI from "openai";
 
 const openai = new OpenAI({ apiKey: process.env.***REMOVED*** });
