@@ -23,8 +23,13 @@ router.post("/lookup", async (req, res) => {
     console.log("🔍 Requête API SIRENE envoyée à :", url);
 
     const response = await fetch(url, {
-      headers: { "Accept": "application/json" },
-    });
+  method: "GET",
+  headers: {
+    "Accept": "application/json",
+    "User-Agent": "MyMirApp/1.0 (contact@mymir.com)"
+  },
+});
+
 
     if (!response.ok) {
       console.error("⚠️ API SIRENE a renvoyé une erreur :", response.status, response.statusText);
