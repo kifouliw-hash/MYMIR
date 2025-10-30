@@ -10,7 +10,7 @@ import siretRoutes from "./backend/routes/siretRoute.js";
 import "dotenv/config";
 import fs from "fs";
 import pkg from "multer";
-import { analyzeTender } from "./ai/analyzeTender.js";
+import { analyzeTender } from "./backend/ai/analyzeTender.js";
 
 const multer = pkg.default || pkg;
 const app = express();
