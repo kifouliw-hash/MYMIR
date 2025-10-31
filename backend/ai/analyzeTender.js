@@ -2,7 +2,7 @@
 
 import fs from "fs";
 import OpenAI from "openai";
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.js";
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.js"; // ✅ version stable Render / Node 20
 
 const openai = new OpenAI({ apiKey: process.env.***REMOVED*** });
 
@@ -25,7 +25,7 @@ async function extractTextFromPDF(filePath) {
 
 /**
  * Analyse complète d'un document d'appel d'offres pour MyMír.
- * @param {string} filePath - Chemin du fichier PDF/DOCX temporaire
+ * @param {string} filePath - Chemin du fichier PDF temporaire
  * @returns {object} Résultat complet d'analyse IA
  */
 export async function analyzeTender(filePath) {
@@ -34,7 +34,6 @@ export async function analyzeTender(filePath) {
     const extractedText = await extractTextFromPDF(filePath);
     console.log("✅ Texte extrait, envoi à l'IA...");
 
-    // === 2️⃣ Prompt professionnel MyMír ===
     const prompt = `
 Tu es **MyMír**, une IA d'analyse stratégique d'appels d'offres publics et privés.
 Ta mission est d’aider les TPE, PME et bureaux d’études à comprendre rapidement les opportunités et les risques d’un marché.
@@ -87,9 +86,8 @@ Et conclus par une **recommandation synthétique** :
 ---
 🧾 **Texte extrait pour analyse :**
 ${extractedText.slice(0, 15000)}
-    `;
+`;
 
-    // === 3️⃣ Appel OpenAI ===
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       temperature: 0.3,
@@ -104,11 +102,8 @@ ${extractedText.slice(0, 15000)}
     });
 
     const analysis = completion.choices[0].message.content;
-
-    // === 4️⃣ Nettoyage du fichier après traitement ===
     fs.unlinkSync(filePath);
 
-    // === 5️⃣ Résultat renvoyé au front ===
     return {
       success: true,
       analysis,
