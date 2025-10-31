@@ -41,35 +41,29 @@
           et vous guide dans votre réponse.
         </p>
 
-        <!-- Zone d’import -->
+        <!-- ===== Zone d’import ===== -->
         <div class="upload-area" id="uploadArea">
           <p>Glissez votre dossier DCE ici ou cliquez pour le sélectionner.</p>
-          <input type="file" id="fileInput" accept=".pdf,.doc,.docx" hidden />
-          <button class="analysis-btn" onclick="document.getElementById('fileInput').click()">
-            Choisir un fichier
-          </button>
+
+          <!-- ✅ Input toujours présent dans le DOM -->
+          <input type="file" id="fileInput" accept=".pdf,.doc,.docx" style="display:none;" />
+          <button class="analysis-btn" id="chooseBtn">Choisir un fichier</button>
         </div>
 
-        <!-- Zone de résultat -->
-        <div id="resultBox" class="result-area hidden">
-          <h3>🧠 Résultat de l’analyse</h3>
-          <p><strong>Type :</strong> Marché public — Fournitures</p>
-          <p><strong>Date limite :</strong> 18 novembre 2025</p>
-          <p><strong>Documents requis :</strong> DC1, DC2, Mémoire technique</p>
-          <p><strong>Score de conformité :</strong> 92%</p>
-          <p><strong>Niveau de risque :</strong> Modéré</p>
-
-          <div class="analysis-btns">
-            <button class="analysis-btn">📄 Télécharger le rapport</button>
-            <button class="analysis-btn" onclick="resetAnalysis()">🔁 Nouvelle analyse</button>
-          </div>
-        </div>
+        <!-- ===== Zone de résultat ===== -->
+        <div id="resultBox" class="result-area hidden"></div>
       </section>
     </main>
   </div>
 
- 
-<script src="js/analyse.js"></script>
+  <!-- ✅ JS toujours en bas -->
+  <script src="js/analyse.js"></script>
 
+  <script>
+    // ✅ Le bouton ouvre le sélecteur de fichier
+    document.getElementById("chooseBtn").addEventListener("click", () => {
+      document.getElementById("fileInput").click();
+    });
+  </script>
 </body>
 </html>
