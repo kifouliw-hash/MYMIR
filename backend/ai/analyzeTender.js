@@ -2,89 +2,56 @@
 
 import fs from "fs";
 import OpenAI from "openai";
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.js"; // ✅ version stable Render / Node 20
+import * as pdfjs from "pdfjs-dist"; // ✅ Import Node-compatible
+import { getDocument } from "pdfjs-dist/build/pdf.mjs"; // ✅ Forçage ES module
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-/**
- * Extraction de texte depuis un PDF via pdfjs-dist
- * Compatible Render / Node 20 (pas de DOM, pas de Canvas)
- */
+// ============================================
+// 🔍 Extraction du texte depuis un PDF
+// ============================================
 async function extractTextFromPDF(filePath) {
-  const data = new Uint8Array(fs.readFileSync(filePath));
-  const pdf = await pdfjsLib.getDocument({ data }).promise;
+  try {
+    const data = new Uint8Array(fs.readFileSync(filePath));
+    const pdf = await getDocument({ data }).promise;
+    let text = "";
 
-  let text = "";
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    text += content.items.map((it) => it.str).join(" ") + "\n";
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map((item) => item.str).join(" ") + "\n";
+    }
+
+    if (text.trim().length === 0) throw new Error("PDF vide ou illisible.");
+    return text;
+  } catch (err) {
+    console.error("❌ Erreur d’extraction PDF :", err);
+    throw new Error("Impossible de lire le fichier PDF.");
   }
-  return text;
 }
 
-/**
- * Analyse complète d'un document d'appel d'offres pour MyMír.
- * @param {string} filePath - Chemin du fichier PDF temporaire
- * @returns {object} Résultat complet d'analyse IA
- */
+// ============================================
+// 🧠 Analyse IA MyMír
+// ============================================
 export async function analyzeTender(filePath) {
   try {
-    console.log("📄 Lecture du PDF...");
+    console.log("📄 Lecture du PDF :", filePath);
     const extractedText = await extractTextFromPDF(filePath);
-    console.log("✅ Texte extrait, envoi à l'IA...");
+
+    console.log("✅ Texte extrait — longueur :", extractedText.length);
 
     const prompt = `
 Tu es **MyMír**, une IA d'analyse stratégique d'appels d'offres publics et privés.
-Ta mission est d’aider les TPE, PME et bureaux d’études à comprendre rapidement les opportunités et les risques d’un marché.
+Analyse le texte suivant et produis une synthèse claire et complète structurée en 7 sections :
+1️⃣ Identification du marché
+2️⃣ Données administratives clés
+3️⃣ Documents exigés
+4️⃣ Critères d’évaluation
+5️⃣ Analyse des risques
+6️⃣ Faisabilité pour une PME
+7️⃣ Score d’opportunité et recommandation
 
-Analyse le document suivant et produis une synthèse structurée en 7 sections.
-
----
-### 1️⃣ Identification du marché
-- Type de procédure (appel d’offres, consultation, MAPA, etc.)
-- Acheteur / organisme émetteur
-- Objet principal du marché
-- Secteur d’activité concerné
-- Référence ou numéro de consultation (si identifiable)
-
-### 2️⃣ Données administratives clés
-- Montant estimé ou budget (s’il est mentionné)
-- Lieu d’exécution
-- Durée ou nombre de lots
-- Date limite de remise des offres
-- Mode de dépôt (plateforme, papier, etc.)
-
-### 3️⃣ Documents exigés
-Liste les documents administratifs et techniques demandés (ex: DC1, DC2, mémoire technique, références, attestations fiscales, etc.)
-
-### 4️⃣ Critères d’évaluation
-- Pondération prix / technique / délais
-- Points d’attention (éléments rédhibitoires, exigences spécifiques)
-- Mots-clés qui indiquent les priorités du client
-
-### 5️⃣ Analyse des risques
-Évalue les risques suivants :
-- **Conformité administrative** (risque de rejet)
-- **Capacité technique** (complexité, exigences fortes)
-- **Compétitivité** (niveau de concurrence attendu)
-Donne un score de risque global sur 100 (0 = sans risque, 100 = très risqué).
-
-### 6️⃣ Faisabilité pour une PME
-Estime la faisabilité pour une PME ou artisan :
-- Facile / Modéré / Difficile
-- Justifie ton estimation en 2 à 3 lignes.
-
-### 7️⃣ Score d’opportunité
-Calcule un score global (0 à 100) basé sur :
-- adéquation avec une PME standard,
-- accessibilité des critères,
-- rapport risque / potentiel.
-Et conclus par une **recommandation synthétique** :
-> Exemple : "Opportunité intéressante à envisager" ou "Marché trop contraignant pour une PME locale".
-
----
-🧾 **Texte extrait pour analyse :**
+🧾 **Extrait du document :**
 ${extractedText.slice(0, 15000)}
 `;
 
@@ -95,29 +62,30 @@ ${extractedText.slice(0, 15000)}
         {
           role: "system",
           content:
-            "Tu es une IA experte en marchés publics et en analyse de DCE. Fournis des analyses fiables, claires et structurées.",
+            "Tu es une IA experte en analyse de marchés publics et DCE. Sois claire, concise et précise.",
         },
         { role: "user", content: prompt },
       ],
     });
 
-    const analysis = completion.choices[0].message.content;
+    const analysis = completion.choices?.[0]?.message?.content || "Analyse vide.";
+
     fs.unlinkSync(filePath);
 
+    console.log("✅ Analyse générée avec succès.");
     return {
       success: true,
       analysis,
       generated_at: new Date().toISOString(),
       model: "gpt-4o-mini",
     };
-   } catch (err) {
-    console.error("❌ Erreur IA complète :", err);
-
+  } catch (err) {
+    console.error("❌ Erreur complète analyzeTender :", err);
     return {
       success: false,
       message:
         "Erreur pendant l'analyse du document : " +
-        (err.message || JSON.stringify(err)),
+        (err.message || "Erreur inconnue."),
     };
   }
 }
