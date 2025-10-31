@@ -110,12 +110,14 @@ ${extractedText.slice(0, 15000)}
       generated_at: new Date().toISOString(),
       model: "gpt-4o-mini",
     };
-  } catch (err) {
-    console.error("❌ Erreur IA :", err);
+   } catch (err) {
+    console.error("❌ Erreur IA complète :", err);
+
     return {
       success: false,
       message:
-        "Erreur pendant l'analyse du document. Vérifie la clé OpenAI ou le format du fichier.",
+        "Erreur pendant l'analyse du document : " +
+        (err.message || JSON.stringify(err)),
     };
   }
 }
