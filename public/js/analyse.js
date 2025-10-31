@@ -1,22 +1,27 @@
-const fileInput = document.getElementById("fileInput");
+// ===============================================
+// 🔍 Gestion du chargement et de l’analyse
+// ===============================================
+
 const uploadArea = document.getElementById("uploadArea");
 const resultBox = document.getElementById("resultBox");
+const fileInput = document.getElementById("fileInput");
 
-// Détection du choix de fichier
+// ✅ Attache une seule fois le listener
 fileInput.addEventListener("change", async () => {
   const file = fileInput.files[0];
   if (!file) return;
 
   uploadArea.innerHTML = `<p>📄 Analyse en cours de ${file.name}...</p>`;
-
   const formData = new FormData();
   formData.append("file", file);
+  console.log("📤 Envoi du fichier à /analyze :", file.name);
 
   try {
     const response = await fetch("/analyze", {
       method: "POST",
       body: formData,
     });
+    console.log("📥 Réponse brute :", response);
 
     const result = await response.json();
 
@@ -25,50 +30,15 @@ fileInput.addEventListener("change", async () => {
       resultBox.classList.remove("hidden");
       resultBox.innerHTML = `
         <h3>🧠 Résultat de l’analyse</h3>
-        <pre style="white-space:pre-wrap;">${result.analysis}</pre>
+        <pre style="white-space: pre-wrap;">${result.analysis}</pre>
         <div class="analysis-btns">
-          <button class="analysis-btn" onclick="resetAnalysis()">🔁 Nouvelle analyse</button>
-        </div>
-      `;
-    } else {
-      uploadArea.innerHTML = `<p>❌ Erreur : ${result.message}</p>`;
-    }
-  } catch (error) {
-    console.error("Erreur:", error);
-    uploadArea.innerHTML = `<p>❌ Erreur de connexion au serveur.</p>`;
-  }
-});
-
-function resetAnalysis() {
-  resultBox.classList.add("hidden");
-  uploadArea.style.display = "block";
-  uploadArea.innerHTML = `
-    <p>Glissez votre dossier DCE ici ou cliquez pour le sélectionner.</p>
-    <input type="file" id="fileInput" accept=".pdf,.doc,.docx" hidden />
-    <button class="analysis-btn" onclick="document.getElementById('fileInput').click()">
-      Choisir un fichier
-    </button>
-  `;
-  document.getElementById("fileInput").addEventListener("change", async () => {
-  const newFile = document.getElementById("fileInput").files[0];
-  if (newFile) {
-    uploadArea.innerHTML = `<p>📄 Analyse en cours de ${newFile.name}...</p>`;
-    const formData = new FormData();
-    formData.append("file", newFile);
-    const response = await fetch("/analyze", { method: "POST", body: formData });
-    const result = await response.json();
-    if (result.success) {
-      uploadArea.style.display = "none";
-      resultBox.classList.remove("hidden");
-      resultBox.innerHTML = `
-        <h3>🧠 Résultat de l’analyse</h3>
-        <pre style="white-space:pre-wrap;">${result.analysis}</pre>
-        <div class="analysis-btns">
-          <button class="analysis-btn" onclick="resetAnalysis()">🔁 Nouvelle analyse</button>
+          <button class="analysis-btn" onclick="window.location.reload()">🔁 Nouvelle analyse</button>
         </div>`;
     } else {
       uploadArea.innerHTML = `<p>❌ Erreur : ${result.message}</p>`;
     }
+  } catch (err) {
+    console.error("❌ Erreur réseau :", err);
+    uploadArea.innerHTML = `<p>⚠️ Erreur de connexion au serveur.</p>`;
   }
 });
-}
