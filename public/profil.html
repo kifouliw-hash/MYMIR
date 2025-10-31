@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profil — MyMír</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div class="background-waves"></div>
+
+  <div class="dashboard">
+    <!-- ====== Sidebar ====== -->
+    <aside class="sidebar">
+      <div>
+        <div class="logo-section">
+          <img src="assets/logo/logo-mymir.png" alt="Logo MyMír" class="logo">
+          <h1>MyMír</h1>
+        </div>
+        <div class="user-info" id="companyName">Entreprise</div>
+
+        <!-- 🔗 Navigation -->
+        <nav>
+          <button class="nav-link" data-target="app.html">🏠 Accueil</button>
+          <button class="nav-link" data-target="analyse.html">📊 Analyse</button>
+          <button class="nav-link" data-target="aide.html">💡 Aide à la réponse</button>
+          <button class="nav-link" data-target="historique.html">📜 Historique</button>
+          <button class="nav-link active" data-target="profil.html">👤 Profil</button>
+        </nav>
+      </div>
+      <button class="logout-btn" id="logoutBtn">🔓 Déconnexion</button>
+    </aside>
+
+    <!-- ====== Contenu principal ====== -->
+    <main class="content">
+      <section class="profile-container">
+        <h2 style="text-align:center; color:var(--gold); margin-bottom:20px;">
+          👤 Profil de l’entreprise
+        </h2>
+        <p style="text-align:center; color:var(--text-dim); margin-bottom:40px;">
+          Retrouvez ici les informations enregistrées lors de votre inscription à MyMír.
+        </p>
+
+        <div class="profile-card">
+          <p><strong>Entreprise :</strong> <span id="p_company">—</span></p>
+          <p><strong>Nom du responsable :</strong> <span id="p_name">—</span></p>
+          <p><strong>Email :</strong> <span id="p_email">—</span></p>
+          <p><strong>Pays :</strong> <span id="p_country">—</span></p>
+          <p><strong>Secteur d’activité :</strong> <span id="p_sector">—</span></p>
+          <p><strong>Chiffre d’affaires :</strong> <span id="p_revenue">—</span></p>
+          <p><strong>Effectif :</strong> <span id="p_size">—</span></p>
+          <p><strong>Certifications :</strong> <span id="p_cert">—</span></p>
+          <p><strong>Site web / LinkedIn :</strong> <span id="p_site">—</span></p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ✅ Script principal -->
+  <script defer>
+  document.addEventListener("DOMContentLoaded", async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Session expirée ou inexistante. Veuillez vous reconnecter.");
+      window.location.href = "login.html";
+      return;
+    }
+
+    // 🔒 Vérifie la session
+    try {
+      const res = await fetch("https://mymir.onrender.com/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        alert("Session expirée. Veuillez vous reconnecter.");
+        localStorage.removeItem("token");
+        window.location.href = "login.html";
+        return;
+      }
+
+      const user = data.user;
+      console.log("✅ Profil chargé :", user);
+
+      document.getElementById("companyName").textContent =
+        user.metadata?.companyName || user.name || "Entreprise";
+
+      // 🧾 Remplissage des infos
+      document.getElementById("p_company").textContent = user.metadata?.companyName || "—";
+      document.getElementById("p_name").textContent = user.name || "—";
+      document.getElementById("p_email").textContent = user.email || "—";
+      document.getElementById("p_country").textContent = user.metadata?.country || "—";
+      document.getElementById("p_sector").textContent = user.metadata?.sector || "—";
+      document.getElementById("p_revenue").textContent = user.metadata?.revenue || "—";
+      document.getElementById("p_size").textContent = user.metadata?.employees || "—";
+      document.getElementById("p_cert").textContent = user.metadata?.certifications || "—";
+      document.getElementById("p_site").textContent = user.metadata?.site || "—";
+    } catch (err) {
+      console.error("⚠️ Erreur de vérification du profil :", err);
+      localStorage.removeItem("token");
+      window.location.href = "login.html";
+    }
+
+    // 🧭 Navigation protégée
+    document.querySelectorAll(".nav-link").forEach(link => {
+      link.addEventListener("click", () => {
+        const target = link.dataset.target;
+        if (target) window.location.href = target;
+      });
+    });
+
+    // 🚪 Déconnexion
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", () => {
+        console.log("🚪 Déconnexion utilisateur");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "login.html";
+      });
+    }
+  });
+  </script>
+</body>
+</html>
