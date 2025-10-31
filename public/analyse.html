@@ -41,29 +41,20 @@
           et vous guide dans votre réponse.
         </p>
 
-        <!-- ===== Zone d’import ===== -->
+        <!-- Zone d’import -->
         <div class="upload-area" id="uploadArea">
           <p>Glissez votre dossier DCE ici ou cliquez pour le sélectionner.</p>
-
-          <!-- ✅ Input toujours présent dans le DOM -->
-          <input type="file" id="fileInput" accept=".pdf,.doc,.docx" style="display:none;" />
+          <input type="file" id="fileInput" accept=".pdf,.doc,.docx" hidden />
           <button class="analysis-btn" id="chooseBtn">Choisir un fichier</button>
         </div>
 
-        <!-- ===== Zone de résultat ===== -->
+        <!-- Zone de résultat -->
         <div id="resultBox" class="result-area hidden"></div>
       </section>
     </main>
   </div>
 
-  <!-- ✅ JS toujours en bas -->
-  <script src="js/analyse.js"></script>
-
-  <script>
-    // ✅ Le bouton ouvre le sélecteur de fichier
-    document.getElementById("chooseBtn").addEventListener("click", () => {
-      document.getElementById("fileInput").click();
-    });
-  </script>
+  <!-- ✅ CHARGE LE SCRIPT À LA FIN DU BODY -->
+  <script src="js/analyse.js" defer></script>
 </body>
 </html>
