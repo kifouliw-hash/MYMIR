@@ -18,7 +18,7 @@ fileInput.addEventListener("change", async () => {
   console.log("📤 Envoi du fichier à /analyze :", file.name);
 
   try {
-    const response = await fetch("/analyze", {
+    const response = await fetch(window.location.origin + "/analyze", {
       method: "POST",
       body: formData,
     });
