@@ -1,29 +1,53 @@
 // ===============================================
-// 🔍 Gestion de l'analyse MyMír
+// 🔍 Analyse MyMír
 // ===============================================
-alert("✅ analyse.js est bien chargé !");
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("✅ Script analyse.js chargé et DOM prêt");
 
+document.addEventListener("DOMContentLoaded", async () => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("Session expirée ou inexistante. Veuillez vous reconnecter.");
+    window.location.href = "login.html";
+    return;
+  }
+
+  try {
+    const res = await fetch("https://mymir.onrender.com/auth/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (!data.success) {
+      alert("Session expirée. Veuillez vous reconnecter.");
+      localStorage.removeItem("token");
+      window.location.href = "login.html";
+      return;
+    }
+
+    console.log("✅ Utilisateur vérifié :", data.user);
+    document.getElementById("companyName").textContent =
+      data.user.metadata?.companyName || data.user.name || "Entreprise";
+  } catch (err) {
+    console.error("⚠️ Erreur auth :", err);
+    localStorage.removeItem("token");
+    window.location.href = "login.html";
+  }
+
+  // ===============================================
+  // 📂 Gestion de l’analyse
+  // ===============================================
   const uploadArea = document.getElementById("uploadArea");
   const resultBox = document.getElementById("resultBox");
   const fileInput = document.getElementById("fileInput");
   const chooseBtn = document.getElementById("chooseBtn");
 
-  if (!fileInput || !uploadArea || !resultBox) {
-    console.error("❌ Éléments DOM manquants dans analyse.html !");
+  if (!uploadArea || !fileInput) {
+    console.error("❌ Éléments manquants dans analyse.html !");
     return;
   }
 
-  // ✅ Bouton "Choisir un fichier"
   if (chooseBtn) {
-    chooseBtn.addEventListener("click", () => {
-      console.log("📂 Ouverture sélecteur de fichiers");
-      fileInput.click();
-    });
+    chooseBtn.addEventListener("click", () => fileInput.click());
   }
 
-  // ✅ Analyse du fichier sélectionné
   fileInput.addEventListener("change", async () => {
     const file = fileInput.files[0];
     if (!file) return;
@@ -32,18 +56,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const formData = new FormData();
     formData.append("file", file);
 
-    console.log("📤 Envoi du fichier à /analyze :", file.name);
-
     try {
-      const response = await fetch(window.location.origin + "/analyze", {
+      const response = await fetch(`${window.location.origin}/analyze`, {
         method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
-      console.log("📥 Réponse brute :", response);
-
       const result = await response.json();
-      console.log("📦 Résultat JSON :", result);
+      console.log("📦 Résultat analyse :", result);
 
       if (result.success) {
         uploadArea.style.display = "none";
@@ -51,15 +72,13 @@ document.addEventListener("DOMContentLoaded", () => {
         resultBox.innerHTML = `
           <h3>🧠 Résultat de l’analyse</h3>
           <pre style="white-space: pre-wrap;">${result.analysis}</pre>
-          <div class="analysis-btns">
-            <button class="analysis-btn" onclick="window.location.reload()">🔁 Nouvelle analyse</button>
-          </div>`;
+          <button class="analysis-btn" onclick="window.location.reload()">🔁 Nouvelle analyse</button>`;
       } else {
         uploadArea.innerHTML = `<p>❌ Erreur : ${result.message}</p>`;
       }
     } catch (err) {
       console.error("❌ Erreur réseau :", err);
-      uploadArea.innerHTML = `<p>⚠️ Erreur de connexion au serveur.</p>`;
+      uploadArea.innerHTML = `<p>⚠️ Erreur lors de l’analyse.</p>`;
     }
   });
 });

@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
-
+  <!-- 🌅 Arrière-plan -->
   <div class="background-waves"></div>
 
   <div class="dashboard">
@@ -19,15 +19,17 @@
           <h1>MyMír</h1>
         </div>
         <div class="user-info" id="companyName">Entreprise</div>
+
+        <!-- 🔗 Navigation sécurisée -->
         <nav>
-  <button class="nav-link" onclick="location.href='app.html'">🏠 Accueil</button>
-  <button class="nav-link active">📊 Analyse</button>
-  <button class="nav-link" onclick="location.href='aide.html'">💡 Aide à la réponse</button>
-  <button class="nav-link" onclick="location.href='historique.html'">📜 Historique</button>
-  <button class="nav-link" onclick="location.href='profil.html'">👤 Profil</button>
-</nav>
+          <button class="nav-link" data-target="app.html">🏠 Accueil</button>
+          <button class="nav-link active" data-target="analyse.html">📊 Analyse</button>
+          <button class="nav-link" data-target="aide.html">💡 Aide à la réponse</button>
+          <button class="nav-link" data-target="historique.html">📜 Historique</button>
+          <button class="nav-link" data-target="profil.html">👤 Profil</button>
+        </nav>
       </div>
-      <button class="logout-btn" onclick="location.href='login.html'">🔓 Déconnexion</button>
+      <button class="logout-btn" id="logoutBtn">🔓 Déconnexion</button>
     </aside>
 
     <!-- ====== Contenu principal ====== -->
@@ -48,13 +50,67 @@
           <button class="analysis-btn" id="chooseBtn">Choisir un fichier</button>
         </div>
 
-        <!-- Zone de résultat -->
+        <!-- Résultats -->
         <div id="resultBox" class="result-area hidden"></div>
       </section>
     </main>
   </div>
 
-  <!-- ✅ CHARGE LE SCRIPT À LA FIN DU BODY -->
-  <script src="/js/analyse.js?v=4" defer></script>
+  <!-- ✅ Script JS principal -->
+  <script defer src="js/analyse.js"></script>
+
+  <!-- ✅ Script navigation et session -->
+  <script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Session expirée ou inexistante. Veuillez vous reconnecter.");
+      window.location.href = "login.html";
+      return;
+    }
+
+    // 🔒 Vérifie le profil
+    try {
+      const res = await fetch("https://mymir.onrender.com/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!data.success) {
+        alert("Session expirée. Veuillez vous reconnecter.");
+        localStorage.removeItem("token");
+        window.location.href = "login.html";
+        return;
+      }
+      document.getElementById("companyName").textContent =
+        data.user.metadata?.companyName || data.user.name || "Entreprise";
+    } catch (err) {
+      console.error("⚠️ Erreur vérification session :", err);
+      localStorage.removeItem("token");
+      window.location.href = "login.html";
+    }
+
+    // 🧭 Navigation sécurisée (conserve le token)
+    document.querySelectorAll(".nav-link").forEach(link => {
+      link.addEventListener("click", () => {
+        const target = link.dataset.target;
+        if (target) {
+          console.log(`🔁 Navigation vers ${target}`);
+          window.location.href = target;
+        }
+      });
+    });
+
+    // 🚪 Déconnexion
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", () => {
+        console.log("🚪 Déconnexion...");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "login.html";
+      });
+    }
+  });
+  </script>
 </body>
 </html>

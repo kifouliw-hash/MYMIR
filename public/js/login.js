@@ -34,6 +34,7 @@ if (form) {
 
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
+        console.log("✅ Connexion réussie :", data.user);
 
         alert("Connexion réussie 🎉");
         window.location.href = "app.html";
