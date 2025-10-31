@@ -8,8 +8,11 @@
 # 📦 Dépendances
 node_modules/
 
-# 🧱 Fichiers temporaires
-public/uploads/
+# 🧱 Fichiers temporaires (uploads)
+# Ignore tous les fichiers uploadés SAUF le marqueur .gitkeep
+public/uploads/*
+!public/uploads/.gitkeep
+
 *.log
 
 # ⚙️ Cache système

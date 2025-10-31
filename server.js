@@ -1,3 +1,7 @@
+// ===================================================
+// 🌐 MyMír — Serveur principal
+// ===================================================
+
 import express from "express";
 import bodyParser from "body-parser";
 import pool from "./db.js";
@@ -5,16 +9,20 @@ import bcrypt from "bcrypt";
 import cors from "cors";
 import path from "path";
 import jwt from "jsonwebtoken";
-import { fileURLToPath } from "url";
-import siretRoutes from "./backend/routes/siretRoute.js";
-import "dotenv/config";
 import fs from "fs";
+import { fileURLToPath } from "url";
+import "dotenv/config";
+
+import siretRoutes from "./backend/routes/siretRoute.js";
 import pkg from "multer";
 import { analyzeTender } from "./backend/ai/analyzeTender.js";
 
-const multer = pkg.default || pkg;
+// ===================================================
+// ⚙️ Configuration de base
+// ===================================================
 const app = express();
 const PORT = process.env.PORT || 3000;
+const multer = pkg.default || pkg;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -171,18 +179,19 @@ app.get("/auth/me", async (req, res) => {
 });
 
 // ===================================================
-// 🤖 ROUTE D'ANALYSE IA (MyMír V2 modulaire)
+// 🤖 ROUTE D'ANALYSE IA (MyMír)
 // ===================================================
 console.log("✅ Multer importé sans erreur");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "public/uploads/"),
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
+  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
 });
 const upload = multer({ storage });
 
 app.post("/analyze", upload.single("file"), async (req, res) => {
   try {
+    if (!req.file) return res.status(400).json({ success: false, message: "Aucun fichier reçu." });
     const filePath = req.file.path;
     const result = await analyzeTender(filePath);
     res.json(result);
@@ -193,7 +202,7 @@ app.post("/analyze", upload.single("file"), async (req, res) => {
 });
 
 // ===================================================
-// 🌍 ROUTES FRONTEND — FIX Render
+// 🌍 ROUTES FRONTEND — pour Render
 // ===================================================
 app.get("/*", (req, res) => {
   const filePath = path.join(__dirname, "public", req.path);
