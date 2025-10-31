@@ -10,10 +10,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
+  <!-- 🌊 Arrière-plan animé -->
   <div class="background-waves"></div>
 
+  <!-- ======================= Tableau de bord principal ======================= -->
   <div class="dashboard">
-    <!-- ======================= Sidebar ======================= -->
+    <!-- ====== Sidebar ====== -->
     <aside class="sidebar">
       <div class="logo-section">
         <img src="assets/logo/logo-mymir.png" alt="Logo MyMír" class="logo" />
@@ -24,12 +27,13 @@
         <p id="companyName">Chargement...</p>
       </div>
 
+      <!-- Navigation interne (SPA) -->
       <div class="nav-section">
-        <button class="nav-link active" data-target="app.html">🏠 Accueil</button>
-        <button class="nav-link" data-target="analyse.html">📊 Analyse</button>
-        <button class="nav-link" data-target="aide.html">💡 Aide à la réponse</button>
-        <button class="nav-link" data-target="historique.html">📜 Historique</button>
-        <button class="nav-link" data-target="profil.html">👤 Profil</button>
+        <button class="nav-link active" data-section="home">🏠 Accueil</button>
+        <button class="nav-link" data-section="analyse">📊 Analyse</button>
+        <button class="nav-link" data-section="aide">💡 Aide à la réponse</button>
+        <button class="nav-link" data-section="historique">📜 Historique</button>
+        <button class="nav-link" data-section="profil">👤 Profil</button>
       </div>
 
       <div class="logout-section">
@@ -37,64 +41,90 @@
       </div>
     </aside>
 
-    <!-- ======================= Contenu principal ======================= -->
+    <!-- ====== Contenu principal ====== -->
     <main class="content">
 
-      <!-- ACCUEIL -->
+      <!-- SECTION ACCUEIL -->
       <section id="home" class="section active">
         <div id="welcomeCard" class="welcome-card">
           <h1 id="welcomeMessage">Bienvenue <span style="color:#facc15;">👋</span></h1>
-          <p id="welcomeSubtext">Heureux de vous revoir sur MyMír, prêt à optimiser vos appels d’offres ?</p>
+          <p id="welcomeSubtext">
+            Heureux de vous revoir sur MyMír — prêt à optimiser vos appels d’offres ?
+          </p>
           <button id="launchAnalyseBtn" class="welcome-btn">Lancer une analyse</button>
         </div>
       </section>
 
-      <!-- ANALYSE -->
+      <!-- SECTION ANALYSE -->
       <section id="analyse" class="section">
         <h2>📊 Analyse de vos opportunités</h2>
+        <p style="color:var(--text-dim); margin-bottom:25px;">
+          Importez un DCE ou document d’appel d’offres — MyMír détecte les critères essentiels
+          et vous guide dans votre réponse.
+        </p>
+
+        <!-- Zone d'import -->
         <div class="upload-area" id="uploadArea">
           <p>Glissez votre dossier DCE ici ou cliquez pour le sélectionner.</p>
-          <input type="file" id="fileInput" hidden>
+          <input type="file" id="fileInput" accept=".pdf,.doc,.docx" hidden>
+          <button class="analysis-btn">Choisir un fichier</button>
         </div>
 
+        <!-- Animation de chargement -->
         <div class="loading hidden" id="loading">
           <div class="spinner"></div>
           <p>Analyse du dossier en cours...</p>
         </div>
 
-        <div class="result-area hidden" id="resultArea">
-          <h3>🧾 Synthèse du projet</h3>
-          <ul>
-            <li><strong>Type :</strong> Marché public - Fournitures</li>
-            <li><strong>Date limite :</strong> 18 novembre 2025</li>
-            <li><strong>Documents exigés :</strong> DC1, DC2, Mémoire technique</li>
-            <li><strong>Score de conformité :</strong> 92%</li>
-            <li><strong>Niveau de risque :</strong> Modéré</li>
-          </ul>
-          <h3>💬 Recommandations stratégiques</h3>
-          <p>- Mettez en avant vos références techniques proches du projet.<br>
-             - Ajoutez une attestation fiscale récente.<br>
-             - Décrivez vos moyens matériels réels pour renforcer la crédibilité.</p>
+        <!-- Zone de résultat -->
+        <div class="result-area hidden" id="resultArea"></div>
+      </section>
 
-          <div class="action-buttons">
-            <button class="secondary-btn">💾 Télécharger le rapport</button>
-            <button class="secondary-btn" id="newAnalyse">🔁 Nouvelle analyse</button>
+      <!-- SECTION AIDE -->
+      <section id="aide" class="section">
+        <h2>💡 Aide à la réponse</h2>
+        <p>Optimisez vos documents de réponse grâce à nos recommandations expertes.</p>
+
+        <div class="cards">
+          <div class="help-card">
+            <h3>📝 Lettre de candidature</h3>
+            <p>Modèle de lettre professionnelle et personnalisable selon votre entreprise.</p>
+            <button class="secondary-btn">Générer un modèle</button>
+          </div>
+
+          <div class="help-card">
+            <h3>🏗️ Description des moyens</h3>
+            <p>Rédigez automatiquement la partie sur vos moyens humains et matériels.</p>
+            <button class="secondary-btn">Créer un descriptif</button>
+          </div>
+
+          <div class="help-card">
+            <h3>✅ Check-list finale</h3>
+            <p>Vérifiez que votre dossier est complet avant le dépôt.</p>
+            <button class="secondary-btn">Voir la check-list</button>
           </div>
         </div>
       </section>
 
-      <!-- AIDE -->
-      <section id="aide" class="section">
-        <h2>💡 Aide à la réponse</h2>
-        <p>Optimisez vos documents de réponse grâce à nos recommandations expertes.</p>
-      </section>
-
-      <!-- HISTORIQUE -->
+      <!-- SECTION HISTORIQUE -->
       <section id="historique" class="section">
-        <h2>📁 Historique</h2>
+        <h2>📁 Historique de vos analyses</h2>
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Nom du marché</th>
+              <th>Score</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody">
+            <tr><td>10/10/2025</td><td>Réhabilitation école communale</td><td>88%</td><td>Terminé</td></tr>
+          </tbody>
+        </table>
       </section>
 
-      <!-- PROFIL -->
+      <!-- SECTION PROFIL -->
       <section id="profil" class="section">
         <h2>👤 Profil de l’entreprise</h2>
         <div class="profile-card">
@@ -102,6 +132,10 @@
           <p><strong>Email :</strong> <span id="p_email">—</span></p>
           <p><strong>Pays :</strong> <span id="p_country">—</span></p>
           <p><strong>Secteur :</strong> <span id="p_sector">—</span></p>
+          <p><strong>Chiffre d’affaires :</strong> <span id="p_revenue">—</span></p>
+          <p><strong>Effectif :</strong> <span id="p_size">—</span></p>
+          <p><strong>Certifications :</strong> <span id="p_cert">—</span></p>
+          <p><strong>Site web / LinkedIn :</strong> <span id="p_site">—</span></p>
         </div>
       </section>
 
