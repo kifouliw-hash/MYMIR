@@ -48,24 +48,25 @@ if (form) {
       const result = await response.json();
       console.log("🧠 Réponse backend :", result);
 
-if (response.ok && result.success) {
-  // ✅ Enregistre le token et les infos utilisateur dans le stockage local
-  if (result.token) {
-    localStorage.setItem("token", result.token);
-    localStorage.setItem("user", JSON.stringify(result.user));
-  }
+      if (response.ok && result.success) {
+        btn.textContent = "Compte créé ✅";
+        btn.style.background = "#4ADE80";
+        alert("✅ Compte créé avec succès !");
 
-  btn.textContent = "Compte créé ✅";
-  btn.style.background = "#4ADE80";
-  alert("✅ Compte créé et connecté !");
-  console.log("➡️ Redirection vers le tableau de bord...");
-
-  // 🔁 Redirection directe vers le tableau de bord
-  setTimeout(() => {
-    window.location.href = "app.html";
-  }, 800);
-} else {
-  alert(result.message || "Erreur lors de la création du compte.");
-  btn.textContent = "Créer le compte";
-  btn.disabled = false;
+        // 🔁 Attendre une demi-seconde avant redirection (Safari safe)
+        setTimeout(() => {
+          window.location.href = "app.html";
+        }, 800);
+      } else {
+        alert(result.message || "Erreur lors de la création du compte.");
+        btn.textContent = "Créer le compte";
+        btn.disabled = false;
+      }
+    } catch (err) {
+      console.error("❌ Erreur réseau :", err);
+      alert("Erreur de connexion au serveur.");
+      btn.textContent = "Créer le compte";
+      btn.disabled = false;
+    }
+  });
 }
