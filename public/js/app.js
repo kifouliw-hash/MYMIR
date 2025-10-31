@@ -51,37 +51,103 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ================================
   // 🚪 Déconnexion
   // ================================
-  const logoutBtn = document.getElementById("logoutBtn");
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
-      console.log("🚪 Déconnexion utilisateur.");
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      window.location.href = "login.html";
-    });
-  }
+  document.getElementById("logoutBtn")?.addEventListener("click", () => {
+    console.log("🚪 Déconnexion utilisateur.");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "login.html";
+  });
 
   // ================================
-  // 🧭 Navigation entre pages (conserve le token)
+  // 🧭 Navigation interne (SPA)
   // ================================
-  document.querySelectorAll(".nav-link").forEach(link => {
+  const sections = document.querySelectorAll(".section");
+  const navLinks = document.querySelectorAll(".nav-link");
+
+  navLinks.forEach(link => {
     link.addEventListener("click", () => {
-      const target = link.dataset.target;
-      if (target) {
-        console.log(`🔁 Navigation vers ${target}`);
-        window.location.href = target;
-      }
+      navLinks.forEach(l => l.classList.remove("active"));
+      link.classList.add("active");
+
+      sections.forEach(section => section.classList.remove("active"));
+      const targetId = link.dataset.section;
+      document.getElementById(targetId)?.classList.add("active");
     });
   });
 
   // ================================
-  // 📊 Lancer une analyse (vers analyse.html)
+  // 🚀 Bouton "Lancer une analyse"
   // ================================
   const analyseBtn = document.getElementById("launchAnalyseBtn");
   if (analyseBtn) {
     analyseBtn.addEventListener("click", () => {
-      console.log("🚀 Redirection vers analyse.html");
-      window.location.href = "analyse.html";
+      console.log("🔁 Ouverture de la section Analyse");
+      document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+      document.getElementById("analyse").classList.add("active");
+      document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
+      document.querySelector('[data-section="analyse"]').classList.add("active");
     });
   }
+
+  // ================================
+  // 📂 Gestion de l'analyse
+  // ================================
+  const uploadArea = document.getElementById("uploadArea");
+  const resultArea = document.getElementById("resultArea");
+  const fileInput = document.getElementById("fileInput");
+  const loading = document.getElementById("loading");
+  const newAnalyse = document.getElementById("newAnalyse");
+
+  if (uploadArea && fileInput) {
+    uploadArea.addEventListener("click", () => fileInput.click());
+
+    fileInput.addEventListener("change", async () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      uploadArea.classList.add("hidden");
+      loading.classList.remove("hidden");
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        console.log("📤 Envoi du fichier à /analyze :", file.name);
+        const response = await fetch("https://mymir.on***REMOVED***/analyze", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        });
+
+        const result = await response.json();
+        console.log("📦 Résultat JSON :", result);
+
+        loading.classList.add("hidden");
+
+        if (result.success) {
+          resultArea.classList.remove("hidden");
+          resultArea.innerHTML = `
+            <h3>🧠 Résultat de l’analyse</h3>
+            <pre style="white-space: pre-wrap;">${result.analysis}</pre>
+            <div class="analysis-btns">
+              <button class="analysis-btn" id="newAnalyse">🔁 Nouvelle analyse</button>
+            </div>`;
+        } else {
+          uploadArea.classList.remove("hidden");
+          uploadArea.innerHTML = `<p>❌ Erreur : ${result.message}</p>`;
+        }
+      } catch (err) {
+        console.error("❌ Erreur réseau :", err);
+        loading.classList.add("hidden");
+        uploadArea.classList.remove("hidden");
+        uploadArea.innerHTML = `<p>⚠️ Erreur de connexion au serveur.</p>`;
+      }
+    });
+  }
+
+  // Réinitialiser l'analyse
+  newAnalyse?.addEventListener("click", () => {
+    resultArea.classList.add("hidden");
+    uploadArea.classList.remove("hidden");
+  });
 });
