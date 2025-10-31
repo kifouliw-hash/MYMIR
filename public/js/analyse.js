@@ -1,7 +1,7 @@
 // ===============================================
 // 🔍 Gestion de l'analyse MyMír
 // ===============================================
-
+alert("✅ analyse.js est bien chargé !");
 document.addEventListener("DOMContentLoaded", () => {
   console.log("✅ Script analyse.js chargé et DOM prêt");
 
