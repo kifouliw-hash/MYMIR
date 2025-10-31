@@ -16,6 +16,10 @@ import "dotenv/config";
 import siretRoutes from "./backend/routes/siretRoute.js";
 import pkg from "multer";
 import { analyzeTender } from "./backend/ai/analyzeTender.js";
+console.log("🚀 Lancement serveur MyMír...");
+console.log("🔑 OpenAI Key:", process.env.OPENAI_API_KEY ? "✅ détectée" : "❌ manquante");
+console.log("🔒 JWT Secret:", process.env.JWT_SECRET ? "✅ détecté" : "❌ manquant");
+
 
 // ===================================================
 // ⚙️ Configuration de base
