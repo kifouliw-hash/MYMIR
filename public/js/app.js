@@ -42,15 +42,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ================================
     // 🧠 Remplissage des infos du profil
     // ================================
-    document.getElementById("p_company").textContent = user.metadata?.companyName || "—";
-    document.getElementById("p_email").textContent = user.email || "—";
-    document.getElementById("p_country").textContent = user.metadata?.country || "—";
-    document.getElementById("p_sector").textContent = user.metadata?.sector || "—";
-    document.getElementById("p_effectif").textContent = user.metadata?.effectif || "—";
-    document.getElementById("p_certifications").textContent = user.metadata?.certifications || "—";
-    document.getElementById("p_siteweb").textContent = user.metadata?.siteWeb || "—";
-    document.getElementById("p_turnover").textContent = user.metadata?.turnover || "—";
+    const safeSet = (id, value) => {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value || "—";
+};
 
+safeSet("p_company", user.metadata?.companyName);
+safeSet("p_email", user.email);
+safeSet("p_country", user.metadata?.country);
+safeSet("p_sector", user.metadata?.sector);
+safeSet("p_effectif", user.metadata?.effectif);
+safeSet("p_certifications", user.metadata?.certifications);
+safeSet("p_siteweb", user.metadata?.siteWeb);
+safeSet("p_turnover", user.metadata?.turnover);
     // ================================
     // 🎉 Message d’accueil dynamique
     // ================================
