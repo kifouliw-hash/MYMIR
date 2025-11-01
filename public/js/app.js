@@ -37,6 +37,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("p_email").textContent = user.email || "—";
     document.getElementById("p_country").textContent = user.metadata?.country || "—";
     document.getElementById("p_sector").textContent = user.metadata?.sector || "—";
+    document.getElementById("p_effectif").textContent = user.metadata?.effectif || "—";
+document.getElementById("p_certifications").textContent = user.metadata?.certifications || "—";
+document.getElementById("p_siteweb").textContent = user.metadata?.siteWeb || "—";
+document.getElementById("p_turnover").textContent = user.metadata?.turnover || "—";
 
     // Message d'accueil dynamique
     const firstName = user.name?.split(" ")[0] || "Utilisateur";
