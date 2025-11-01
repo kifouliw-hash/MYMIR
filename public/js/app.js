@@ -3,10 +3,14 @@
 // ================================
 
 document.addEventListener("DOMContentLoaded", async () => {
+  function getCookie(name) {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? match[2] : null;
+}
   // ================================
   // 🔐 Vérification de la session
   // ================================
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token") || getCookie("token");
   if (!token) {
     console.warn("⚠️ Aucun token trouvé, redirection vers la page de connexion.");
     window.location.href = "login.html";
@@ -155,3 +159,10 @@ document.getElementById("p_turnover").textContent = user.metadata?.turnover || "
     uploadArea.classList.remove("hidden");
   });
 });
+// === Redirection vers la page de modification du profil ===
+const editBtn = document.getElementById("editProfileBtn");
+if (editBtn) {
+  editBtn.addEventListener("click", () => {
+    window.location.href = "edit-profile.html";
+  });
+}
