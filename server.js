@@ -16,6 +16,8 @@ import "dotenv/config";
 import siretRoutes from "./backend/routes/siretRoute.js";
 import pkg from "multer";
 import { analyzeTender } from "./backend/ai/analyzeTender.js";
+import cookieParser from "cookie-parser";
+app.use(cookieParser());
 console.log("🚀 Lancement serveur MyMír...");
 console.log("🔑 OpenAI Key:", process.env.***REMOVED*** ? "✅ détectée" : "❌ manquante");
 console.log("🔒 JWT Secret:", process.env.JWT_SECRET ? "✅ détecté" : "❌ manquant");
@@ -141,12 +143,19 @@ app.post("/login", async (req, res) => {
       { expiresIn: "2h" }
     );
 
-    console.log("✅ Token généré pour:", user.email);
+    // ✅ Nouveau : envoi du cookie sécurisé
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+      maxAge: 2 * 60 * 60 * 1000, // 2h
+    });
+
+    console.log("✅ Connexion réussie via cookie pour :", user.email);
 
     res.json({
       success: true,
       message: "Connexion réussie",
-      token,
       user: {
         id: user.id,
         name: user.name,
@@ -165,16 +174,12 @@ app.post("/login", async (req, res) => {
 // ===================================================
 app.get("/auth/me", async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ success: false, message: "Non autorisé" });
-
-    const token = authHeader.split(" ")[1];
-    if (!token) return res.status(401).json({ success: false, message: "Token manquant" });
+    // 🔐 On vérifie d’abord si un token existe en cookie
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ success: false, message: "Aucun cookie trouvé" });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
-    const result = await pool.query("SELECT id, name, email, metadata FROM users WHERE id = $1", [
-      decoded.id,
-    ]);
+    const result = await pool.query("SELECT id, name, email, metadata FROM users WHERE id = $1", [decoded.id]);
 
     if (result.rows.length === 0)
       return res.status(404).json({ success: false, message: "Utilisateur introuvable" });
