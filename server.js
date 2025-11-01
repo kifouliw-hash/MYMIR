@@ -17,11 +17,10 @@ import siretRoutes from "./backend/routes/siretRoute.js";
 import pkg from "multer";
 import { analyzeTender } from "./backend/ai/analyzeTender.js";
 import cookieParser from "cookie-parser";
-app.use(cookieParser());
+
 console.log("🚀 Lancement serveur MyMír...");
 console.log("🔑 OpenAI Key:", process.env.OPENAI_API_KEY ? "✅ détectée" : "❌ manquante");
 console.log("🔒 JWT Secret:", process.env.JWT_SECRET ? "✅ détecté" : "❌ manquant");
-
 
 // ===================================================
 // ⚙️ Configuration de base
@@ -33,9 +32,12 @@ const multer = pkg.default || pkg;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Middlewares
+app.use(cookieParser());
 app.use(cors({
   origin: ["https://mymir.onrender.com"],
   methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
 app.use(bodyParser.json());
@@ -102,18 +104,11 @@ app.post("/register", async (req, res) => {
     );
 
     const user = result.rows[0];
-    const token = jwt.sign(
-      { id: user.id, email: user.email },
-      process.env.JWT_SECRET || "fallbackSecret",
-      { expiresIn: "2h" }
-    );
-
     console.log("✅ Nouveau compte créé et connecté :", email);
 
     res.status(200).json({
       success: true,
       message: "Compte créé avec succès et connecté",
-      token,
       user,
     });
   } catch (err) {
@@ -143,7 +138,7 @@ app.post("/login", async (req, res) => {
       { expiresIn: "2h" }
     );
 
-    // ✅ Nouveau : envoi du cookie sécurisé
+    // ✅ Envoi du cookie sécurisé
     res.cookie("token", token, {
       httpOnly: true,
       secure: true,
@@ -170,11 +165,10 @@ app.post("/login", async (req, res) => {
 });
 
 // ===================================================
-// 🧠 VERIFICATION TOKEN
+// 🧠 VERIFICATION TOKEN (via cookie)
 // ===================================================
 app.get("/auth/me", async (req, res) => {
   try {
-    // 🔐 On vérifie d’abord si un token existe en cookie
     const token = req.cookies.token;
     if (!token) return res.status(401).json({ success: false, message: "Aucun cookie trouvé" });
 
@@ -223,29 +217,6 @@ app.get("/*", (req, res) => {
     return res.sendFile(filePath);
   }
   res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-// =========================================
-// 🔧 ROUTE MISE À JOUR DU PROFIL ENTREPRISE
-// =========================================
-app.put("/api/update-profile", async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(401).json({ error: "Token manquant" });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
-    const userId = decoded.id;
-
-    const { companyName, sector, country, effectif, certifications, siteWeb, turnover } = req.body;
-
-    const newMetadata = { companyName, sector, country, effectif, certifications, siteWeb, turnover };
-
-    await pool.query("UPDATE users SET metadata = $1 WHERE id = $2", [newMetadata, userId]);
-
-    res.json({ success: true, message: "Profil mis à jour avec succès" });
-  } catch (error) {
-    console.error("Erreur lors de la mise à jour du profil :", error);
-    res.status(500).json({ error: "Erreur serveur" });
-  }
 });
 
 // ===================================================
