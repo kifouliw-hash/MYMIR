@@ -31,7 +31,11 @@ const multer = pkg.default || pkg;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(cors());
+app.use(cors({
+  origin: ["https://mymir.onrender.com"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/api/siret", siretRoutes);
@@ -162,10 +166,10 @@ app.post("/login", async (req, res) => {
 app.get("/auth/me", async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ message: "Non autorisé" });
+    if (!authHeader) return res.status(401).json({ success: false, message: "Non autorisé" });
 
     const token = authHeader.split(" ")[1];
-    if (!token) return res.status(401).json({ message: "Token manquant" });
+    if (!token) return res.status(401).json({ success: false, message: "Token manquant" });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
     const result = await pool.query("SELECT id, name, email, metadata FROM users WHERE id = $1", [
@@ -173,12 +177,12 @@ app.get("/auth/me", async (req, res) => {
     ]);
 
     if (result.rows.length === 0)
-      return res.status(404).json({ message: "Utilisateur introuvable" });
+      return res.status(404).json({ success: false, message: "Utilisateur introuvable" });
 
     res.json({ success: true, user: result.rows[0] });
   } catch (err) {
     console.error("Erreur /auth/me:", err);
-    res.status(401).json({ message: "Token invalide ou expiré" });
+    res.status(401).json({ success: false, message: "Token invalide ou expiré" });
   }
 });
 
