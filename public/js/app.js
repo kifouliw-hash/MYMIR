@@ -150,6 +150,7 @@ if (result.success) {
     <h3>🧠 Résultat de l’analyse</h3>
     <pre style="white-space: pre-wrap;">${result.analysis}</pre>
     <div class="analysis-btns">
+      <button class="analysis-btn" id="downloadPdf">📥 Télécharger le rapport PDF</button>
       <button class="analysis-btn" id="newAnalyse">🔁 Nouvelle analyse</button>
     </div>
   `;
@@ -157,6 +158,7 @@ if (result.success) {
   // 💾 Sauvegarde automatique dans PostgreSQL
   const token = localStorage.getItem("token");
   const title = file.name.replace(/\.[^/.]+$/, ""); // nom du fichier sans extension
+  let savedId = null;
 
   try {
     const saveRes = await fetch("https://mymir.onrender.com/api/save-analysis", {
@@ -177,6 +179,7 @@ if (result.success) {
 
     if (saveData.success) {
       console.log("💾 Analyse sauvegardée avec succès !");
+      savedId = saveData.id || null;
     } else {
       console.warn("⚠️ Échec de la sauvegarde :", saveData.message);
     }
@@ -184,8 +187,32 @@ if (result.success) {
     console.error("❌ Erreur lors de la sauvegarde :", saveErr);
   }
 
+  // 📥 Gestion du téléchargement PDF
+  document.getElementById("downloadPdf").addEventListener("click", async () => {
+    try {
+      const res = await fetch(
+        `https://mymir.onrender.com/api/analysis/${savedId || 1}/pdf`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!res.ok) throw new Error("Erreur lors du téléchargement du PDF");
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${title}-analyse.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("⚠️ Impossible de télécharger le rapport PDF.");
+      console.error("Erreur téléchargement PDF :", err);
+    }
+  });
+
 } else {
-  // ⚠️ Si l’analyse échoue
+  // ⚠️ Gestion des erreurs d’analyse
   uploadArea.classList.remove("hidden");
   uploadArea.innerHTML = `<p>❌ Erreur : ${result.message}</p>`;
 }
