@@ -175,15 +175,73 @@ safeSet("p_turnover", user.metadata?.turnover);
       uploadArea.classList.remove("hidden");
     }
   });
-
   // ================================
-  // ✏️ Redirection vers la modification de profil
+  // 🧩 Mode édition du profil (SPA)
   // ================================
   const editBtn = document.getElementById("editProfileBtn");
-  if (editBtn) {
+  const saveBtn = document.getElementById("saveProfileBtn");
+  const viewCard = document.getElementById("profileView");
+  const form = document.getElementById("profileEditForm");
+
+  if (editBtn && saveBtn && viewCard && form) {
+    // Activer le mode édition
     editBtn.addEventListener("click", () => {
-      console.log("✏️ Redirection vers la page de modification du profil");
-      window.location.href = "edit-profile.html";
+      form.classList.remove("hidden");
+      viewCard.classList.add("hidden");
+      saveBtn.classList.remove("hidden");
+      editBtn.classList.add("hidden");
+
+      // Remplir le formulaire avec les données actuelles
+     const getValue = (id) => document.getElementById(id)?.textContent || "";
+
+form.f_companyName.value = getValue("p_company");
+form.f_country.value = getValue("p_country");
+form.f_sector.value = getValue("p_sector");
+form.f_turnover.value = getValue("p_turnover");
+form.f_effectif.value = getValue("p_effectif");
+form.f_certifications.value = getValue("p_certifications");
+form.f_siteweb.value = getValue("p_siteweb");
+    });
+
+    // Sauvegarder les modifications
+    saveBtn.addEventListener("click", async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Session expirée, veuillez vous reconnecter.");
+        return;
+      }
+
+      const body = {
+        companyName: form.f_companyName.value,
+        country: form.f_country.value,
+        sector: form.f_sector.value,
+        turnover: form.f_turnover.value,
+        effectif: form.f_effectif.value,
+        certifications: form.f_certifications.value,
+        siteWeb: form.f_siteweb.value,
+      };
+
+      try {
+        const res = await fetch("https://mymir.onrender.com/api/update-profile", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(body),
+        });
+
+        const result = await res.json();
+        if (result.success) {
+  alert("✅ Profil mis à jour avec succès !");
+  setTimeout(() => window.location.reload(), 700);
+} else {
+  alert("❌ Erreur lors de la mise à jour du profil.");
+}
+      } catch (error) {
+        console.error("Erreur update profil :", error);
+        alert("Erreur réseau.");
+      }
     });
   }
 });

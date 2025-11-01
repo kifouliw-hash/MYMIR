@@ -204,6 +204,27 @@ app.post("/analyze", upload.single("file"), async (req, res) => {
     res.status(500).json({ success: false, message: "Erreur lors de l'analyse." });
   }
 });
+app.put("/api/update-profile", async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token)
+      return res.status(401).json({ success: false, message: "Token manquant" });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
+    const userId = decoded.id;
+
+    const { companyName, country, sector, turnover, effectif, certifications, siteWeb } = req.body;
+
+    const metadata = { companyName, country, sector, turnover, effectif, certifications, siteWeb };
+    await pool.query("UPDATE users SET metadata = $1 WHERE id = $2", [metadata, userId]);
+
+    console.log(`✅ Profil mis à jour pour l’utilisateur ID ${userId}`);
+    res.json({ success: true, message: "Profil mis à jour avec succès" });
+  } catch (error) {
+    console.error("❌ Erreur update profil :", error);
+    res.status(500).json({ success: false, message: "Erreur serveur" });
+  }
+});
 
 // ===================================================
 // 🌍 ROUTES FRONTEND — pour Render
