@@ -63,6 +63,27 @@ app.use("/api/siret", siretRoutes);
     console.error("⚠️ Erreur vérification table users:", err);
   }
 })();
+// ===================================================
+// 🧱 Vérifie la table analyses au démarrage
+// ===================================================
+(async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS analyses (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        title TEXT,
+        score INTEGER,
+        summary TEXT,
+        analysis TEXT,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log("🧱 Table 'analyses' vérifiée et créée 🔄✅");
+  } catch (err) {
+    console.error("⚠️ Erreur création table analyses :", err);
+  }
+})();
 
 // ===================================================
 // 🚀 INSCRIPTION
@@ -204,6 +225,105 @@ app.post("/analyze", upload.single("file"), async (req, res) => {
     res.status(500).json({ success: false, message: "Erreur lors de l'analyse." });
   }
 });
+// ===================================================
+// 💾 Sauvegarde d'une analyse IA
+// ===================================================
+app.post("/api/save-analysis", async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token)
+      return res.status(401).json({ success: false, message: "Token manquant" });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
+    const userId = decoded.id;
+
+    const { title, score, summary, analysis } = req.body;
+
+    if (!title || !analysis)
+      return res.status(400).json({ success: false, message: "Champs requis manquants." });
+
+    await pool.query(
+      `INSERT INTO analyses (user_id, title, score, summary, analysis)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [userId, title, score || null, summary || "", analysis]
+    );
+
+    console.log(`✅ Nouvelle analyse enregistrée pour l’utilisateur ${userId}`);
+    res.json({ success: true, message: "Analyse sauvegardée avec succès ✅" });
+  } catch (err) {
+    console.error("❌ Erreur sauvegarde analyse :", err);
+    res.status(500).json({ success: false, message: "Erreur serveur." });
+  }
+});
+// ===================================================
+// 📥 Téléchargement d’une analyse sauvegardée
+// ===================================================
+app.get("/api/analysis/:id/download", async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token)
+      return res.status(401).json({ success: false, message: "Token manquant" });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
+    const userId = decoded.id;
+    const analysisId = req.params.id;
+
+    const { rows } = await pool.query(
+      "SELECT * FROM analyses WHERE id = $1 AND user_id = $2",
+      [analysisId, userId]
+    );
+
+    if (rows.length === 0)
+      return res.status(404).json({ success: false, message: "Analyse introuvable" });
+
+    const analysis = rows[0];
+    const fileName = `${analysis.title || "analyse"}-${analysis.id}.txt`;
+
+    // 🔽 Génération simple d’un fichier texte
+    res.setHeader("Content-Disposition", `attachment; filename=${fileName}`);
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+
+    const content = `🧠 Rapport d’analyse — MyMír\n
+Titre : ${analysis.title}\n
+Score : ${analysis.score || "—"}%\n
+Date : ${new Date(analysis.created_at).toLocaleString("fr-FR")}\n
+Résumé : ${analysis.summary || "Aucun résumé"}\n
+───────────────────────────────\n
+${analysis.analysis}
+`;
+
+    res.send(content);
+  } catch (err) {
+    console.error("❌ Erreur téléchargement analyse :", err);
+    res.status(500).json({ success: false, message: "Erreur serveur." });
+  }
+});
+// ===================================================
+// 📜 Récupération de l'historique des analyses d'un utilisateur
+// ===================================================
+app.get("/api/analyses", async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token)
+      return res.status(401).json({ success: false, message: "Token manquant" });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
+    const userId = decoded.id;
+
+    const result = await pool.query(
+      `SELECT id, title, score, summary, created_at
+       FROM analyses
+       WHERE user_id = $1
+       ORDER BY created_at DESC`,
+      [userId]
+    );
+
+    res.json({ success: true, analyses: result.rows });
+  } catch (err) {
+    console.error("❌ Erreur récupération analyses :", err);
+    res.status(500).json({ success: false, message: "Erreur serveur." });
+  }
+});
 app.put("/api/update-profile", async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
@@ -223,6 +343,102 @@ app.put("/api/update-profile", async (req, res) => {
   } catch (error) {
     console.error("❌ Erreur update profil :", error);
     res.status(500).json({ success: false, message: "Erreur serveur" });
+  }
+});
+// ===================================================
+// 📥 Téléchargement PDF neutre d’une analyse
+// ===================================================
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+
+app.get("/api/analysis/:id/pdf", async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token)
+      return res.status(401).json({ success: false, message: "Token manquant" });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
+    const userId = decoded.id;
+    const analysisId = req.params.id;
+
+    const { rows } = await pool.query(
+      "SELECT * FROM analyses WHERE id = $1 AND user_id = $2",
+      [analysisId, userId]
+    );
+
+    if (rows.length === 0)
+      return res.status(404).json({ success: false, message: "Analyse introuvable" });
+
+    const analysis = rows[0];
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage([595, 842]); // A4
+    const { width, height } = page.getSize();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+    let y = height - 80;
+    const margin = 50;
+    const lineHeight = 16;
+
+    // === Header ===
+    page.drawText("Rapport d’analyse", {
+      x: margin,
+      y,
+      size: 18,
+      font,
+      color: rgb(0.1, 0.1, 0.1),
+    });
+    y -= 30;
+
+    // === Meta infos ===
+    const meta = [
+      `Titre : ${analysis.title || "—"}`,
+      `Score : ${analysis.score || "—"}%`,
+      `Date : ${new Date(analysis.created_at).toLocaleString("fr-FR")}`,
+      `Résumé : ${analysis.summary || "Aucun résumé fourni"}`,
+    ];
+    meta.forEach(line => {
+      page.drawText(line, { x: margin, y, size: 12, font });
+      y -= lineHeight;
+    });
+
+    y -= 15;
+    page.drawLine({
+      start: { x: margin, y },
+      end: { x: width - margin, y },
+      thickness: 1,
+      color: rgb(0.7, 0.7, 0.7),
+    });
+    y -= 25;
+
+    // === Corps du texte (analyse IA) ===
+    const text = analysis.analysis || "Aucune analyse disponible.";
+    const wrapped = text.match(/.{1,95}/g) || [];
+    wrapped.forEach(line => {
+      if (y < 60) {
+        // Ajouter une nouvelle page si nécessaire
+        const newPage = pdfDoc.addPage([595, 842]);
+        y = height - 80;
+        page.drawLine({
+          start: { x: margin, y },
+          end: { x: width - margin, y },
+          thickness: 1,
+          color: rgb(0.7, 0.7, 0.7),
+        });
+      }
+      page.drawText(line, { x: margin, y, size: 11, font });
+      y -= lineHeight;
+    });
+
+    // === Envoi du PDF au client ===
+    const pdfBytes = await pdfDoc.save();
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="analyse-${analysis.id}.pdf"`
+    );
+    res.send(Buffer.from(pdfBytes));
+  } catch (err) {
+    console.error("❌ Erreur génération PDF :", err);
+    res.status(500).json({ success: false, message: "Erreur lors de la génération du PDF." });
   }
 });
 
