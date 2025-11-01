@@ -124,21 +124,52 @@
         </table>
       </section>
 
-      <!-- SECTION PROFIL -->
-      <section id="profil" class="section">
-        <h2>👤 Profil de l’entreprise</h2>
-        <div class="profile-card">
-          <p><strong>Entreprise :</strong> <span id="p_company">—</span></p>
-          <p><strong>Email :</strong> <span id="p_email">—</span></p>
-          <p><strong>Pays :</strong> <span id="p_country">—</span></p>
-          <p><strong>Secteur :</strong> <span id="p_sector">—</span></p>
-          <p><strong>Chiffre d’affaires :</strong> <span id="p_revenue">—</span></p>
-          <p><strong>Effectif :</strong> <span id="p_size">—</span></p>
-          <p><strong>Certifications :</strong> <span id="p_cert">—</span></p>
-          <p><strong>Site web / LinkedIn :</strong> <span id="p_site">—</span></p>
-        </div>
-      </section>
+ <!-- SECTION PROFIL -->
+<section id="profil" class="section">
+  <h2>👤 Profil de l’entreprise</h2>
 
+  <!-- 🔘 Bouton modifier -->
+  <button id="editProfileBtn" class="edit-btn">✏️ Modifier le profil</button>
+
+  <!-- 🔘 Bouton enregistrer (caché au départ) -->
+  <button id="saveProfileBtn" class="save-btn hidden">💾 Enregistrer les modifications</button>
+
+  <!-- 📋 Carte d'affichage -->
+  <div class="profile-card" id="profileView">
+    <p><strong>Entreprise :</strong> <span id="p_company">—</span></p>
+    <p><strong>Email :</strong> <span id="p_email">—</span></p>
+    <p><strong>Pays :</strong> <span id="p_country">—</span></p>
+    <p><strong>Secteur :</strong> <span id="p_sector">—</span></p>
+    <p><strong>Chiffre d’affaires :</strong> <span id="p_turnover">—</span></p>
+    <p><strong>Effectif :</strong> <span id="p_effectif">—</span></p>
+    <p><strong>Certifications :</strong> <span id="p_certifications">—</span></p>
+    <p><strong>Site web / LinkedIn :</strong> <span id="p_siteweb">—</span></p>
+  </div>
+
+  <!-- 🧾 Formulaire de modification -->
+  <form id="profileEditForm" class="hidden">
+    <label>Entreprise :</label>
+    <input type="text" id="f_companyName">
+
+    <label>Pays :</label>
+    <input type="text" id="f_country">
+
+    <label>Secteur :</label>
+    <input type="text" id="f_sector">
+
+    <label>Chiffre d’affaires :</label>
+    <input type="text" id="f_turnover">
+
+    <label>Effectif :</label>
+    <input type="text" id="f_effectif">
+
+    <label>Certifications :</label>
+    <input type="text" id="f_certifications">
+
+    <label>Site web / LinkedIn :</label>
+    <input type="text" id="f_siteweb">
+  </form>
+</section>
     </main>
   </div>
 </body>
