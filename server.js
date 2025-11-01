@@ -215,6 +215,29 @@ app.get("/*", (req, res) => {
   }
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
+// =========================================
+// 🔧 ROUTE MISE À JOUR DU PROFIL ENTREPRISE
+// =========================================
+app.put("/api/update-profile", async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ error: "Token manquant" });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
+    const userId = decoded.id;
+
+    const { companyName, sector, country, effectif, certifications, siteWeb, turnover } = req.body;
+
+    const newMetadata = { companyName, sector, country, effectif, certifications, siteWeb, turnover };
+
+    await pool.query("UPDATE users SET metadata = $1 WHERE id = $2", [newMetadata, userId]);
+
+    res.json({ success: true, message: "Profil mis à jour avec succès" });
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour du profil :", error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
 
 // ===================================================
 // 🚀 LANCEMENT DU SERVEUR
