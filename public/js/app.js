@@ -276,45 +276,7 @@ form.f_siteweb.value = getValue("p_siteweb");
       }
     });
   }
-  // ================================
-// 📜 Chargement de l'historique
-// ================================
-async function loadHistory() {
-  const token = localStorage.getItem("token");
-  if (!token) return;
 
-  try {
-    const res = await fetch("https://mymir.on***REMOVED***/api/analyses", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-
-    if (data.success && data.analyses.length > 0) {
-      const tbody = document.getElementById("historyBody");
-      tbody.innerHTML = ""; // Vide l'ancien contenu
-
-      data.analyses.forEach((a) => {
-        const date = new Date(a.created_at).toLocaleDateString("fr-FR");
-        tbody.innerHTML += `
-          <tr>
-            <td>${date}</td>
-            <td>${a.title || "Sans titre"}</td>
-            <td>${a.score ? a.score + "%" : "—"}</td>
-            <td>${a.summary || "Analyse complète"}</td>
-          </tr>
-        `;
-      });
-    } else {
-      document.getElementById("historyBody").innerHTML =
-        "<tr><td colspan='4'>Aucune analyse enregistrée.</td></tr>";
-    }
-  } catch (err) {
-    console.error("❌ Erreur lors du chargement de l’historique :", err);
-  }
-}
-
-// Charger l'historique dès l'ouverture du dashboard
-loadHistory();
 // ================================
 // 📜 Chargement de l’historique des analyses
 // ================================
@@ -343,7 +305,11 @@ async function loadHistory() {
           <td>${new Date(a.created_at).toLocaleDateString("fr-FR")}</td>
           <td>${a.title || "Analyse sans titre"}</td>
           <td>${a.score ? a.score + "%" : "—"}</td>
-          <td><span class="status success">✔️ Terminé</span></td>
+          <td>
+  <span class="status success">✔️ Terminé</span>
+  <button class="download-btn" data-id="${a.id}">🗒 TXT</button>
+  <button class="download-pdf" data-id="${a.id}">📄 PDF</button>
+</td>
         </tr>`
       )
       .join("");
@@ -353,6 +319,64 @@ async function loadHistory() {
       `<tr><td colspan="4">⚠️ Impossible de charger l’historique.</td></tr>`;
   }
 }
+// ================================
+// ⬇️ Téléchargement d’un rapport d’analyse
+// ================================
+document.addEventListener("click", async (e) => {
+  if (e.target.classList.contains("download-btn")) {
+    const id = e.target.dataset.id;
+    const token = localStorage.getItem("token");
+
+    try {
+      const res = await fetch(`https://mymir.on***REMOVED***/api/analysis/${id}/download`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error("Erreur lors du téléchargement");
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `analyse-${id}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (err) {
+      console.error("Erreur téléchargement :", err);
+      alert("⚠️ Impossible de télécharger ce rapport.");
+    }
+  }
+});
+// ================================
+// ⬇️ Téléchargement d’un rapport PDF
+// ================================
+document.addEventListener("click", async (e) => {
+  if (e.target.classList.contains("download-pdf")) {
+    const id = e.target.dataset.id;
+    const token = localStorage.getItem("token");
+
+    try {
+      const res = await fetch(`https://mymir.on***REMOVED***/api/analysis/${id}/pdf`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error("Erreur PDF");
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `analyse-${id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (err) {
+      console.error("Erreur téléchargement PDF :", err);
+      alert("⚠️ Impossible de télécharger le PDF.");
+    }
+  }
+});
 
 // 🔁 Charger automatiquement l’historique au démarrage
 loadHistory();
