@@ -35,9 +35,8 @@ const __dirname = path.dirname(__filename);
 // Middlewares
 app.use(cookieParser());
 app.use(cors({
-  origin: ["https://mymir.onrender.com"],
+  origin: "https://mymir.onrender.com",
   methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
 app.use(bodyParser.json());
@@ -123,34 +122,29 @@ app.post("/register", async (req, res) => {
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+
     const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
-    if (result.rows.length === 0)
+    if (result.rows.length === 0) {
       return res.status(400).json({ success: false, message: "Utilisateur introuvable." });
+    }
 
     const user = result.rows[0];
     const valid = await bcrypt.compare(password, user.password);
-    if (!valid)
+    if (!valid) {
       return res.status(400).json({ success: false, message: "Mot de passe incorrect." });
+    }
 
+    // ⬇️ CRITIQUE : on RENVOIE le token dans la réponse JSON
     const token = jwt.sign(
       { id: user.id, email: user.email },
       process.env.JWT_SECRET || "fallbackSecret",
       { expiresIn: "2h" }
     );
 
-    // ✅ Envoi du cookie sécurisé
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "None",
-      maxAge: 2 * 60 * 60 * 1000, // 2h
-    });
-
-    console.log("✅ Connexion réussie via cookie pour :", user.email);
-
-    res.json({
+    return res.json({
       success: true,
       message: "Connexion réussie",
+      token, // ⬅️ IMPORTANT
       user: {
         id: user.id,
         name: user.name,
@@ -169,18 +163,21 @@ app.post("/login", async (req, res) => {
 // ===================================================
 app.get("/auth/me", async (req, res) => {
   try {
-    const token = req.cookies.token;
-    if (!token) return res.status(401).json({ success: false, message: "Aucun cookie trouvé" });
+    const auth = req.headers.authorization || "";
+    const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
+    if (!token) return res.status(401).json({ success: false, message: "Token manquant" });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
-    const result = await pool.query("SELECT id, name, email, metadata FROM users WHERE id = $1", [decoded.id]);
-
-    if (result.rows.length === 0)
+    const { rows } = await pool.query(
+      "SELECT id, name, email, metadata FROM users WHERE id = $1",
+      [decoded.id]
+    );
+    if (rows.length === 0) {
       return res.status(404).json({ success: false, message: "Utilisateur introuvable" });
-
-    res.json({ success: true, user: result.rows[0] });
-  } catch (err) {
-    console.error("Erreur /auth/me:", err);
+    }
+    res.json({ success: true, user: rows[0] });
+  } catch (e) {
+    console.error("Erreur /auth/me:", e);
     res.status(401).json({ success: false, message: "Token invalide ou expiré" });
   }
 });

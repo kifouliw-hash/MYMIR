@@ -3,30 +3,45 @@
 // ================================
 
 document.addEventListener("DOMContentLoaded", async () => {
+  console.log("🚀 Chargement du tableau de bord MyMír...");
+
   // ================================
-  // 🔐 Vérification de la session (via cookie sécurisé)
+  // 🔐 Vérification de la session (token localStorage)
   // ================================
+  const token = localStorage.getItem("token");
+  if (!token) {
+    console.warn("⚠️ Aucun token trouvé — redirection vers login.html");
+    window.location.href = "login.html";
+    return;
+  }
+
   try {
     const res = await fetch("https://mymir.onrender.com/auth/me", {
-      credentials: "include", // ✅ indispensable pour que le cookie soit envoyé
+      headers: { Authorization: `Bearer ${token}` },
     });
 
     const data = await res.json();
+    console.log("📡 Réponse /auth/me :", data);
 
     if (!data.success) {
-      console.warn("❌ Session invalide ou expirée :", data.message);
+      console.warn("❌ Token invalide ou expiré.");
+      localStorage.removeItem("token");
       window.location.href = "login.html";
       return;
     }
 
     const user = data.user;
-    console.log("✅ Profil chargé via cookie :", user);
+    console.log("✅ Profil chargé :", user);
 
+    // ================================
     // 🧾 Affichage du nom de l’entreprise
+    // ================================
     document.getElementById("companyName").textContent =
       user.metadata?.companyName || "Entreprise";
 
+    // ================================
     // 🧠 Remplissage des infos du profil
+    // ================================
     document.getElementById("p_company").textContent = user.metadata?.companyName || "—";
     document.getElementById("p_email").textContent = user.email || "—";
     document.getElementById("p_country").textContent = user.metadata?.country || "—";
@@ -36,14 +51,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("p_siteweb").textContent = user.metadata?.siteWeb || "—";
     document.getElementById("p_turnover").textContent = user.metadata?.turnover || "—";
 
+    // ================================
     // 🎉 Message d’accueil dynamique
+    // ================================
     const firstName = user.name?.split(" ")[0] || "Utilisateur";
     document.getElementById("welcomeMessage").innerHTML =
       `Bienvenue <span style="color:#facc15;">${firstName} 👋</span>`;
 
   } catch (err) {
     console.error("❌ Erreur lors du chargement du profil :", err);
+    localStorage.removeItem("token");
     window.location.href = "login.html";
+    return;
   }
 
   // ================================
@@ -88,13 +107,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ================================
-  // 📂 Gestion de l'analyse
+  // 📂 Gestion de l'analyse (envoi de fichier)
   // ================================
   const uploadArea = document.getElementById("uploadArea");
   const resultArea = document.getElementById("resultArea");
   const fileInput = document.getElementById("fileInput");
   const loading = document.getElementById("loading");
-  const newAnalyse = document.getElementById("newAnalyse");
 
   if (uploadArea && fileInput) {
     uploadArea.addEventListener("click", () => fileInput.click());
@@ -111,6 +129,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       try {
         console.log("📤 Envoi du fichier à /analyze :", file.name);
+
         const response = await fetch("https://mymir.onrender.com/analyze", {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
@@ -143,16 +162,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Réinitialiser l'analyse
-  newAnalyse?.addEventListener("click", () => {
-    resultArea.classList.add("hidden");
-    uploadArea.classList.remove("hidden");
+  // ================================
+  // 🔁 Réinitialisation d'une analyse
+  // ================================
+  document.addEventListener("click", (e) => {
+    if (e.target.id === "newAnalyse") {
+      resultArea.classList.add("hidden");
+      uploadArea.classList.remove("hidden");
+    }
   });
+
+  // ================================
+  // ✏️ Redirection vers la modification de profil
+  // ================================
+  const editBtn = document.getElementById("editProfileBtn");
+  if (editBtn) {
+    editBtn.addEventListener("click", () => {
+      console.log("✏️ Redirection vers la page de modification du profil");
+      window.location.href = "edit-profile.html";
+    });
+  }
 });
-// === Redirection vers la page de modification du profil ===
-const editBtn = document.getElementById("editProfileBtn");
-if (editBtn) {
-  editBtn.addEventListener("click", () => {
-    window.location.href = "edit-profile.html";
-  });
-}
