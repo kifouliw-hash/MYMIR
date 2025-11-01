@@ -30,12 +30,13 @@ if (form) {
 if (data.success) {
   console.log("✅ Connexion réussie via cookie pour :", data.user.email);
 
-  // ⚡️ Utilise une redirection différée (Safari safe)
-  alert("Connexion réussie 🎉");
+  // 🧠 Test redirection
+  alert("Connexion réussie 🎉 — redirection en cours...");
 
   setTimeout(() => {
+    console.log("➡️ Tentative de redirection vers app.html...");
     window.location.replace("app.html");
-  }, 200);
+  }, 500);
 } else {
   alert(data.message || "Erreur de connexion.");
 }
