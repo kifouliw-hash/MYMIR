@@ -345,11 +345,6 @@ app.put("/api/update-profile", async (req, res) => {
     res.status(500).json({ success: false, message: "Erreur serveur" });
   }
 });
-// ===================================================
-// 📥 Téléchargement PDF neutre d’une analyse
-// ===================================================
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-
 app.get("/api/analysis/:id/pdf", async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
@@ -369,6 +364,15 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
       return res.status(404).json({ success: false, message: "Analyse introuvable" });
 
     const analysis = rows[0];
+
+    // ✅ Protection contre valeurs nulles
+    const title = analysis.title || "Analyse sans titre";
+    const score = analysis.score !== null ? analysis.score + "%" : "—";
+    const summary = analysis.summary || "Aucun résumé fourni.";
+    const content = analysis.analysis || "Aucune analyse disponible.";
+
+    // === Génération du PDF ===
+    const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([595, 842]); // A4
     const { width, height } = page.getSize();
@@ -378,24 +382,25 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     const margin = 50;
     const lineHeight = 16;
 
-    // === Header ===
-    page.drawText("Rapport d’analyse", {
+    // --- Header
+    page.drawText("Rapport d’analyse — MyMír", {
       x: margin,
       y,
       size: 18,
       font,
-      color: rgb(0.1, 0.1, 0.1),
+      color: rgb(0.2, 0.2, 0.2),
     });
     y -= 30;
 
-    // === Meta infos ===
-    const meta = [
-      `Titre : ${analysis.title || "—"}`,
-      `Score : ${analysis.score || "—"}%`,
+    // --- Infos
+    const metaLines = [
+      `Titre : ${title}`,
+      `Score : ${score}`,
       `Date : ${new Date(analysis.created_at).toLocaleString("fr-FR")}`,
-      `Résumé : ${analysis.summary || "Aucun résumé fourni"}`,
+      `Résumé : ${summary}`,
     ];
-    meta.forEach(line => {
+
+    metaLines.forEach((line) => {
       page.drawText(line, { x: margin, y, size: 12, font });
       y -= lineHeight;
     });
@@ -409,26 +414,18 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     });
     y -= 25;
 
-    // === Corps du texte (analyse IA) ===
-    const text = analysis.analysis || "Aucune analyse disponible.";
-    const wrapped = text.match(/.{1,95}/g) || [];
-    wrapped.forEach(line => {
+    // --- Corps de l’analyse
+    const lines = content.match(/.{1,95}/g) || [];
+    lines.forEach((line) => {
       if (y < 60) {
-        // Ajouter une nouvelle page si nécessaire
-        const newPage = pdfDoc.addPage([595, 842]);
+        page = pdfDoc.addPage([595, 842]);
         y = height - 80;
-        page.drawLine({
-          start: { x: margin, y },
-          end: { x: width - margin, y },
-          thickness: 1,
-          color: rgb(0.7, 0.7, 0.7),
-        });
       }
       page.drawText(line, { x: margin, y, size: 11, font });
       y -= lineHeight;
     });
 
-    // === Envoi du PDF au client ===
+    // --- Envoi du PDF au client
     const pdfBytes = await pdfDoc.save();
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
