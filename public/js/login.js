@@ -32,9 +32,16 @@ if (form) {
       if (data.success && data.token) {
         console.log("🟢 Token reçu :", data.token);
 
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        console.log("✅ Connexion réussie :", data.user);
+        try {
+          // ✅ Stockage local normal
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("user", JSON.stringify(data.user));
+          console.log("✅ Token sauvegardé dans localStorage");
+        } catch (e) {
+          // ⚠️ Safari ou mode privé → fallback cookie
+          console.warn("⚠️ localStorage bloqué, utilisation d’un cookie de secours :", e);
+          document.cookie = `token=${data.token}; path=/; max-age=7200; Secure; SameSite=None`;
+        }
 
         alert("Connexion réussie 🎉");
         window.location.href = "app.html";
@@ -47,4 +54,3 @@ if (form) {
     }
   });
 }
-
