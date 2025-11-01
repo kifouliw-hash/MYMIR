@@ -54,7 +54,6 @@ safeSet("p_sector", user.metadata?.sector);
 safeSet("p_effectif", user.metadata?.effectif);
 safeSet("p_certifications", user.metadata?.certifications);
 safeSet("p_siteweb", user.metadata?.siteWeb);
-safeSet("p_turnover", user.metadata?.turnover);
     // ================================
     // 🎉 Message d’accueil dynamique
     // ================================
@@ -197,7 +196,6 @@ safeSet("p_turnover", user.metadata?.turnover);
 form.f_companyName.value = getValue("p_company");
 form.f_country.value = getValue("p_country");
 form.f_sector.value = getValue("p_sector");
-form.f_turnover.value = getValue("p_turnover");
 form.f_effectif.value = getValue("p_effectif");
 form.f_certifications.value = getValue("p_certifications");
 form.f_siteweb.value = getValue("p_siteweb");
@@ -215,7 +213,6 @@ form.f_siteweb.value = getValue("p_siteweb");
         companyName: form.f_companyName.value,
         country: form.f_country.value,
         sector: form.f_sector.value,
-        turnover: form.f_turnover.value,
         effectif: form.f_effectif.value,
         certifications: form.f_certifications.value,
         siteWeb: form.f_siteweb.value,
