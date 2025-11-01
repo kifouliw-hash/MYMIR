@@ -27,25 +27,15 @@ if (form) {
       const data = await res.json();
       console.log("📡 Réponse /login :", data);
 
-      if (data.success && data.token) {
-        console.log("🟢 Token reçu :", data.token);
+if (data.success) {
+  console.log("✅ Connexion réussie via cookie pour :", data.user.email);
 
-        try {
-          // ✅ Stockage local normal
-          localStorage.setItem("token", data.token);
-          localStorage.setItem("user", JSON.stringify(data.user));
-          console.log("✅ Token sauvegardé dans localStorage");
-        } catch (e) {
-          // ⚠️ Safari ou mode privé → fallback cookie
-          console.warn("⚠️ localStorage bloqué, utilisation d’un cookie de secours :", e);
-          document.cookie = `token=${data.token}; path=/; max-age=7200; Secure; SameSite=None`;
-        }
-
-        alert("Connexion réussie 🎉");
-        window.location.href = "app.html";
-      } else {
-        alert(data.message || "Erreur de connexion.");
-      }
+  alert("Connexion réussie 🎉");
+  // 🟢 Redirection automatique vers le tableau de bord
+  window.location.href = "app.html";
+} else {
+  alert(data.message || "Erreur de connexion.");
+}
     } catch (err) {
       console.error("❌ Erreur serveur :", err);
       alert("Erreur serveur, veuillez réessayer.");
