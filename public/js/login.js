@@ -18,13 +18,11 @@ if (form) {
 
     try {
       const res = await fetch("https://mymir.onrender.com/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+  method: "POST",
+  credentials: "include", // ✅ ici aussi
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ email, password }),
+});
 
       const data = await res.json();
       console.log("📡 Réponse /login :", data);

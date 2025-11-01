@@ -3,56 +3,46 @@
 // ================================
 
 document.addEventListener("DOMContentLoaded", async () => {
-  function getCookie(name) {
-  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-  return match ? match[2] : null;
-}
   // ================================
-  // 🔐 Vérification de la session
+  // 🔐 Vérification de la session (via cookie sécurisé)
   // ================================
-  const token = localStorage.getItem("token") || getCookie("token");
-  if (!token) {
-    console.warn("⚠️ Aucun token trouvé, redirection vers la page de connexion.");
-    window.location.href = "login.html";
-    return;
-  }
-
   try {
     const res = await fetch("https://mymir.onrender.com/auth/me", {
-      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include", // ✅ indispensable pour que le cookie soit envoyé
     });
+
     const data = await res.json();
 
     if (!data.success) {
-      console.warn("❌ Token invalide ou expiré.");
-      localStorage.removeItem("token");
+      console.warn("❌ Session invalide ou expirée :", data.message);
       window.location.href = "login.html";
       return;
     }
 
     const user = data.user;
-    console.log("✅ Profil chargé :", user);
+    console.log("✅ Profil chargé via cookie :", user);
 
+    // 🧾 Affichage du nom de l’entreprise
     document.getElementById("companyName").textContent =
       user.metadata?.companyName || "Entreprise";
 
-    // Remplissage profil
+    // 🧠 Remplissage des infos du profil
     document.getElementById("p_company").textContent = user.metadata?.companyName || "—";
     document.getElementById("p_email").textContent = user.email || "—";
     document.getElementById("p_country").textContent = user.metadata?.country || "—";
     document.getElementById("p_sector").textContent = user.metadata?.sector || "—";
     document.getElementById("p_effectif").textContent = user.metadata?.effectif || "—";
-document.getElementById("p_certifications").textContent = user.metadata?.certifications || "—";
-document.getElementById("p_siteweb").textContent = user.metadata?.siteWeb || "—";
-document.getElementById("p_turnover").textContent = user.metadata?.turnover || "—";
+    document.getElementById("p_certifications").textContent = user.metadata?.certifications || "—";
+    document.getElementById("p_siteweb").textContent = user.metadata?.siteWeb || "—";
+    document.getElementById("p_turnover").textContent = user.metadata?.turnover || "—";
 
-    // Message d'accueil dynamique
+    // 🎉 Message d’accueil dynamique
     const firstName = user.name?.split(" ")[0] || "Utilisateur";
     document.getElementById("welcomeMessage").innerHTML =
       `Bienvenue <span style="color:#facc15;">${firstName} 👋</span>`;
+
   } catch (err) {
-    console.error("❌ Erreur chargement profil :", err);
-    localStorage.removeItem("token");
+    console.error("❌ Erreur lors du chargement du profil :", err);
     window.location.href = "login.html";
   }
 
