@@ -1,4 +1,4 @@
-// ==========================
+ // ==========================
 // 🔐 Connexion MyMír (Frontend)
 // ==========================
 
@@ -18,28 +18,35 @@ if (form) {
 
     try {
       const res = await fetch("https://mymir.onrender.com/login", {
-  method: "POST",
-  credentials: "include", // ✅ ici aussi
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ email, password }),
-});
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
       const data = await res.json();
       console.log("📡 Réponse /login :", data);
 
-if (data.success) {
-  console.log("✅ Connexion réussie via cookie pour :", data.user.email);
+      // ✅ Si le serveur renvoie le token
+      if (data.success && data.token) {
+        console.log("🟢 Token reçu :", data.token);
 
-  // 🧠 Test redirection
-  alert("Connexion réussie 🎉 — redirection en cours...");
+        // 🔒 Stockage local (fonctionne même sur Safari)
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
 
-  setTimeout(() => {
-    console.log("➡️ Tentative de redirection vers app.html...");
-    window.location.replace("app.html");
-  }, 500);
-} else {
-  alert(data.message || "Erreur de connexion.");
-}
+        alert("Connexion réussie 🎉");
+        console.log("➡️ Redirection vers app.html...");
+
+        // 🕐 Petit délai pour Safari avant la redirection
+        setTimeout(() => {
+          window.location.href = "app.html";
+        }, 300);
+      } else {
+        alert(data.message || "Erreur de connexion.");
+      }
     } catch (err) {
       console.error("❌ Erreur serveur :", err);
       alert("Erreur serveur, veuillez réessayer.");
