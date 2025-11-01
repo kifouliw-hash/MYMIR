@@ -414,16 +414,7 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     });
     y -= 25;
 
-    // --- Corps de l’analyse
-    const lines = content.match(/.{1,95}/g) || [];
-    lines.forEach((line) => {
-      if (y < 60) {
-        page = pdfDoc.addPage([595, 842]);
-        y = height - 80;
-      }
-      page.drawText(line, { x: margin, y, size: 11, font });
-      y -= lineHeight;
-    });
+    
 
     // --- Envoi du PDF au client
     const pdfBytes = await pdfDoc.save();
