@@ -143,25 +143,60 @@ safeSet("p_siteweb", user.metadata?.siteWeb);
         console.log("📦 Résultat JSON :", result);
 
         loading.classList.add("hidden");
+if (result.success) {
+  // ✅ Affichage du résultat de l’analyse
+  resultArea.classList.remove("hidden");
+  resultArea.innerHTML = `
+    <h3>🧠 Résultat de l’analyse</h3>
+    <pre style="white-space: pre-wrap;">${result.analysis}</pre>
+    <div class="analysis-btns">
+      <button class="analysis-btn" id="newAnalyse">🔁 Nouvelle analyse</button>
+    </div>
+  `;
 
-        if (result.success) {
-          resultArea.classList.remove("hidden");
-          resultArea.innerHTML = `
-            <h3>🧠 Résultat de l’analyse</h3>
-            <pre style="white-space: pre-wrap;">${result.analysis}</pre>
-            <div class="analysis-btns">
-              <button class="analysis-btn" id="newAnalyse">🔁 Nouvelle analyse</button>
-            </div>`;
-        } else {
-          uploadArea.classList.remove("hidden");
-          uploadArea.innerHTML = `<p>❌ Erreur : ${result.message}</p>`;
-        }
-      } catch (err) {
-        console.error("❌ Erreur réseau :", err);
-        loading.classList.add("hidden");
-        uploadArea.classList.remove("hidden");
-        uploadArea.innerHTML = `<p>⚠️ Erreur de connexion au serveur.</p>`;
-      }
+  // 💾 Sauvegarde automatique dans PostgreSQL
+  const token = localStorage.getItem("token");
+  const title = file.name.replace(/\.[^/.]+$/, ""); // nom du fichier sans extension
+
+  try {
+    const saveRes = await fetch("https://mymir.on***REMOVED***/api/save-analysis", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        title,
+        score: result.score || null,
+        summary: result.summary || "",
+        analysis: result.analysis,
+      }),
+    });
+
+    const saveData = await saveRes.json();
+
+    if (saveData.success) {
+      console.log("💾 Analyse sauvegardée avec succès !");
+    } else {
+      console.warn("⚠️ Échec de la sauvegarde :", saveData.message);
+    }
+  } catch (saveErr) {
+    console.error("❌ Erreur lors de la sauvegarde :", saveErr);
+  }
+
+} else {
+  // ⚠️ Si l’analyse échoue
+  uploadArea.classList.remove("hidden");
+  uploadArea.innerHTML = `<p>❌ Erreur : ${result.message}</p>`;
+}
+
+} catch (err) {
+  // ⚠️ Gestion des erreurs réseau
+  console.error("❌ Erreur réseau :", err);
+  loading.classList.add("hidden");
+  uploadArea.classList.remove("hidden");
+  uploadArea.innerHTML = `<p>⚠️ Erreur de connexion au serveur.</p>`;
+}
     });
   }
 
@@ -241,4 +276,84 @@ form.f_siteweb.value = getValue("p_siteweb");
       }
     });
   }
+  // ================================
+// 📜 Chargement de l'historique
+// ================================
+async function loadHistory() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  try {
+    const res = await fetch("https://mymir.on***REMOVED***/api/analyses", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+
+    if (data.success && data.analyses.length > 0) {
+      const tbody = document.getElementById("historyBody");
+      tbody.innerHTML = ""; // Vide l'ancien contenu
+
+      data.analyses.forEach((a) => {
+        const date = new Date(a.created_at).toLocaleDateString("fr-FR");
+        tbody.innerHTML += `
+          <tr>
+            <td>${date}</td>
+            <td>${a.title || "Sans titre"}</td>
+            <td>${a.score ? a.score + "%" : "—"}</td>
+            <td>${a.summary || "Analyse complète"}</td>
+          </tr>
+        `;
+      });
+    } else {
+      document.getElementById("historyBody").innerHTML =
+        "<tr><td colspan='4'>Aucune analyse enregistrée.</td></tr>";
+    }
+  } catch (err) {
+    console.error("❌ Erreur lors du chargement de l’historique :", err);
+  }
+}
+
+// Charger l'historique dès l'ouverture du dashboard
+loadHistory();
+// ================================
+// 📜 Chargement de l’historique des analyses
+// ================================
+async function loadHistory() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  try {
+    const res = await fetch("https://mymir.on***REMOVED***/api/analyses", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const data = await res.json();
+    const tbody = document.getElementById("historyBody");
+
+    if (!data.success || !data.analyses || data.analyses.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4">Aucune analyse enregistrée pour le moment.</td></tr>`;
+      return;
+    }
+
+    // 🔁 Remplissage du tableau historique
+    tbody.innerHTML = data.analyses
+      .map(
+        (a) => `
+        <tr>
+          <td>${new Date(a.created_at).toLocaleDateString("fr-FR")}</td>
+          <td>${a.title || "Analyse sans titre"}</td>
+          <td>${a.score ? a.score + "%" : "—"}</td>
+          <td><span class="status success">✔️ Terminé</span></td>
+        </tr>`
+      )
+      .join("");
+  } catch (err) {
+    console.error("❌ Erreur chargement historique :", err);
+    document.getElementById("historyBody").innerHTML =
+      `<tr><td colspan="4">⚠️ Impossible de charger l’historique.</td></tr>`;
+  }
+}
+
+// 🔁 Charger automatiquement l’historique au démarrage
+loadHistory();
 });
