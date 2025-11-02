@@ -449,11 +449,17 @@ res.setHeader(
   `attachment; filename="analyse-${analysis.id}.pdf"`
 );
 res.send(Buffer.from(pdfBytes));
-  } catch (err) {
-    console.error("❌ Erreur génération PDF :", err);
-    res.status(500).json({ success: false, message: "Erreur lors de la génération du PDF." });
-  }
+} catch (err) {
+  console.error("❌ Erreur génération PDF :", err.message);
+  console.error("📜 Stack trace :", err.stack);
+  res.status(500).json({
+    success: false,
+    message: `Erreur lors de la génération du PDF : ${err.message}`,
+  });
+}
 });
+
+
 
 // ===================================================
 // 🌍 ROUTES FRONTEND — pour Render
