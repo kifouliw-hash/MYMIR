@@ -38,6 +38,15 @@ export async function analyzeTender(filePath) {
     const extractedText = await extractTextFromPDF(filePath);
     console.log("✅ Texte extrait :", extractedText.length, "caractères");
 
+    // 🔹 Profil entreprise par défaut (sera remplacé plus tard par le vrai profil utilisateur)
+const entrepriseProfil = JSON.stringify({
+  companyName: "Entreprise non renseignée",
+  secteur: "Non spécifié",
+  chiffre_affaires: "Inconnu",
+  effectif: "Inconnu",
+  certifications: "Aucune",
+  pays: "Non précisé"
+});
 const prompt = `
 Tu es MyMír, un assistant expert en appels d’offres publics et privés.
 Ta mission est d’analyser le document fourni et de produire une synthèse complète, claire et exploitable.
