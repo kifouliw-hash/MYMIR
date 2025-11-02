@@ -12,7 +12,7 @@ import jwt from "jsonwebtoken";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import "dotenv/config";
-
+import fontkit from "@pdf-lib/fontkit";
 import siretRoutes from "./backend/routes/siretRoute.js";
 import pkg from "multer";
 import { analyzeTender } from "./backend/ai/analyzeTender.js";
@@ -257,8 +257,10 @@ app.post("/api/save-analysis", async (req, res) => {
   }
 });
 // ===================================================
-// 📄 Téléchargement du rapport PDF (corrigé et robuste)
+// 📄 Téléchargement du rapport PDF (corrigé + fontkit intégré)
 // ===================================================
+import fontkit from "@pdf-lib/fontkit"; // ⬅️ AJOUTE CETTE IMPORTATION EN HAUT DU FICHIER
+
 app.get("/api/analysis/:id/pdf", async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
@@ -282,7 +284,7 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     const summary = analysis.summary || "Aucun résumé fourni.";
     const content = analysis.analysis || "Aucune analyse disponible.";
 
-    // ✅ Résolution fiable du chemin police pour Render
+    // ✅ Chemin vers la police
     const fontPath = path.join(__dirname, "public", "fonts", "NotoSans-Regular.ttf");
     if (!fs.existsSync(fontPath)) {
       console.error("❌ Police introuvable :", fontPath);
@@ -290,7 +292,10 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     }
 
     const fontBytes = fs.readFileSync(fontPath);
+
+    // ✅ Création du PDF et enregistrement du moteur de police
     const pdfDoc = await PDFDocument.create();
+    pdfDoc.registerFontkit(fontkit); // ⬅️ CRITIQUE : Active la gestion des polices personnalisées
     const customFont = await pdfDoc.embedFont(fontBytes);
 
     const createPage = () => {
@@ -334,7 +339,7 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     });
     y -= 25;
 
-    // === Corps du texte (format Markdown simplifié)
+    // === Corps de texte
     const cleanContent = content
       .replace(/\*\*/g, "")
       .replace(/#{1,6}\s*/g, "")
@@ -352,13 +357,9 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
       }
     }
 
-    // === Envoi du PDF
     const pdfBytes = await pdfDoc.save();
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="analyse-${analysis.id}.pdf"`
-    );
+    res.setHeader("Content-Disposition", `attachment; filename="analyse-${analysis.id}.pdf"`);
     res.send(Buffer.from(pdfBytes));
   } catch (err) {
     console.error("❌ Erreur génération PDF :", err);
