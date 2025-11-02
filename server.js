@@ -257,7 +257,7 @@ app.post("/api/save-analysis", async (req, res) => {
   }
 });
 // ===================================================
-// 📥 Téléchargement d’une analyse sauvegardée (.TXT)
+// 📄 Téléchargement du rapport PDF (UTF-8 + multi-pages)
 // ===================================================
 app.get("/api/analysis/:id/pdf", async (req, res) => {
   try {
@@ -269,6 +269,7 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     const userId = decoded.id;
     const analysisId = req.params.id;
 
+    // 🧠 Récupération de l’analyse
     const { rows } = await pool.query(
       "SELECT * FROM analyses WHERE id = $1 AND user_id = $2",
       [analysisId, userId]
@@ -279,38 +280,35 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
 
     const analysis = rows[0];
 
-    // Sécurisation du contenu
+    // 🧱 Sécurisation des données
     const title = (analysis.title || "Analyse sans titre").toString();
     const score = analysis.score !== null ? `${analysis.score}%` : "—";
-    const summary = (analysis.summary || "Aucun résumé fourni.").toString();
-    const content = (analysis.analysis || "Aucune analyse disponible.").toString();
+    const summary = analysis.summary || "Aucun résumé fourni.";
+    const content = analysis.analysis || "Aucune analyse disponible.";
 
- // --- 📚 Import PDF-lib et font Unicode
-// (PDFDocument et rgb sont déjà importés tout en haut du fichier)
-const fontPath = path.join(process.cwd(), "public", "fonts", "NotoSans-Regular.ttf");
+    // === 📘 Chargement police Unicode compatible (NotoSans) ===
+    const fontPath = path.join(process.cwd(), "public", "fonts", "NotoSans-Regular.ttf");
+    if (!fs.existsSync(fontPath)) {
+      console.error("❌ Police NotoSans-Regular.ttf introuvable !");
+      return res.status(500).json({ success: false, message: "Police PDF manquante." });
+    }
 
-// 🔍 Vérification que la police existe
-if (!fs.existsSync(fontPath)) {
-  console.error("❌ Police introuvable :", fontPath);
-  return res.status(500).json({
-    success: false,
-    message: "Police PDF manquante (NotoSans-Regular.ttf)",
-  });
-}
+    const fontBytes = fs.readFileSync(fontPath);
+    const pdfDoc = await PDFDocument.create();
+    const customFont = await pdfDoc.embedFont(fontBytes);
 
-// ✅ Chargement de la police Unicode
-const fontBytes = fs.readFileSync(fontPath);
-const pdfDoc = await PDFDocument.create();
-const customFont = await pdfDoc.embedFont(fontBytes);
+    // === 📄 Création du PDF ===
+    const createPage = () => {
+      const page = pdfDoc.addPage([595, 842]); // A4
+      const { width, height } = page.getSize();
+      return { page, width, height, y: height - 80 };
+    };
 
-// === Paramètres de page
-const page = pdfDoc.addPage([595, 842]); // A4
-const { width, height } = page.getSize();
-const margin = 50;
-const lineHeight = 16;
-let y = height - 80;
+    let { page, width, height, y } = createPage();
+    const margin = 50;
+    const lineHeight = 16;
 
-    // --- En-tête
+    // === En-tête
     page.drawText("Rapport d’analyse — MyMír", {
       x: margin,
       y,
@@ -320,19 +318,19 @@ let y = height - 80;
     });
     y -= 30;
 
-    // --- Infos principales
+    // === Métadonnées
     const metaLines = [
       `Titre : ${title}`,
       `Score : ${score}`,
       `Date : ${new Date(analysis.created_at).toLocaleString("fr-FR")}`,
       `Résumé : ${summary}`,
     ];
-    for (const line of metaLines) {
+
+    metaLines.forEach((line) => {
       page.drawText(line, { x: margin, y, size: 12, font: customFont });
       y -= lineHeight;
-    }
+    });
 
-    // --- Ligne séparatrice
     y -= 15;
     page.drawLine({
       start: { x: margin, y },
@@ -342,46 +340,42 @@ let y = height - 80;
     });
     y -= 25;
 
-    // --- Nettoyage du contenu Markdown
-    let cleanContent = content
+    // === Corps de texte
+    const cleanContent = content
       .replace(/\*\*/g, "")
       .replace(/#{1,6}\s*/g, "")
       .replace(/\*/g, "• ")
       .replace(/\n{2,}/g, "\n")
-      .replace(/\r/g, "")
       .trim();
 
-    // --- Découpage du contenu
-    const lines = cleanContent.split("\n").flatMap(line =>
-      line.match(/.{1,95}/g) || [line]
-    );
-
+    const lines = cleanContent.split("\n");
     for (const line of lines) {
-      if (y < 60) {
-        const newPage = pdfDoc.addPage([595, 842]);
-        y = height - 80;
-        newPage.drawText(line, { x: margin, y, size: 11, font: customFont });
-      } else {
-        page.drawText(line, { x: margin, y, size: 11, font: customFont });
+      const chunks = line.match(/.{1,95}/g) || [" "];
+      for (const chunk of chunks) {
+        if (y < 60) ({ page, width, height, y } = createPage());
+        page.drawText(chunk, { x: margin, y, size: 11, font: customFont });
+        y -= lineHeight;
       }
-      y -= lineHeight;
     }
 
-    // --- Envoi du PDF au client
+    // === Envoi du PDF généré
     const pdfBytes = await pdfDoc.save();
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename="${title}.pdf"`);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="analyse-${analysis.id}.pdf"`
+    );
     res.send(Buffer.from(pdfBytes));
 
   } catch (err) {
     console.error("❌ Erreur génération PDF complète :", err);
-    process.stdout.write(`\n===== ERREUR PDF DÉTECTÉE =====\n`);
+    process.stdout.write(`\n===== ERREUR PDF DETECTÉE =====\n`);
     process.stdout.write(`Message : ${err.message}\n`);
-    process.stdout.write(`Stack : ${err.stack || "Aucune stack détectée"}\n`);
+    process.stdout.write(`Stack : ${err.stack || "Aucune stack"}\n`);
     process.stdout.write(`===============================\n`);
     res.status(500).json({
       success: false,
-      message: `Erreur lors de la génération du PDF : ${err.message || "Erreur inconnue"}`,
+      message: `Erreur lors de la génération du PDF : ${err.message}`,
     });
   }
 });
