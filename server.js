@@ -256,7 +256,7 @@ app.post("/api/save-analysis", async (req, res) => {
   }
 });
 // ===================================================
-// 📥 Téléchargement d’une analyse sauvegardée
+// 📥 Téléchargement d’une analyse sauvegardée (.TXT)
 // ===================================================
 app.get("/api/analysis/:id/download", async (req, res) => {
   try {
@@ -298,8 +298,9 @@ ${analysis.analysis}
     res.status(500).json({ success: false, message: "Erreur serveur." });
   }
 });
+
 // ===================================================
-// 📜 Récupération de l'historique des analyses d'un utilisateur
+// 📜 Récupération de l'historique des analyses
 // ===================================================
 app.get("/api/analyses", async (req, res) => {
   try {
@@ -324,6 +325,10 @@ app.get("/api/analyses", async (req, res) => {
     res.status(500).json({ success: false, message: "Erreur serveur." });
   }
 });
+
+// ===================================================
+// ⚙️ Mise à jour du profil utilisateur
+// ===================================================
 app.put("/api/update-profile", async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
@@ -345,6 +350,10 @@ app.put("/api/update-profile", async (req, res) => {
     res.status(500).json({ success: false, message: "Erreur serveur" });
   }
 });
+
+// ===================================================
+// 🧾 Téléchargement d’une analyse en PDF
+// ===================================================
 app.get("/api/analysis/:id/pdf", async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
@@ -371,104 +380,102 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     const summary = analysis.summary || "Aucun résumé fourni.";
     const content = analysis.analysis || "Aucune analyse disponible.";
 
-// === Génération du PDF ===
-const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
-const pdfDoc = await PDFDocument.create();
+    // === Génération du PDF ===
+    const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
+    const pdfDoc = await PDFDocument.create();
 
-// --- Fonction pour créer une nouvelle page proprement
-const createPage = () => {
-  const page = pdfDoc.addPage([595, 842]); // Format A4
-  const { width, height } = page.getSize();
-  return { page, width, height, y: height - 80 };
-};
+    // --- Fonction pour créer une nouvelle page proprement
+    const createPage = () => {
+      const page = pdfDoc.addPage([595, 842]); // Format A4
+      const { width, height } = page.getSize();
+      return { page, width, height, y: height - 80 };
+    };
 
-// --- Création de la première page
-let { page, width, height, y } = createPage();
-const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    // --- Création de la première page
+    let { page, width, height, y } = createPage();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-const margin = 50;
-const lineHeight = 16;
+    const margin = 50;
+    const lineHeight = 16;
 
-// --- En-tête du document
-page.drawText("Rapport d’analyse — MyMír", {
-  x: margin,
-  y,
-  size: 18,
-  font,
-  color: rgb(0.2, 0.2, 0.2),
-});
-y -= 30;
+    // --- En-tête du document
+    page.drawText("Rapport d’analyse — MyMír", {
+      x: margin,
+      y,
+      size: 18,
+      font,
+      color: rgb(0.2, 0.2, 0.2),
+    });
+    y -= 30;
 
-// --- Métadonnées (informations principales)
-const metaLines = [
-  `Titre : ${title}`,
-  `Score : ${score}`,
-  `Date : ${new Date(analysis.created_at).toLocaleString("fr-FR")}`,
-  `Résumé : ${summary}`,
-];
+    // --- Métadonnées principales
+    const metaLines = [
+      `Titre : ${title}`,
+      `Score : ${score}`,
+      `Date : ${new Date(analysis.created_at).toLocaleString("fr-FR")}`,
+      `Résumé : ${summary}`,
+    ];
 
-metaLines.forEach((line) => {
-  page.drawText(line, { x: margin, y, size: 12, font });
-  y -= lineHeight;
-});
+    metaLines.forEach((line) => {
+      page.drawText(line, { x: margin, y, size: 12, font });
+      y -= lineHeight;
+    });
 
-// --- Ligne de séparation
-y -= 15;
-page.drawLine({
-  start: { x: margin, y },
-  end: { x: width - margin, y },
-  thickness: 1,
-  color: rgb(0.7, 0.7, 0.7),
-});
-y -= 25;
+    // --- Ligne de séparation
+    y -= 15;
+    page.drawLine({
+      start: { x: margin, y },
+      end: { x: width - margin, y },
+      thickness: 1,
+      color: rgb(0.7, 0.7, 0.7),
+    });
+    y -= 25;
 
-// --- Nettoyage du contenu Markdown avant affichage
-let cleanContent = content
-  .replace(/\*\*/g, "")         // retire le gras **texte**
-  .replace(/#{1,6}\s*/g, "")    // retire les titres ###
-  .replace(/\*/g, "• ")         // transforme * en puce
-  .replace(/\n{2,}/g, "\n")     // normalise les sauts de ligne
-  .trim();
+    // --- Nettoyage du contenu Markdown
+    let cleanContent = content
+      .replace(/\*\*/g, "")         // retire **gras**
+      .replace(/#{1,6}\s*/g, "")    // retire titres ###
+      .replace(/\*/g, "• ")         // transforme * en puce
+      .replace(/\n{2,}/g, "\n")     // normalise sauts de ligne
+      .trim();
 
-// --- Corps du texte (multi-pages automatique)
-const lines = cleanContent.split("\n");
+    // --- Corps du texte (multi-pages automatique)
+    const lines = cleanContent.split("\n");
 
-for (const line of lines) {
-  // Découpe les lignes longues pour éviter les débordements
-  const chunks = line.match(/.{1,95}/g) || [" "];
-  for (const chunk of chunks) {
-    // Nouvelle page si on atteint le bas de la feuille
-    if (y < 60) {
-      ({ page, width, height, y } = createPage());
+    for (const line of lines) {
+      const chunks = line.match(/.{1,95}/g) || [" "];
+      for (const chunk of chunks) {
+        if (y < 60) {
+          ({ page, width, height, y } = createPage());
+        }
+        page.drawText(chunk, { x: margin, y, size: 11, font });
+        y -= lineHeight;
+      }
     }
-    page.drawText(chunk, { x: margin, y, size: 11, font });
-    y -= lineHeight;
+
+    // --- Envoi du PDF au client
+    const pdfBytes = await pdfDoc.save();
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="analyse-${analysis.id}.pdf"`
+    );
+    res.send(Buffer.from(pdfBytes));
+
+  } catch (err) {
+    console.error("❌ Erreur génération PDF complète :", err);
+
+    // 🔥 Forcer une sortie explicite dans les logs Render
+    process.stdout.write(`\n===== ERREUR PDF DETECTÉE =====\n`);
+    process.stdout.write(`Message : ${err.message}\n`);
+    process.stdout.write(`Stack : ${err.stack || "Aucune stack détectée"}\n`);
+    process.stdout.write(`===============================\n`);
+
+    res.status(500).json({
+      success: false,
+      message: `Erreur lors de la génération du PDF : ${err.message || "Erreur inconnue"}`,
+    });
   }
-}
-
-// --- Envoi du PDF généré au client
-const pdfBytes = await pdfDoc.save();
-res.setHeader("Content-Type", "application/pdf");
-res.setHeader(
-  "Content-Disposition",
-  `attachment; filename="analyse-${analysis.id}.pdf"`
-);
-res.send(Buffer.from(pdfBytes));
-
-} catch (err) {
-  console.error("❌ Erreur génération PDF complète :", err);
-
-  // 🔥 Forcer une sortie explicite sur Render (utile pour voir les erreurs dans les logs)
-  process.stdout.write(`\n===== ERREUR PDF DETECTÉE =====\n`);
-  process.stdout.write(`Message : ${err.message}\n`);
-  process.stdout.write(`Stack : ${err.stack || "Aucune stack détectée"}\n`);
-  process.stdout.write(`===============================\n`);
-
-  res.status(500).json({
-    success: false,
-    message: `Erreur lors de la génération du PDF : ${err.message || "Erreur inconnue"}`,
-  });
-}
 });
 
 
