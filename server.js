@@ -257,7 +257,7 @@ app.post("/api/save-analysis", async (req, res) => {
   }
 });
 // ===================================================
-// 📄 Téléchargement du rapport PDF — Version PRO MyMír
+// 📄 Téléchargement du rapport PDF — Version Épurée MyMír
 // ===================================================
 app.get("/api/analysis/:id/pdf", async (req, res) => {
   try {
@@ -292,41 +292,42 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     const addPage = () => {
       const page = pdfDoc.addPage([595, 842]);
       const { width, height } = page.getSize();
-      return { page, width, height, y: height - 70 };
+      return { page, width, height, y: height - 80 };
     };
 
     let { page, width, height, y } = addPage();
-    const margin = 50;
-    const lineHeight = 15;
+    const margin = 60;
+    const lineHeight = 16;
 
-    // === En-tête colorée
-    page.drawRectangle({
-      x: 0,
-      y: height - 60,
-      width,
-      height: 60,
-      color: rgb(0.35, 0.25, 0.55), // violet MyMír
-    });
-    page.drawText("MyMír — IA d’analyse des appels d’offres", {
-      x: margin,
+    // === En-tête minimaliste
+    page.drawText("MyMír", {
+      x: width - 100,
       y: height - 40,
-      size: 16,
+      size: 14,
       font,
-      color: rgb(1, 1, 1),
+      color: rgb(0.35, 0.35, 0.35),
     });
 
-    // === Titre principal
-    y -= 90;
+    // === Titre principal centré
     page.drawText("Rapport d’analyse", {
       x: margin,
-      y,
+      y: y,
       size: 20,
       font,
-      color: rgb(0.15, 0.15, 0.2),
+      color: rgb(0.1, 0.1, 0.1),
     });
     y -= 20;
 
-    // === Bloc de métadonnées
+    // === Ligne dorée
+    page.drawLine({
+      start: { x: margin, y },
+      end: { x: width - margin },
+      thickness: 2,
+      color: rgb(0.96, 0.72, 0.25), // doré MyMír
+    });
+    y -= 30;
+
+    // === Métadonnées claires
     const info = [
       `Titre : ${title}`,
       `Score : ${score}`,
@@ -334,20 +335,20 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
       `Résumé : ${summary}`,
     ];
     info.forEach((line) => {
-      page.drawText(line, { x: margin, y, size: 12, font });
+      page.drawText(line, { x: margin, y, size: 12, font, color: rgb(0.15, 0.15, 0.15) });
       y -= lineHeight;
     });
 
-    y -= 10;
+    y -= 15;
     page.drawLine({
       start: { x: margin, y },
-      end: { x: width - margin, y },
-      thickness: 1,
-      color: rgb(0.7, 0.7, 0.7),
+      end: { x: width - margin },
+      thickness: 0.5,
+      color: rgb(0.8, 0.8, 0.8),
     });
     y -= 25;
 
-    // === Corps du texte
+    // === Corps du texte structuré
     const cleanContent = content
       .replace(/\*\*/g, "")
       .replace(/#{1,6}\s*/g, "")
@@ -359,19 +360,25 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     for (const line of lines) {
       const chunks = line.match(/.{1,95}/g) || [" "];
       for (const chunk of chunks) {
-        if (y < 60) {
+        if (y < 70) {
           ({ page, width, height, y } = addPage());
           y -= 30;
         }
-        page.drawText(chunk, { x: margin, y, size: 11, font });
+        page.drawText(chunk, { x: margin, y, size: 11, font, color: rgb(0.1, 0.1, 0.1) });
         y -= lineHeight;
       }
     }
 
-    // === Pied de page
+    // === Pied de page sobre
     const pages = pdfDoc.getPages();
     pages.forEach((p, i) => {
       const { width } = p.getSize();
+      p.drawLine({
+        start: { x: 50, y: 40 },
+        end: { x: width - 50, y: 40 },
+        thickness: 0.5,
+        color: rgb(0.85, 0.85, 0.85),
+      });
       p.drawText(`Page ${i + 1}`, {
         x: width - 80,
         y: 25,
@@ -379,8 +386,8 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
         font,
         color: rgb(0.5, 0.5, 0.5),
       });
-      p.drawText("MyMír — www.mymir.com", {
-        x: 50,
+      p.drawText("MyMír — Rapport généré automatiquement", {
+        x: 60,
         y: 25,
         size: 10,
         font,
@@ -396,10 +403,10 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     );
     res.send(Buffer.from(pdfBytes));
   } catch (err) {
-    console.error("❌ Erreur génération PDF PRO :", err);
+    console.error("❌ Erreur génération PDF :", err);
     res.status(500).json({
       success: false,
-      message: `Erreur PDF : ${err.message}`,
+      message: `Erreur lors de la génération du PDF : ${err.message}`,
     });
   }
 });
