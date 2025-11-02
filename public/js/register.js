@@ -20,16 +20,17 @@ if (form) {
     const API_BASE = window.location.origin;
 
     const data = {
-      companyName: document.getElementById("companyName").value.trim(),
-      managerName: document.getElementById("managerName").value.trim(),
-      email: document.getElementById("email").value.trim(),
-      sector: document.getElementById("sector").value,
-      revenue: document.getElementById("revenue") ? document.getElementById("revenue").value : "",
-      employees: document.getElementById("employees").value,
-      country: document.getElementById("country").value,
-      certifications: document.getElementById("certifications").value.trim(),
-      password: document.getElementById("password").value.trim(),
-    };
+  companyName: document.getElementById("companyName").value.trim(),
+  managerName: document.getElementById("managerName").value.trim(),
+  email: document.getElementById("email").value.trim(),
+  sector: document.getElementById("sector").value,
+  revenue: document.getElementById("revenue") ? document.getElementById("revenue").value : "",
+  employees: document.getElementById("employees").value,
+  country: document.getElementById("country").value,
+  certifications: document.getElementById("certifications").value.trim(),
+  description: document.getElementById("description").value.trim(), // 👈 AJOUT ICI
+  password: document.getElementById("password").value.trim(),
+};
 
     if (!data.managerName || !data.email || !data.password) {
       alert("Veuillez remplir au minimum le nom, l’email et le mot de passe.");

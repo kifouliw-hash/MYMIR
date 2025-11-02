@@ -124,28 +124,28 @@
         </table>
       </section>
 
- <!-- SECTION PROFIL -->
+<!-- SECTION PROFIL -->
 <section id="profil" class="section">
   <h2>👤 Profil de l’entreprise</h2>
 
-  <!-- 🔘 Bouton modifier -->
   <button id="editProfileBtn" class="edit-btn">✏️ Modifier le profil</button>
+  <button id="saveProfileBtn" class="save-btn hidden">💾 Enregistrer</button>
 
-  <!-- 🔘 Bouton enregistrer (caché au départ) -->
-  <button id="saveProfileBtn" class="save-btn hidden">💾 Enregistrer les modifications</button>
-
-  <!-- 📋 Carte d'affichage -->
+  <!-- 🧱 Vue profil -->
   <div class="profile-card" id="profileView">
     <p><strong>Entreprise :</strong> <span id="p_company">—</span></p>
     <p><strong>Email :</strong> <span id="p_email">—</span></p>
     <p><strong>Pays :</strong> <span id="p_country">—</span></p>
     <p><strong>Secteur :</strong> <span id="p_sector">—</span></p>
+    <p><strong>Sous-secteur :</strong> <span id="p_soussecteur">—</span></p>
     <p><strong>Effectif :</strong> <span id="p_effectif">—</span></p>
+    <p><strong>Chiffre d’affaires :</strong> <span id="p_revenue">—</span></p>
     <p><strong>Certifications :</strong> <span id="p_certifications">—</span></p>
     <p><strong>Site web / LinkedIn :</strong> <span id="p_siteweb">—</span></p>
+    <p><strong>Description :</strong> <span id="p_description">—</span></p>
   </div>
 
-  <!-- 🧾 Formulaire de modification -->
+  <!-- 🧾 Formulaire édition -->
   <form id="profileEditForm" class="hidden">
     <label>Entreprise :</label>
     <input type="text" id="f_companyName">
@@ -156,14 +156,36 @@
     <label>Secteur :</label>
     <input type="text" id="f_sector">
 
+    <label>Sous-secteur (optionnel) :</label>
+    <input type="text" id="f_soussecteur">
+
     <label>Effectif :</label>
-    <input type="text" id="f_effectif">
+    <select id="f_effectif">
+      <option>1–5</option>
+      <option>6–20</option>
+      <option>21–50</option>
+      <option>51–100</option>
+      <option>+100</option>
+    </select>
+
+    <label>Chiffre d’affaires annuel :</label>
+    <select id="f_revenue">
+      <option value="">Sélectionner</option>
+      <option>Moins de 100 000 €</option>
+      <option>100 000 € – 500 000 €</option>
+      <option>500 000 € – 2 000 000 €</option>
+      <option>2 000 000 € – 10 000 000 €</option>
+      <option>Plus de 10 000 000 €</option>
+    </select>
 
     <label>Certifications :</label>
     <input type="text" id="f_certifications">
 
     <label>Site web / LinkedIn :</label>
     <input type="text" id="f_siteweb">
+
+    <label>Description de l’entreprise :</label>
+    <textarea id="f_description" rows="4" placeholder="Présentez brièvement votre entreprise..."></textarea>
   </form>
 </section>
     </main>
