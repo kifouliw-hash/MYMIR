@@ -376,37 +376,50 @@ document.addEventListener("click", async (e) => {
   }
 });
 // ================================
-// ⬇️ Téléchargement d’un rapport PDF (corrigé)
+// ⬇️ Téléchargement d’un rapport PDF
 // ================================
 document.addEventListener("click", async (e) => {
   if (e.target.classList.contains("download-pdf")) {
     const id = e.target.dataset.id;
     const token = localStorage.getItem("token");
 
+    // 🧱 Vérification du token avant envoi
+    if (!token) {
+      alert("⚠️ Votre session a expiré. Veuillez vous reconnecter.");
+      window.location.href = "login.html";
+      return;
+    }
+
     try {
-      // ✅ Toujours utiliser un chemin relatif pour éviter un CORS interne
-      const res = await fetch(`/api/analysis/${id}/pdf`, {
-        headers: { Authorization: `Bearer ${token}` },
+      console.log("📡 Téléchargement PDF pour analyse ID :", id);
+
+      // ✅ Appel sécurisé vers Render
+      const res = await fetch(`https://mymir.on***REMOVED***/api/analysis/${id}/pdf`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/pdf",
+        },
       });
 
-      if (!res.ok) throw new Error(`Erreur PDF (${res.status})`);
+      // 🚨 Gestion des erreurs HTTP
+      if (!res.ok) {
+        console.error("❌ Réponse non OK :", res.status, res.statusText);
+        throw new Error(`Erreur PDF (${res.status})`);
+      }
 
-      // ✅ Lire la réponse comme un BLOB (binaire)
+      // 📄 Conversion en Blob pour téléchargement
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
-
-      // ✅ Créer le lien de téléchargement
       const a = document.createElement("a");
       a.href = url;
       a.download = `analyse-${id}.pdf`;
       document.body.appendChild(a);
       a.click();
-
-      // ✅ Nettoyage
       a.remove();
       window.URL.revokeObjectURL(url);
 
-      console.log("✅ Téléchargement PDF réussi :", a.download);
+      console.log("✅ PDF téléchargé avec succès !");
     } catch (err) {
       console.error("❌ Erreur téléchargement PDF :", err);
       alert("⚠️ Impossible de télécharger le PDF. Vérifie la console pour le détail.");
