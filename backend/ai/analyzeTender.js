@@ -39,74 +39,19 @@ export async function analyzeTender(filePath) {
     console.log("✅ Texte extrait :", extractedText.length, "caractères");
 
     const prompt = `
-Tu es MyMír, un assistant expert en appels d’offres publics et privés.
-Ta mission est d’analyser le document fourni et de produire une synthèse complète, claire et exploitable.
+Tu es **MyMír**, une IA experte en analyse d’appels d’offres publics et privés.
+Analyse le texte suivant et fournis une synthèse structurée :
 
-Analyse selon les axes suivants :
-
-1️⃣ IDENTIFICATION DU MARCHÉ
-- Type de marché (public, privé, secteur, sous-secteur…)
-- Objet du marché et finalité du projet
-- Lieu ou zone géographique d’exécution
-- Montant estimatif s’il est mentionné
-- Date limite de dépôt
-- Autorité contractante
-
-2️⃣ EXIGENCES ET DOCUMENTS À FOURNIR
-- Liste exhaustive des documents administratifs (DC1, DC2, assurance, bilan, références…)
-- Exigences techniques
-- Contraintes financières ou juridiques
-- Certifications demandées (Qualibat, ISO, etc.)
-
-3️⃣ COMPARAISON AVEC LE PROFIL ENTREPRISE
-Profil entreprise :
-${entrepriseProfil}
-
-Analyse la correspondance entre l’appel d’offre et le profil ci-dessus :
-- Points forts de l’entreprise pour ce marché
-- Points faibles ou risques
-- Ressources à mobiliser
-- Compatibilité géographique, technique et financière
-
-4️⃣ OPPORTUNITÉ ET SCORE
-- Évalue la faisabilité et la pertinence de participer à ce marché.
-- Donne un score de compatibilité sur 100.
-  - 0–49 : Risque élevé / peu compatible
-  - 50–74 : Faisable avec ajustements
-  - 75–89 : Bonne opportunité
-  - 90–100 : Très forte compatibilité
-Explique brièvement pourquoi tu donnes ce score.
-
-5️⃣ RECOMMANDATIONS STRATÉGIQUES
-- Conseils pratiques pour renforcer le dossier
-- Actions à entreprendre avant dépôt
-- Erreurs à éviter
-- Pistes pour valoriser les points forts
-
-6️⃣ PLAN DE DÉPÔT ET SUIVI
-- Étapes à suivre jusqu’au dépôt final
-- Portail ou site de dépôt s’il est mentionné
-- Checklist finale (documents à joindre, formats, signatures)
-- Phrase de rappel personnalisée
+1️⃣ Identification du marché
+2️⃣ Données administratives clés
+3️⃣ Documents exigés
+4️⃣ Critères d’évaluation
+5️⃣ Analyse des risques
+6️⃣ Faisabilité pour une PME
+7️⃣ Score d’opportunité et recommandation
 
 Texte extrait :
 ${extractedText.slice(0, 15000)}
-
-Donne ta réponse au format JSON suivant :
-{
-  "titre": "...",
-  "type_marche": "...",
-  "autorite": "...",
-  "date_limite": "...",
-  "contexte": "...",
-  "documents_requis": "...",
-  "analyse_profil": "...",
-  "score": 0 à 100,
-  "opportunite": "...",
-  "recommandations": [ "...", "..." ],
-  "plan_de_depot": [ "...", "..." ],
-  "checklist": [ "...", "..." ]
-}
 `;
 
 
