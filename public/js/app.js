@@ -320,13 +320,16 @@ async function loadHistory() {
 
   try {
     // ✅ Appel propre à ton API Render
-    const res = await fetch("https://mymir.on***REMOVED***/api/analyses", {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Accept": "application/json",
-      },
-    });
+    console.log("🔑 Token actuel :", token);
+console.log("🌐 URL appelée : https://mymir.on***REMOVED***/api/analyses");
+
+const res = await fetch('https://mymir.on***REMOVED***/api/analyses', {
+  method: "GET",
+  headers: {
+    "Authorization": "Bearer " + token,
+    "Accept": "application/json",
+  },
+});
 
     // 🚨 Si Render renvoie une erreur HTTP
     if (!res.ok) {
