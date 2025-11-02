@@ -413,8 +413,26 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
       color: rgb(0.7, 0.7, 0.7),
     });
     y -= 25;
+    // --- Nettoyage du contenu Markdown avant rendu PDF
+let cleanContent = content
+  .replace(/\*\*/g, "")         // retire **gras**
+  .replace(/#{1,6}\s*/g, "")    // retire titres ###
+  .replace(/\*/g, "• ")         // transforme * en puce
+  .replace(/\n{2,}/g, "\n")     // normalise les sauts de ligne
+  .trim();
 
-    
+// --- Corps du texte (analyse IA)
+const lines = cleanContent.match(/.{1,95}/g) || [];
+let currentPage = page; // ✅ permet de changer de page quand on atteint le bas
+
+for (const line of lines) {
+  if (y < 60) {
+    currentPage = pdfDoc.addPage([595, 842]);
+    y = height - 80;
+  }
+  currentPage.drawText(line, { x: margin, y, size: 11, font });
+  y -= lineHeight;
+}
 
     // --- Envoi du PDF au client
     const pdfBytes = await pdfDoc.save();
