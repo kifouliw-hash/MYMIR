@@ -146,47 +146,71 @@
   </div>
 
   <!-- 🧾 Formulaire édition -->
-  <form id="profileEditForm" class="hidden">
-    <label>Entreprise :</label>
-    <input type="text" id="f_companyName">
+<form id="profileEditForm" class="hidden profile-form">
+  <div class="form-row">
+    <div class="form-group">
+      <label>Entreprise :</label>
+      <input type="text" id="f_companyName">
+    </div>
+    <div class="form-group">
+      <label>Pays :</label>
+      <input type="text" id="f_country">
+    </div>
+  </div>
 
-    <label>Pays :</label>
-    <input type="text" id="f_country">
+  <div class="form-row">
+    <div class="form-group">
+      <label>Secteur :</label>
+      <input type="text" id="f_sector">
+    </div>
+    <div class="form-group">
+      <label>Sous-secteur (optionnel) :</label>
+      <input type="text" id="f_soussecteur">
+    </div>
+  </div>
 
-    <label>Secteur :</label>
-    <input type="text" id="f_sector">
+  <div class="form-row">
+    <div class="form-group">
+      <label>Effectif :</label>
+      <select id="f_effectif">
+        <option>1–5</option>
+        <option>6–20</option>
+        <option>21–50</option>
+        <option>51–100</option>
+        <option>+100</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Chiffre d’affaires annuel :</label>
+      <select id="f_revenue">
+        <option value="">Sélectionner</option>
+        <option>Moins de 100 000 €</option>
+        <option>100 000 € – 500 000 €</option>
+        <option>500 000 € – 2 000 000 €</option>
+        <option>2 000 000 € – 10 000 000 €</option>
+        <option>Plus de 10 000 000 €</option>
+      </select>
+    </div>
+  </div>
 
-    <label>Sous-secteur (optionnel) :</label>
-    <input type="text" id="f_soussecteur">
+  <div class="form-row">
+    <div class="form-group">
+      <label>Certifications :</label>
+      <input type="text" id="f_certifications" placeholder="Ex : ISO 9001, Qualibat">
+    </div>
+    <div class="form-group">
+      <label>Site web / LinkedIn :</label>
+      <input type="text" id="f_siteweb" placeholder="https://...">
+    </div>
+  </div>
 
-    <label>Effectif :</label>
-    <select id="f_effectif">
-      <option>1–5</option>
-      <option>6–20</option>
-      <option>21–50</option>
-      <option>51–100</option>
-      <option>+100</option>
-    </select>
-
-    <label>Chiffre d’affaires annuel :</label>
-    <select id="f_revenue">
-      <option value="">Sélectionner</option>
-      <option>Moins de 100 000 €</option>
-      <option>100 000 € – 500 000 €</option>
-      <option>500 000 € – 2 000 000 €</option>
-      <option>2 000 000 € – 10 000 000 €</option>
-      <option>Plus de 10 000 000 €</option>
-    </select>
-
-    <label>Certifications :</label>
-    <input type="text" id="f_certifications">
-
-    <label>Site web / LinkedIn :</label>
-    <input type="text" id="f_siteweb">
-
-    <label>Description de l’entreprise :</label>
-    <textarea id="f_description" rows="4" placeholder="Présentez brièvement votre entreprise..."></textarea>
-  </form>
+  <div class="form-row full-width">
+    <div class="form-group">
+      <label>Description de l’entreprise :</label>
+      <textarea id="f_description" rows="3" placeholder="Présentez brièvement votre entreprise..."></textarea>
+    </div>
+  </div>
+</form>
 </section>
     </main>
   </div>
