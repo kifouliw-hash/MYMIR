@@ -259,7 +259,6 @@ app.post("/api/save-analysis", async (req, res) => {
 // ===================================================
 // 📄 Téléchargement du rapport PDF (corrigé + fontkit intégré)
 // ===================================================
-import fontkit from "@pdf-lib/fontkit"; // ⬅️ AJOUTE CETTE IMPORTATION EN HAUT DU FICHIER
 
 app.get("/api/analysis/:id/pdf", async (req, res) => {
   try {
