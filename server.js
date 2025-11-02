@@ -371,77 +371,84 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     const summary = analysis.summary || "Aucun résumé fourni.";
     const content = analysis.analysis || "Aucune analyse disponible.";
 
-    // === Génération du PDF ===
-    const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
-    const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([595, 842]); // A4
-    const { width, height } = page.getSize();
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+// === Génération du PDF ===
+const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
+const pdfDoc = await PDFDocument.create();
 
-    let y = height - 80;
-    const margin = 50;
-    const lineHeight = 16;
+// Fonction pour ajouter une nouvelle page
+const createPage = () => {
+  const page = pdfDoc.addPage([595, 842]); // Format A4
+  const { width, height } = page.getSize();
+  return { page, width, height, y: height - 80 };
+};
 
-    // --- Header
-    page.drawText("Rapport d’analyse — MyMír", {
-      x: margin,
-      y,
-      size: 18,
-      font,
-      color: rgb(0.2, 0.2, 0.2),
-    });
-    y -= 30;
+// Première page
+let { page, width, height, y } = createPage();
+const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-    // --- Infos
-    const metaLines = [
-      `Titre : ${title}`,
-      `Score : ${score}`,
-      `Date : ${new Date(analysis.created_at).toLocaleString("fr-FR")}`,
-      `Résumé : ${summary}`,
-    ];
+const margin = 50;
+const lineHeight = 16;
 
-    metaLines.forEach((line) => {
-      page.drawText(line, { x: margin, y, size: 12, font });
-      y -= lineHeight;
-    });
+// --- Header
+page.drawText("Rapport d’analyse — MyMír", {
+  x: margin,
+  y,
+  size: 18,
+  font,
+  color: rgb(0.2, 0.2, 0.2),
+});
+y -= 30;
 
-    y -= 15;
-    page.drawLine({
-      start: { x: margin, y },
-      end: { x: width - margin, y },
-      thickness: 1,
-      color: rgb(0.7, 0.7, 0.7),
-    });
-    y -= 25;
-    // --- Nettoyage du contenu Markdown avant rendu PDF
+// --- Infos
+const metaLines = [
+  `Titre : ${title}`,
+  `Score : ${score}`,
+  `Date : ${new Date(analysis.created_at).toLocaleString("fr-FR")}`,
+  `Résumé : ${summary}`,
+];
+
+metaLines.forEach((line) => {
+  page.drawText(line, { x: margin, y, size: 12, font });
+  y -= lineHeight;
+});
+
+y -= 15;
+page.drawLine({
+  start: { x: margin, y },
+  end: { x: width - margin, y },
+  thickness: 1,
+  color: rgb(0.7, 0.7, 0.7),
+});
+y -= 25;
+
+// --- Nettoyage du contenu Markdown avant rendu PDF
 let cleanContent = content
   .replace(/\*\*/g, "")         // retire **gras**
   .replace(/#{1,6}\s*/g, "")    // retire titres ###
   .replace(/\*/g, "• ")         // transforme * en puce
-  .replace(/\n{2,}/g, "\n")     // normalise les sauts de ligne
+  .replace(/\n{2,}/g, "\n")     // normalise sauts de ligne
   .trim();
 
-// --- Corps du texte (analyse IA)
-const lines = cleanContent.match(/.{1,95}/g) || [];
-let currentPage = page; // ✅ permet de changer de page quand on atteint le bas
+// --- Corps du texte
+const lines = cleanContent.split("\n");
 
 for (const line of lines) {
   if (y < 60) {
-    currentPage = pdfDoc.addPage([595, 842]);
-    y = height - 80;
+    // Nouvelle page si on atteint le bas
+    ({ page, width, height, y } = createPage());
   }
-  currentPage.drawText(line, { x: margin, y, size: 11, font });
+  page.drawText(line, { x: margin, y, size: 11, font });
   y -= lineHeight;
 }
 
-    // --- Envoi du PDF au client
-    const pdfBytes = await pdfDoc.save();
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="analyse-${analysis.id}.pdf"`
-    );
-    res.send(Buffer.from(pdfBytes));
+// --- Envoi du PDF au client
+const pdfBytes = await pdfDoc.save();
+res.setHeader("Content-Type", "application/pdf");
+res.setHeader(
+  "Content-Disposition",
+  `attachment; filename="analyse-${analysis.id}.pdf"`
+);
+res.send(Buffer.from(pdfBytes));
   } catch (err) {
     console.error("❌ Erreur génération PDF :", err);
     res.status(500).json({ success: false, message: "Erreur lors de la génération du PDF." });
