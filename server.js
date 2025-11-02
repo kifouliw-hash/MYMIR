@@ -257,19 +257,17 @@ app.post("/api/save-analysis", async (req, res) => {
   }
 });
 // ===================================================
-// 📄 Téléchargement du rapport PDF (UTF-8 + multi-pages)
+// 📄 Téléchargement du rapport PDF (corrigé et robuste)
 // ===================================================
 app.get("/api/analysis/:id/pdf", async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
-    if (!token)
-      return res.status(401).json({ success: false, message: "Token manquant" });
+    if (!token) return res.status(401).json({ success: false, message: "Token manquant" });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
     const userId = decoded.id;
     const analysisId = req.params.id;
 
-    // 🧠 Récupération de l’analyse
     const { rows } = await pool.query(
       "SELECT * FROM analyses WHERE id = $1 AND user_id = $2",
       [analysisId, userId]
@@ -279,17 +277,15 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
       return res.status(404).json({ success: false, message: "Analyse introuvable" });
 
     const analysis = rows[0];
-
-    // 🧱 Sécurisation des données
-    const title = (analysis.title || "Analyse sans titre").toString();
+    const title = analysis.title || "Analyse sans titre";
     const score = analysis.score !== null ? `${analysis.score}%` : "—";
     const summary = analysis.summary || "Aucun résumé fourni.";
     const content = analysis.analysis || "Aucune analyse disponible.";
 
-    // === 📘 Chargement police Unicode compatible (NotoSans) ===
-    const fontPath = path.join(process.cwd(), "public", "fonts", "NotoSans-Regular.ttf");
+    // ✅ Résolution fiable du chemin police pour Render
+    const fontPath = path.join(__dirname, "public", "fonts", "NotoSans-Regular.ttf");
     if (!fs.existsSync(fontPath)) {
-      console.error("❌ Police NotoSans-Regular.ttf introuvable !");
+      console.error("❌ Police introuvable :", fontPath);
       return res.status(500).json({ success: false, message: "Police PDF manquante." });
     }
 
@@ -297,9 +293,8 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     const pdfDoc = await PDFDocument.create();
     const customFont = await pdfDoc.embedFont(fontBytes);
 
-    // === 📄 Création du PDF ===
     const createPage = () => {
-      const page = pdfDoc.addPage([595, 842]); // A4
+      const page = pdfDoc.addPage([595, 842]);
       const { width, height } = page.getSize();
       return { page, width, height, y: height - 80 };
     };
@@ -325,7 +320,6 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
       `Date : ${new Date(analysis.created_at).toLocaleString("fr-FR")}`,
       `Résumé : ${summary}`,
     ];
-
     metaLines.forEach((line) => {
       page.drawText(line, { x: margin, y, size: 12, font: customFont });
       y -= lineHeight;
@@ -340,7 +334,7 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     });
     y -= 25;
 
-    // === Corps de texte
+    // === Corps du texte (format Markdown simplifié)
     const cleanContent = content
       .replace(/\*\*/g, "")
       .replace(/#{1,6}\s*/g, "")
@@ -358,7 +352,7 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
       }
     }
 
-    // === Envoi du PDF généré
+    // === Envoi du PDF
     const pdfBytes = await pdfDoc.save();
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
@@ -366,13 +360,8 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
       `attachment; filename="analyse-${analysis.id}.pdf"`
     );
     res.send(Buffer.from(pdfBytes));
-
   } catch (err) {
-    console.error("❌ Erreur génération PDF complète :", err);
-    process.stdout.write(`\n===== ERREUR PDF DETECTÉE =====\n`);
-    process.stdout.write(`Message : ${err.message}\n`);
-    process.stdout.write(`Stack : ${err.stack || "Aucune stack"}\n`);
-    process.stdout.write(`===============================\n`);
+    console.error("❌ Erreur génération PDF :", err);
     res.status(500).json({
       success: false,
       message: `Erreur lors de la génération du PDF : ${err.message}`,
