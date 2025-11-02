@@ -17,6 +17,9 @@ import siretRoutes from "./backend/routes/siretRoute.js";
 import pkg from "multer";
 import { analyzeTender } from "./backend/ai/analyzeTender.js";
 import cookieParser from "cookie-parser";
+import { PDFDocument, rgb } from "pdf-lib";
+import fs from "fs";
+import path from "path";
 
 console.log("🚀 Lancement serveur MyMír...");
 console.log("🔑 OpenAI Key:", process.env.OPENAI_API_KEY ? "✅ détectée" : "❌ manquante");
@@ -258,102 +261,6 @@ app.post("/api/save-analysis", async (req, res) => {
 // ===================================================
 // 📥 Téléchargement d’une analyse sauvegardée (.TXT)
 // ===================================================
-app.get("/api/analysis/:id/download", async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token)
-      return res.status(401).json({ success: false, message: "Token manquant" });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
-    const userId = decoded.id;
-    const analysisId = req.params.id;
-
-    const { rows } = await pool.query(
-      "SELECT * FROM analyses WHERE id = $1 AND user_id = $2",
-      [analysisId, userId]
-    );
-
-    if (rows.length === 0)
-      return res.status(404).json({ success: false, message: "Analyse introuvable" });
-
-    const analysis = rows[0];
-    const fileName = `${analysis.title || "analyse"}-${analysis.id}.txt`;
-
-    // 🔽 Génération simple d’un fichier texte
-    res.setHeader("Content-Disposition", `attachment; filename=${fileName}`);
-    res.setHeader("Content-Type", "text/plain; charset=utf-8");
-
-    const content = `🧠 Rapport d’analyse — MyMír\n
-Titre : ${analysis.title}\n
-Score : ${analysis.score || "—"}%\n
-Date : ${new Date(analysis.created_at).toLocaleString("fr-FR")}\n
-Résumé : ${analysis.summary || "Aucun résumé"}\n
-───────────────────────────────\n
-${analysis.analysis}
-`;
-
-    res.send(content);
-  } catch (err) {
-    console.error("❌ Erreur téléchargement analyse :", err);
-    res.status(500).json({ success: false, message: "Erreur serveur." });
-  }
-});
-
-// ===================================================
-// 📜 Récupération de l'historique des analyses
-// ===================================================
-app.get("/api/analyses", async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token)
-      return res.status(401).json({ success: false, message: "Token manquant" });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
-    const userId = decoded.id;
-
-    const result = await pool.query(
-      `SELECT id, title, score, summary, created_at
-       FROM analyses
-       WHERE user_id = $1
-       ORDER BY created_at DESC`,
-      [userId]
-    );
-
-    res.json({ success: true, analyses: result.rows });
-  } catch (err) {
-    console.error("❌ Erreur récupération analyses :", err);
-    res.status(500).json({ success: false, message: "Erreur serveur." });
-  }
-});
-
-// ===================================================
-// ⚙️ Mise à jour du profil utilisateur
-// ===================================================
-app.put("/api/update-profile", async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token)
-      return res.status(401).json({ success: false, message: "Token manquant" });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
-    const userId = decoded.id;
-
-    const { companyName, country, sector, turnover, effectif, certifications, siteWeb } = req.body;
-
-    const metadata = { companyName, country, sector, turnover, effectif, certifications, siteWeb };
-    await pool.query("UPDATE users SET metadata = $1 WHERE id = $2", [metadata, userId]);
-
-    console.log(`✅ Profil mis à jour pour l’utilisateur ID ${userId}`);
-    res.json({ success: true, message: "Profil mis à jour avec succès" });
-  } catch (error) {
-    console.error("❌ Erreur update profil :", error);
-    res.status(500).json({ success: false, message: "Erreur serveur" });
-  }
-});
-
-// ===================================================
-// 🧾 Téléchargement d’une analyse en PDF
-// ===================================================
 app.get("/api/analysis/:id/pdf", async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
@@ -374,35 +281,48 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
 
     const analysis = rows[0];
 
-    // Sécurisation des champs
+    // Sécurisation du contenu
     const title = (analysis.title || "Analyse sans titre").toString();
     const score = analysis.score !== null ? `${analysis.score}%` : "—";
     const summary = (analysis.summary || "Aucun résumé fourni.").toString();
     const content = (analysis.analysis || "Aucune analyse disponible.").toString();
 
-    // Import PDF-lib
-    const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
-    const pdfDoc = await PDFDocument.create();
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+ // --- 📚 Import PDF-lib et font Unicode
+// (PDFDocument et rgb sont déjà importés tout en haut du fichier)
+const fontPath = path.join(process.cwd(), "public", "fonts", "NotoSans-Regular.ttf");
 
-    // Création première page
-    const page = pdfDoc.addPage([595, 842]);
-    const { width, height } = page.getSize();
-    const margin = 50;
-    const lineHeight = 16;
-    let y = height - 80;
+// 🔍 Vérification que la police existe
+if (!fs.existsSync(fontPath)) {
+  console.error("❌ Police introuvable :", fontPath);
+  return res.status(500).json({
+    success: false,
+    message: "Police PDF manquante (NotoSans-Regular.ttf)",
+  });
+}
 
-    // En-tête
+// ✅ Chargement de la police Unicode
+const fontBytes = fs.readFileSync(fontPath);
+const pdfDoc = await PDFDocument.create();
+const customFont = await pdfDoc.embedFont(fontBytes);
+
+// === Paramètres de page
+const page = pdfDoc.addPage([595, 842]); // A4
+const { width, height } = page.getSize();
+const margin = 50;
+const lineHeight = 16;
+let y = height - 80;
+
+    // --- En-tête
     page.drawText("Rapport d’analyse — MyMír", {
       x: margin,
       y,
       size: 18,
-      font,
+      font: customFont,
       color: rgb(0.2, 0.2, 0.2),
     });
     y -= 30;
 
-    // Infos principales
+    // --- Infos principales
     const metaLines = [
       `Titre : ${title}`,
       `Score : ${score}`,
@@ -410,11 +330,11 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
       `Résumé : ${summary}`,
     ];
     for (const line of metaLines) {
-      page.drawText(line, { x: margin, y, size: 12, font });
+      page.drawText(line, { x: margin, y, size: 12, font: customFont });
       y -= lineHeight;
     }
 
-    // Ligne de séparation
+    // --- Ligne séparatrice
     y -= 15;
     page.drawLine({
       start: { x: margin, y },
@@ -424,7 +344,7 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     });
     y -= 25;
 
-    // Nettoyage contenu
+    // --- Nettoyage du contenu Markdown
     let cleanContent = content
       .replace(/\*\*/g, "")
       .replace(/#{1,6}\s*/g, "")
@@ -433,7 +353,7 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
       .replace(/\r/g, "")
       .trim();
 
-    // Limite de caractères par ligne
+    // --- Découpage du contenu
     const lines = cleanContent.split("\n").flatMap(line =>
       line.match(/.{1,95}/g) || [line]
     );
@@ -442,14 +362,14 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
       if (y < 60) {
         const newPage = pdfDoc.addPage([595, 842]);
         y = height - 80;
-        newPage.drawText(line, { x: margin, y, size: 11, font });
+        newPage.drawText(line, { x: margin, y, size: 11, font: customFont });
       } else {
-        page.drawText(line, { x: margin, y, size: 11, font });
+        page.drawText(line, { x: margin, y, size: 11, font: customFont });
       }
       y -= lineHeight;
     }
 
-    // Envoi du PDF
+    // --- Envoi du PDF au client
     const pdfBytes = await pdfDoc.save();
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${title}.pdf"`);
@@ -461,7 +381,6 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     process.stdout.write(`Message : ${err.message}\n`);
     process.stdout.write(`Stack : ${err.stack || "Aucune stack détectée"}\n`);
     process.stdout.write(`===============================\n`);
-
     res.status(500).json({
       success: false,
       message: `Erreur lors de la génération du PDF : ${err.message || "Erreur inconnue"}`,
