@@ -450,8 +450,12 @@ res.setHeader(
 );
 res.send(Buffer.from(pdfBytes));
 } catch (err) {
-  console.error("❌ Erreur génération PDF :", err.message);
-  console.error("📜 Stack trace :", err.stack);
+  console.error("❌ Erreur génération PDF complète :", err);
+  console.error("📜 Stack trace :", err.stack || "Aucune stack détectée");
+  // 🔥 Forcer une sortie explicite sur Render
+  process.stdout.write(`ERREUR PDF DETECTEE: ${err.message}\n`);
+  process.stdout.write(`${err.stack}\n`);
+
   res.status(500).json({
     success: false,
     message: `Erreur lors de la génération du PDF : ${err.message}`,
