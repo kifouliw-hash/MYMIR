@@ -18,8 +18,6 @@ import pkg from "multer";
 import { analyzeTender } from "./backend/ai/analyzeTender.js";
 import cookieParser from "cookie-parser";
 import { PDFDocument, rgb } from "pdf-lib";
-import fs from "fs";
-import path from "path";
 
 console.log("🚀 Lancement serveur MyMír...");
 console.log("🔑 OpenAI Key:", process.env.***REMOVED*** ? "✅ détectée" : "❌ manquante");
