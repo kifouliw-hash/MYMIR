@@ -178,39 +178,56 @@ if (result.success) {
     const saveData = await saveRes.json();
 
     if (saveData.success) {
-      console.log("💾 Analyse sauvegardée avec succès !");
-      savedId = saveData.id || null;
-    } else {
-      console.warn("⚠️ Échec de la sauvegarde :", saveData.message);
-    }
+  console.log("💾 Analyse sauvegardée avec succès !");
+  savedId = saveData.id || null;
+
+  // 🧱 Stocke l'ID dans le localStorage pour le PDF
+  if (savedId) {
+    localStorage.setItem("lastAnalysisId", savedId);
+    console.log("🧾 ID de l'analyse sauvegardée :", savedId);
+  }
+} else {
+  console.warn("⚠️ Échec de la sauvegarde :", saveData.message);
+}
   } catch (saveErr) {
     console.error("❌ Erreur lors de la sauvegarde :", saveErr);
   }
 
-  // 📥 Gestion du téléchargement PDF
-  document.getElementById("downloadPdf").addEventListener("click", async () => {
-    try {
-      const res = await fetch(
-        `https://mymir.on***REMOVED***/api/analysis/${savedId || 1}/pdf`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (!res.ok) throw new Error("Erreur lors du téléchargement du PDF");
+  // 📥 Gestion du téléchargement PDF (version corrigée)
+document.getElementById("downloadPdf").addEventListener("click", async () => {
+  const id = localStorage.getItem("lastAnalysisId");
+  const token = localStorage.getItem("token");
 
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${title}-analyse.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      alert("⚠️ Impossible de télécharger le rapport PDF.");
-      console.error("Erreur téléchargement PDF :", err);
-    }
-  });
+  if (!id) {
+    alert("⚠️ Aucun rapport trouvé. Essayez depuis l’historique.");
+    return;
+  }
 
+  try {
+    console.log("📡 Téléchargement du PDF pour l’analyse ID :", id);
+
+    const res = await fetch(`https://mymir.on***REMOVED***/api/analysis/${id}/pdf`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!res.ok) throw new Error("Erreur lors du téléchargement du PDF");
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `analyse-${id}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+
+    console.log("✅ PDF téléchargé avec succès !");
+  } catch (err) {
+    alert("⚠️ Impossible de télécharger le rapport PDF.");
+    console.error("Erreur téléchargement PDF :", err);
+  }
+});
 } else {
   // ⚠️ Gestion des erreurs d’analyse
   uploadArea.classList.remove("hidden");
