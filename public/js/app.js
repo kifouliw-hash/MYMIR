@@ -39,10 +39,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("companyName").textContent =
       user.metadata?.companyName || "Entreprise";
 
-    // ================================
-    // 🧠 Remplissage des infos du profil
-    // ================================
-    const safeSet = (id, value) => {
+// ================================
+// 🧠 Remplissage + édition du profil MyMír
+// ================================
+const safeSet = (id, value) => {
   const el = document.getElementById(id);
   if (el) el.textContent = value || "—";
 };
@@ -51,9 +51,12 @@ safeSet("p_company", user.metadata?.companyName);
 safeSet("p_email", user.email);
 safeSet("p_country", user.metadata?.country);
 safeSet("p_sector", user.metadata?.sector);
+safeSet("p_soussecteur", user.metadata?.sousSecteur);
 safeSet("p_effectif", user.metadata?.effectif);
+safeSet("p_revenue", user.metadata?.revenue);
 safeSet("p_certifications", user.metadata?.certifications);
 safeSet("p_siteweb", user.metadata?.siteWeb);
+safeSet("p_description", user.metadata?.description || "—");
     // ================================
     // 🎉 Message d’accueil dynamique
     // ================================
@@ -253,70 +256,74 @@ document.getElementById("downloadPdf").addEventListener("click", async () => {
       uploadArea.classList.remove("hidden");
     }
   });
-  // ================================
-  // 🧩 Mode édition du profil (SPA)
-  // ================================
-  const editBtn = document.getElementById("editProfileBtn");
-  const saveBtn = document.getElementById("saveProfileBtn");
-  const viewCard = document.getElementById("profileView");
-  const form = document.getElementById("profileEditForm");
+  
+// ================================
+// 🧩 Mode édition du profil
+// ================================
+const editBtn = document.getElementById("editProfileBtn");
+const saveBtn = document.getElementById("saveProfileBtn");
+const viewCard = document.getElementById("profileView");
+const form = document.getElementById("profileEditForm");
 
-  if (editBtn && saveBtn && viewCard && form) {
-    // Activer le mode édition
-    editBtn.addEventListener("click", () => {
-      form.classList.remove("hidden");
-      viewCard.classList.add("hidden");
-      saveBtn.classList.remove("hidden");
-      editBtn.classList.add("hidden");
+if (editBtn && saveBtn && viewCard && form) {
+  editBtn.addEventListener("click", () => {
+    form.classList.remove("hidden");
+    viewCard.classList.add("hidden");
+    saveBtn.classList.remove("hidden");
+    editBtn.classList.add("hidden");
 
-      // Remplir le formulaire avec les données actuelles
-     const getValue = (id) => document.getElementById(id)?.textContent || "";
+    const getValue = (id) => document.getElementById(id)?.textContent || "";
 
-form.f_companyName.value = getValue("p_company");
-form.f_country.value = getValue("p_country");
-form.f_sector.value = getValue("p_sector");
-form.f_effectif.value = getValue("p_effectif");
-form.f_certifications.value = getValue("p_certifications");
-form.f_siteweb.value = getValue("p_siteweb");
-    });
+    form.f_companyName.value = getValue("p_company");
+    form.f_country.value = getValue("p_country");
+    form.f_sector.value = getValue("p_sector");
+    form.f_soussecteur.value = getValue("p_soussecteur");
+    form.f_effectif.value = getValue("p_effectif");
+    form.f_revenue.value = getValue("p_revenue");
+    form.f_certifications.value = getValue("p_certifications");
+    form.f_siteweb.value = getValue("p_siteweb");
+    form.f_description.value = getValue("p_description");
+  });
 
-    // Sauvegarder les modifications
-    saveBtn.addEventListener("click", async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("Session expirée, veuillez vous reconnecter.");
-        return;
+  saveBtn.addEventListener("click", async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Session expirée, veuillez vous reconnecter.");
+      return;
+    }
+
+    const body = {
+      companyName: form.f_companyName.value,
+      country: form.f_country.value,
+      sector: form.f_sector.value,
+      sousSecteur: form.f_soussecteur.value,
+      effectif: form.f_effectif.value,
+      revenue: form.f_revenue.value,
+      certifications: form.f_certifications.value,
+      siteWeb: form.f_siteweb.value,
+      description: form.f_description.value,
+    };
+
+    try {
+      const res = await fetch("https://mymir.on***REMOVED***/api/update-profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      const result = await res.json();
+      if (result.success) {
+        alert("✅ Profil mis à jour avec succès !");
+        setTimeout(() => window.location.reload(), 700);
+      } else {
+        alert("❌ Erreur lors de la mise à jour du profil.");
       }
-
-      const body = {
-        companyName: form.f_companyName.value,
-        country: form.f_country.value,
-        sector: form.f_sector.value,
-        effectif: form.f_effectif.value,
-        certifications: form.f_certifications.value,
-        siteWeb: form.f_siteweb.value,
-      };
-
-      try {
-        const res = await fetch("https://mymir.on***REMOVED***/api/update-profile", {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(body),
-        });
-
-        const result = await res.json();
-        if (result.success) {
-  alert("✅ Profil mis à jour avec succès !");
-  setTimeout(() => window.location.reload(), 700);
-} else {
-  alert("❌ Erreur lors de la mise à jour du profil.");
-}
-      } catch (error) {
-        console.error("Erreur update profil :", error);
-        alert("Erreur réseau.");
+    } catch (error) {
+      console.error("Erreur update profil :", error);
+      alert("Erreur réseau.");
       }
     });
   }
