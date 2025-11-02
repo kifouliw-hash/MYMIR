@@ -309,45 +309,45 @@ form.f_siteweb.value = getValue("p_siteweb");
 // ================================
 async function loadHistory() {
   console.log("🚀 Chargement du tableau de bord MyMír...");
-  const token = localStorage.getItem("token");
 
-  // 🧱 Vérifie si la session est valide
-  if (!token) {
+  // 🔑 Récupération et nettoyage du token
+  let token = (localStorage.getItem("token") || "").replace(/^"|"$/g, "");
+  if (!token || token.length < 10) {
     alert("⚠️ Votre session a expiré. Veuillez vous reconnecter.");
     window.location.href = "login.html";
     return;
   }
 
   try {
-    // ✅ Appel propre à ton API Render
-    console.log("🔑 Token actuel :", token);
-console.log("🌐 URL appelée : https://mymir.onrender.com/api/analyses");
+    // ✅ Logs de debug pour Render
+    console.log("🔑 Token actuel (nettoyé) :", token);
+    console.log("🌐 URL appelée : https://mymir.onrender.com/api/analyses");
 
-const res = await fetch('https://mymir.onrender.com/api/analyses', {
-  method: "GET",
-  headers: {
-    "Authorization": "Bearer " + token,
-    "Accept": "application/json",
-  },
-});
+    const res = await fetch("https://mymir.onrender.com/api/analyses", {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/json",
+      },
+    });
 
-    // 🚨 Si Render renvoie une erreur HTTP
+    // 🚨 Vérifie la validité de la réponse HTTP
     if (!res.ok) {
       console.error("❌ Erreur HTTP :", res.status, res.statusText);
       throw new Error(`Erreur serveur (${res.status})`);
     }
 
-    // ✅ Parsing sécurisé du JSON
+    // ✅ Tentative de parsing du JSON
     const data = await res.json();
+    console.log("📦 Données reçues :", data);
 
+    // 🧩 Vérifie la structure attendue
     if (!data.success || !Array.isArray(data.analyses)) {
-      console.warn("⚠️ Réponse inattendue :", data);
-      throw new Error("Format de données invalide depuis le serveur");
+      console.warn("⚠️ Format inattendu :", data);
+      throw new Error("Format de données invalide depuis le serveur.");
     }
 
-    console.log("✅ Historique chargé :", data.analyses);
-
-    // 🎨 Cible le tableau dans ton HTML
+    // 🎯 Cible le tableau HTML
     const tbody = document.getElementById("historyBody");
     tbody.innerHTML = "";
 
@@ -356,7 +356,7 @@ const res = await fetch('https://mymir.onrender.com/api/analyses', {
       return;
     }
 
-    // 🧩 Génération dynamique des lignes
+    // 🧱 Remplissage dynamique
     data.analyses.forEach((a) => {
       const row = document.createElement("tr");
       row.innerHTML = `
@@ -371,10 +371,13 @@ const res = await fetch('https://mymir.onrender.com/api/analyses', {
       `;
       tbody.appendChild(row);
     });
+
+    console.log("✅ Historique affiché avec succès !");
   } catch (err) {
     console.error("❌ Erreur chargement historique :", err);
     const tbody = document.getElementById("historyBody");
-    tbody.innerHTML = `<tr><td colspan="4">⚠️ Impossible de charger l’historique.</td></tr>`;
+    tbody.innerHTML =
+      `<tr><td colspan="4">⚠️ Impossible de charger l’historique.</td></tr>`;
   }
 }
 // ================================
