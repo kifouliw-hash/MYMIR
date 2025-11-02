@@ -397,67 +397,7 @@ app.get("/api/analyses", async (req, res) => {
     });
   }
 });
-// ===================================================
-// 📄 Téléchargement du rapport TXT (analyse brute)
-// ===================================================
-app.get("/api/analysis/:id/download", async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token)
-      return res.status(401).json({ success: false, message: "Token manquant" });
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
-    const userId = decoded.id;
-    const analysisId = req.params.id;
-
-    // 🔎 On récupère l’analyse dans la base
-    const { rows } = await pool.query(
-      "SELECT * FROM analyses WHERE id = $1 AND user_id = $2",
-      [analysisId, userId]
-    );
-
-    if (rows.length === 0)
-      return res.status(404).json({ success: false, message: "Analyse introuvable" });
-
-    const analysis = rows[0];
-    const title = analysis.title || "Analyse sans titre";
-    const score = analysis.score !== null ? `${analysis.score}%` : "—";
-    const summary = analysis.summary || "Aucun résumé fourni.";
-    const content = analysis.analysis || "Aucune analyse disponible.";
-
-    // 🧱 Structure du fichier TXT
-    const textContent = `
-Rapport d'analyse — MyMír
-==========================
-
-Titre : ${title}
-Score : ${score}
-Date : ${new Date(analysis.created_at).toLocaleString("fr-FR")}
-Résumé : ${summary}
-
-----------------------------
-CONTENU DE L’ANALYSE
-----------------------------
-
-${content}
-    `.trim();
-
-    // 📤 Envoi du fichier TXT
-    res.setHeader("Content-Type", "text/plain; charset=utf-8");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="analyse-${analysis.id}.txt"`
-    );
-    res.send(textContent);
-
-  } catch (err) {
-    console.error("❌ Erreur génération TXT :", err);
-    res.status(500).json({
-      success: false,
-      message: `Erreur lors du téléchargement TXT : ${err.message}`,
-    });
-  }
-});
 // ===================================================
 // 🌍 ROUTES FRONTEND — pour Render
 // ===================================================
