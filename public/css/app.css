@@ -454,6 +454,19 @@
   background: rgba(255, 255, 255, 0.08);
   transition: 0.2s ease;
 }
+.download-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  margin-left: 8px;
+  font-size: 16px;
+  transition: transform 0.2s ease;
+}
+
+.download-btn:hover {
+  transform: scale(1.2);
+  color: #facc15;
+}
 
 /* ✅ Statuts (Terminé / En cours / Erreur) */
 .status {
@@ -853,4 +866,56 @@
     font-size: 13px;
   }
 }
+/* ===== 🎨 STYLE DU FORMULAIRE PROFIL ===== */
+.profile-form {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 25px;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.form-row.full-width {
+  flex-direction: column;
+}
+
+.form-group {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  color: #facc15;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #fff;
+  font-size: 15px;
+  transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #facc15;
+  background: rgba(255, 255, 255, 0.15);
+}
