@@ -375,21 +375,21 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
 const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
 const pdfDoc = await PDFDocument.create();
 
-// Fonction pour ajouter une nouvelle page
+// --- Fonction pour créer une nouvelle page proprement
 const createPage = () => {
   const page = pdfDoc.addPage([595, 842]); // Format A4
   const { width, height } = page.getSize();
   return { page, width, height, y: height - 80 };
 };
 
-// Première page
+// --- Création de la première page
 let { page, width, height, y } = createPage();
 const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
 const margin = 50;
 const lineHeight = 16;
 
-// --- Header
+// --- En-tête du document
 page.drawText("Rapport d’analyse — MyMír", {
   x: margin,
   y,
@@ -399,7 +399,7 @@ page.drawText("Rapport d’analyse — MyMír", {
 });
 y -= 30;
 
-// --- Infos
+// --- Métadonnées (informations principales)
 const metaLines = [
   `Titre : ${title}`,
   `Score : ${score}`,
@@ -412,6 +412,7 @@ metaLines.forEach((line) => {
   y -= lineHeight;
 });
 
+// --- Ligne de séparation
 y -= 15;
 page.drawLine({
   start: { x: margin, y },
@@ -421,27 +422,31 @@ page.drawLine({
 });
 y -= 25;
 
-// --- Nettoyage du contenu Markdown avant rendu PDF
+// --- Nettoyage du contenu Markdown avant affichage
 let cleanContent = content
-  .replace(/\*\*/g, "")         // retire **gras**
-  .replace(/#{1,6}\s*/g, "")    // retire titres ###
+  .replace(/\*\*/g, "")         // retire le gras **texte**
+  .replace(/#{1,6}\s*/g, "")    // retire les titres ###
   .replace(/\*/g, "• ")         // transforme * en puce
-  .replace(/\n{2,}/g, "\n")     // normalise sauts de ligne
+  .replace(/\n{2,}/g, "\n")     // normalise les sauts de ligne
   .trim();
 
-// --- Corps du texte
+// --- Corps du texte (multi-pages automatique)
 const lines = cleanContent.split("\n");
 
 for (const line of lines) {
-  if (y < 60) {
-    // Nouvelle page si on atteint le bas
-    ({ page, width, height, y } = createPage());
+  // Découpe les lignes longues pour éviter les débordements
+  const chunks = line.match(/.{1,95}/g) || [" "];
+  for (const chunk of chunks) {
+    // Nouvelle page si on atteint le bas de la feuille
+    if (y < 60) {
+      ({ page, width, height, y } = createPage());
+    }
+    page.drawText(chunk, { x: margin, y, size: 11, font });
+    y -= lineHeight;
   }
-  page.drawText(line, { x: margin, y, size: 11, font });
-  y -= lineHeight;
 }
 
-// --- Envoi du PDF au client
+// --- Envoi du PDF généré au client
 const pdfBytes = await pdfDoc.save();
 res.setHeader("Content-Type", "application/pdf");
 res.setHeader(
@@ -449,16 +454,19 @@ res.setHeader(
   `attachment; filename="analyse-${analysis.id}.pdf"`
 );
 res.send(Buffer.from(pdfBytes));
+
 } catch (err) {
   console.error("❌ Erreur génération PDF complète :", err);
-  console.error("📜 Stack trace :", err.stack || "Aucune stack détectée");
-  // 🔥 Forcer une sortie explicite sur Render
-  process.stdout.write(`ERREUR PDF DETECTEE: ${err.message}\n`);
-  process.stdout.write(`${err.stack}\n`);
+
+  // 🔥 Forcer une sortie explicite sur Render (utile pour voir les erreurs dans les logs)
+  process.stdout.write(`\n===== ERREUR PDF DETECTÉE =====\n`);
+  process.stdout.write(`Message : ${err.message}\n`);
+  process.stdout.write(`Stack : ${err.stack || "Aucune stack détectée"}\n`);
+  process.stdout.write(`===============================\n`);
 
   res.status(500).json({
     success: false,
-    message: `Erreur lors de la génération du PDF : ${err.message}`,
+    message: `Erreur lors de la génération du PDF : ${err.message || "Erreur inconnue"}`,
   });
 }
 });
