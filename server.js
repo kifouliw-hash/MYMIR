@@ -257,13 +257,13 @@ app.post("/api/save-analysis", async (req, res) => {
   }
 });
 // ===================================================
-// 📄 Téléchargement du rapport PDF (corrigé + fontkit intégré)
+// 📄 Téléchargement du rapport PDF — Version stable + stylisée MyMír
 // ===================================================
-
 app.get("/api/analysis/:id/pdf", async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(401).json({ success: false, message: "Token manquant" });
+    if (!token)
+      return res.status(401).json({ success: false, message: "Token manquant" });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
     const userId = decoded.id;
@@ -283,7 +283,7 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     const summary = analysis.summary || "Aucun résumé fourni.";
     const content = analysis.analysis || "Aucune analyse disponible.";
 
-    // ✅ Chemin vers la police
+    // ✅ Police
     const fontPath = path.join(__dirname, "public", "fonts", "NotoSans-Regular.ttf");
     if (!fs.existsSync(fontPath)) {
       console.error("❌ Police introuvable :", fontPath);
@@ -291,11 +291,9 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     }
 
     const fontBytes = fs.readFileSync(fontPath);
-
-    // ✅ Création du PDF et enregistrement du moteur de police
     const pdfDoc = await PDFDocument.create();
-    pdfDoc.registerFontkit(fontkit); // ⬅️ CRITIQUE : Active la gestion des polices personnalisées
-    const customFont = await pdfDoc.embedFont(fontBytes);
+    pdfDoc.registerFontkit(fontkit);
+    const font = await pdfDoc.embedFont(fontBytes);
 
     const createPage = () => {
       const page = pdfDoc.addPage([595, 842]);
@@ -307,17 +305,24 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     const margin = 50;
     const lineHeight = 16;
 
-    // === En-tête
-    page.drawText("Rapport d’analyse — MyMír", {
+    // === En-tête stylisée
+    page.drawText("MyMír — Rapport d’analyse", {
       x: margin,
       y,
       size: 18,
-      font: customFont,
-      color: rgb(0.2, 0.2, 0.2),
+      font,
+      color: rgb(0.1, 0.1, 0.1),
     });
-    y -= 30;
+    y -= 15;
+    page.drawLine({
+      start: { x: margin, y },
+      end: { x: width - margin, y },
+      thickness: 2,
+      color: rgb(0.96, 0.72, 0.25), // doré MyMír
+    });
+    y -= 25;
 
-    // === Métadonnées
+    // === Métadonnées propres
     const metaLines = [
       `Titre : ${title}`,
       `Score : ${score}`,
@@ -325,20 +330,26 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
       `Résumé : ${summary}`,
     ];
     metaLines.forEach((line) => {
-      page.drawText(line, { x: margin, y, size: 12, font: customFont });
+      page.drawText(line, {
+        x: margin,
+        y,
+        size: 12,
+        font,
+        color: rgb(0.2, 0.2, 0.2),
+      });
       y -= lineHeight;
     });
 
-    y -= 15;
+    y -= 10;
     page.drawLine({
       start: { x: margin, y },
       end: { x: width - margin, y },
-      thickness: 1,
-      color: rgb(0.7, 0.7, 0.7),
+      thickness: 0.8,
+      color: rgb(0.8, 0.8, 0.8),
     });
-    y -= 25;
+    y -= 20;
 
-    // === Corps de texte
+    // === Corps du texte
     const cleanContent = content
       .replace(/\*\*/g, "")
       .replace(/#{1,6}\s*/g, "")
@@ -351,14 +362,44 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
       const chunks = line.match(/.{1,95}/g) || [" "];
       for (const chunk of chunks) {
         if (y < 60) ({ page, width, height, y } = createPage());
-        page.drawText(chunk, { x: margin, y, size: 11, font: customFont });
+        page.drawText(chunk, { x: margin, y, size: 11, font, color: rgb(0, 0, 0) });
         y -= lineHeight;
       }
     }
 
+    // === Pied de page discret
+    const pages = pdfDoc.getPages();
+    pages.forEach((p, i) => {
+      const { width } = p.getSize();
+      p.drawLine({
+        start: { x: 50, y: 40 },
+        end: { x: width - 50, y: 40 },
+        thickness: 0.5,
+        color: rgb(0.85, 0.85, 0.85),
+      });
+      p.drawText("MyMír — Rapport confidentiel", {
+        x: 60,
+        y: 25,
+        size: 10,
+        font,
+        color: rgb(0.4, 0.4, 0.4),
+      });
+      p.drawText(`Page ${i + 1}`, {
+        x: width - 80,
+        y: 25,
+        size: 10,
+        font,
+        color: rgb(0.4, 0.4, 0.4),
+      });
+    });
+
+    // === Envoi du PDF
     const pdfBytes = await pdfDoc.save();
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename="analyse-${analysis.id}.pdf"`);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="analyse-${analysis.id}.pdf"`
+    );
     res.send(Buffer.from(pdfBytes));
   } catch (err) {
     console.error("❌ Erreur génération PDF :", err);
