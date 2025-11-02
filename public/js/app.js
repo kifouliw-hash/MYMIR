@@ -308,42 +308,70 @@ form.f_siteweb.value = getValue("p_siteweb");
 // 📜 Chargement de l’historique des analyses
 // ================================
 async function loadHistory() {
+  console.log("🚀 Chargement du tableau de bord MyMír...");
   const token = localStorage.getItem("token");
-  if (!token) return;
+
+  // 🧱 Vérifie si la session est valide
+  if (!token) {
+    alert("⚠️ Votre session a expiré. Veuillez vous reconnecter.");
+    window.location.href = "login.html";
+    return;
+  }
 
   try {
+    // ✅ Appel propre à ton API Render
     const res = await fetch("https://mymir.onrender.com/api/analyses", {
-      headers: { Authorization: `Bearer ${token}` },
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/json",
+      },
     });
 
-    const data = await res.json();
-    const tbody = document.getElementById("historyBody");
+    // 🚨 Si Render renvoie une erreur HTTP
+    if (!res.ok) {
+      console.error("❌ Erreur HTTP :", res.status, res.statusText);
+      throw new Error(`Erreur serveur (${res.status})`);
+    }
 
-    if (!data.success || !data.analyses || data.analyses.length === 0) {
+    // ✅ Parsing sécurisé du JSON
+    const data = await res.json();
+
+    if (!data.success || !Array.isArray(data.analyses)) {
+      console.warn("⚠️ Réponse inattendue :", data);
+      throw new Error("Format de données invalide depuis le serveur");
+    }
+
+    console.log("✅ Historique chargé :", data.analyses);
+
+    // 🎨 Cible le tableau dans ton HTML
+    const tbody = document.getElementById("historyBody");
+    tbody.innerHTML = "";
+
+    if (data.analyses.length === 0) {
       tbody.innerHTML = `<tr><td colspan="4">Aucune analyse enregistrée pour le moment.</td></tr>`;
       return;
     }
 
-    // 🔁 Remplissage du tableau historique
-    tbody.innerHTML = data.analyses
-      .map(
-        (a) => `
-        <tr>
-          <td>${new Date(a.created_at).toLocaleDateString("fr-FR")}</td>
-          <td>${a.title || "Analyse sans titre"}</td>
-          <td>${a.score ? a.score + "%" : "—"}</td>
-          <td>
-  <span class="status success">✔️ Terminé</span>
-  <button class="download-btn" data-id="${a.id}">🗒 TXT</button>
-  <button class="download-pdf" data-id="${a.id}">📄 PDF</button>
-</td>
-        </tr>`
-      )
-      .join("");
+    // 🧩 Génération dynamique des lignes
+    data.analyses.forEach((a) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${new Date(a.created_at).toLocaleDateString("fr-FR")}</td>
+        <td>${a.title || "Analyse sans titre"}</td>
+        <td>${a.score ? a.score + "%" : "—"}</td>
+        <td>
+          <span class="status success">✔️ Terminé</span>
+          <button class="download-btn" data-id="${a.id}">🗒 TXT</button>
+          <button class="download-pdf" data-id="${a.id}">📄 PDF</button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
   } catch (err) {
     console.error("❌ Erreur chargement historique :", err);
-    document.getElementById("historyBody").innerHTML =
-      `<tr><td colspan="4">⚠️ Impossible de charger l’historique.</td></tr>`;
+    const tbody = document.getElementById("historyBody");
+    tbody.innerHTML = `<tr><td colspan="4">⚠️ Impossible de charger l’historique.</td></tr>`;
   }
 }
 // ================================
