@@ -463,19 +463,23 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     res.send(Buffer.from(pdfBytes));
 
   } catch (err) {
-    console.error("❌ Erreur génération PDF complète :", err);
+  console.error("❌ Erreur génération PDF complète :", err);
 
-    // 🔥 Forcer une sortie explicite dans les logs Render
-    process.stdout.write(`\n===== ERREUR PDF DETECTÉE =====\n`);
-    process.stdout.write(`Message : ${err.message}\n`);
-    process.stdout.write(`Stack : ${err.stack || "Aucune stack détectée"}\n`);
-    process.stdout.write(`===============================\n`);
+  // 🔥 LOGS DÉTAILLÉS POUR DEBUG SUR RENDER
+  process.stdout.write(`\n===== ERREUR PDF DÉTECTÉE =====\n`);
+  process.stdout.write(`🕒 Timestamp : ${new Date().toISOString()}\n`);
+  process.stdout.write(`🧾 Type : ${err.name || "Erreur inconnue"}\n`);
+  process.stdout.write(`💬 Message : ${err.message || "Aucun message"}\n`);
+  process.stdout.write(`📄 Stack : ${err.stack || "Aucune stack"}\n`);
+  process.stdout.write(`===============================\n`);
 
-    res.status(500).json({
-      success: false,
-      message: `Erreur lors de la génération du PDF : ${err.message || "Erreur inconnue"}`,
-    });
-  }
+  // Réponse client
+  res.status(500).json({
+    success: false,
+    message: `Erreur lors de la génération du PDF.`,
+    details: err.message,
+  });
+}
 });
 
 
