@@ -257,13 +257,13 @@ app.post("/api/save-analysis", async (req, res) => {
   }
 });
 // ===================================================
-// 📄 Téléchargement du rapport PDF (corrigé + fontkit intégré)
+// 📄 Téléchargement du rapport PDF — Version PRO MyMír
 // ===================================================
-
 app.get("/api/analysis/:id/pdf", async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(401).json({ success: false, message: "Token manquant" });
+    if (!token)
+      return res.status(401).json({ success: false, message: "Token manquant" });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
     const userId = decoded.id;
@@ -273,7 +273,6 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
       "SELECT * FROM analyses WHERE id = $1 AND user_id = $2",
       [analysisId, userId]
     );
-
     if (rows.length === 0)
       return res.status(404).json({ success: false, message: "Analyse introuvable" });
 
@@ -283,53 +282,63 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     const summary = analysis.summary || "Aucun résumé fourni.";
     const content = analysis.analysis || "Aucune analyse disponible.";
 
-    // ✅ Chemin vers la police
     const fontPath = path.join(__dirname, "public", "fonts", "NotoSans-Regular.ttf");
-    if (!fs.existsSync(fontPath)) {
-      console.error("❌ Police introuvable :", fontPath);
-      return res.status(500).json({ success: false, message: "Police PDF manquante." });
-    }
-
     const fontBytes = fs.readFileSync(fontPath);
 
-    // ✅ Création du PDF et enregistrement du moteur de police
     const pdfDoc = await PDFDocument.create();
-    pdfDoc.registerFontkit(fontkit); // ⬅️ CRITIQUE : Active la gestion des polices personnalisées
-    const customFont = await pdfDoc.embedFont(fontBytes);
+    pdfDoc.registerFontkit(fontkit);
+    const font = await pdfDoc.embedFont(fontBytes);
 
-    const createPage = () => {
+    const addPage = () => {
       const page = pdfDoc.addPage([595, 842]);
       const { width, height } = page.getSize();
-      return { page, width, height, y: height - 80 };
+      return { page, width, height, y: height - 70 };
     };
 
-    let { page, width, height, y } = createPage();
+    let { page, width, height, y } = addPage();
     const margin = 50;
-    const lineHeight = 16;
+    const lineHeight = 15;
 
-    // === En-tête
-    page.drawText("Rapport d’analyse — MyMír", {
+    // === En-tête colorée
+    page.drawRectangle({
+      x: 0,
+      y: height - 60,
+      width,
+      height: 60,
+      color: rgb(0.35, 0.25, 0.55), // violet MyMír
+    });
+    page.drawText("MyMír — IA d’analyse des appels d’offres", {
+      x: margin,
+      y: height - 40,
+      size: 16,
+      font,
+      color: rgb(1, 1, 1),
+    });
+
+    // === Titre principal
+    y -= 90;
+    page.drawText("Rapport d’analyse", {
       x: margin,
       y,
-      size: 18,
-      font: customFont,
-      color: rgb(0.2, 0.2, 0.2),
+      size: 20,
+      font,
+      color: rgb(0.15, 0.15, 0.2),
     });
-    y -= 30;
+    y -= 20;
 
-    // === Métadonnées
-    const metaLines = [
+    // === Bloc de métadonnées
+    const info = [
       `Titre : ${title}`,
       `Score : ${score}`,
       `Date : ${new Date(analysis.created_at).toLocaleString("fr-FR")}`,
       `Résumé : ${summary}`,
     ];
-    metaLines.forEach((line) => {
-      page.drawText(line, { x: margin, y, size: 12, font: customFont });
+    info.forEach((line) => {
+      page.drawText(line, { x: margin, y, size: 12, font });
       y -= lineHeight;
     });
 
-    y -= 15;
+    y -= 10;
     page.drawLine({
       start: { x: margin, y },
       end: { x: width - margin, y },
@@ -338,7 +347,7 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     });
     y -= 25;
 
-    // === Corps de texte
+    // === Corps du texte
     const cleanContent = content
       .replace(/\*\*/g, "")
       .replace(/#{1,6}\s*/g, "")
@@ -350,21 +359,47 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     for (const line of lines) {
       const chunks = line.match(/.{1,95}/g) || [" "];
       for (const chunk of chunks) {
-        if (y < 60) ({ page, width, height, y } = createPage());
-        page.drawText(chunk, { x: margin, y, size: 11, font: customFont });
+        if (y < 60) {
+          ({ page, width, height, y } = addPage());
+          y -= 30;
+        }
+        page.drawText(chunk, { x: margin, y, size: 11, font });
         y -= lineHeight;
       }
     }
 
+    // === Pied de page
+    const pages = pdfDoc.getPages();
+    pages.forEach((p, i) => {
+      const { width } = p.getSize();
+      p.drawText(`Page ${i + 1}`, {
+        x: width - 80,
+        y: 25,
+        size: 10,
+        font,
+        color: rgb(0.5, 0.5, 0.5),
+      });
+      p.drawText("MyMír — www.mymir.com", {
+        x: 50,
+        y: 25,
+        size: 10,
+        font,
+        color: rgb(0.5, 0.5, 0.5),
+      });
+    });
+
     const pdfBytes = await pdfDoc.save();
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename="analyse-${analysis.id}.pdf"`);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="analyse-${analysis.id}.pdf"`
+    );
     res.send(Buffer.from(pdfBytes));
   } catch (err) {
-    console.error("❌ Erreur génération PDF :", err);
+    console.error("❌ Erreur génération PDF PRO :", err);
     res.status(500).json({
       success: false,
-      message: `Erreur lors de la génération du PDF : ${err.message}`,
+      message: `Erreur PDF : ${err.message}`,
     });
   }
 });
