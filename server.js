@@ -257,7 +257,7 @@ app.post("/api/save-analysis", async (req, res) => {
   }
 });
 // ===================================================
-// 📄 Téléchargement du rapport PDF — Version stable + stylisée MyMír
+// 📄 Téléchargement du rapport PDF — Version premium stylisée MyMír
 // ===================================================
 app.get("/api/analysis/:id/pdf", async (req, res) => {
   try {
@@ -269,6 +269,7 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     const userId = decoded.id;
     const analysisId = req.params.id;
 
+    // 🧩 Récupération de l’analyse
     const { rows } = await pool.query(
       "SELECT * FROM analyses WHERE id = $1 AND user_id = $2",
       [analysisId, userId]
@@ -283,7 +284,7 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     const summary = analysis.summary || "Aucun résumé fourni.";
     const content = analysis.analysis || "Aucune analyse disponible.";
 
-    // ✅ Police
+    // 🔤 Police MyMír
     const fontPath = path.join(__dirname, "public", "fonts", "NotoSans-Regular.ttf");
     if (!fs.existsSync(fontPath)) {
       console.error("❌ Police introuvable :", fontPath);
@@ -304,25 +305,27 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     let { page, width, height, y } = createPage();
     const margin = 50;
     const lineHeight = 16;
+    const gold = rgb(0.96, 0.72, 0.25);
+    const dark = rgb(0.1, 0.1, 0.1);
 
-    // === En-tête stylisée
+    // === 🏷️ En-tête principale
     page.drawText("MyMír — Rapport d’analyse", {
       x: margin,
       y,
       size: 18,
       font,
-      color: rgb(0.1, 0.1, 0.1),
+      color: dark,
     });
     y -= 15;
     page.drawLine({
       start: { x: margin, y },
       end: { x: width - margin, y },
       thickness: 2,
-      color: rgb(0.96, 0.72, 0.25), // doré MyMír
+      color: gold,
     });
     y -= 25;
 
-    // === Métadonnées propres
+    // === 🧾 Métadonnées
     const metaLines = [
       `Titre : ${title}`,
       `Score : ${score}`,
@@ -330,44 +333,81 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
       `Résumé : ${summary}`,
     ];
     metaLines.forEach((line) => {
-      page.drawText(line, {
-        x: margin,
-        y,
-        size: 12,
-        font,
-        color: rgb(0.2, 0.2, 0.2),
-      });
+      page.drawText(line, { x: margin, y, size: 12, font, color: rgb(0.2, 0.2, 0.2) });
       y -= lineHeight;
     });
 
-    y -= 10;
-    page.drawLine({
-      start: { x: margin, y },
-      end: { x: width - margin, y },
-      thickness: 0.8,
-      color: rgb(0.8, 0.8, 0.8),
-    });
-    y -= 20;
+    y -= 15;
 
-    // === Corps du texte
-    const cleanContent = content
+    // === 🔹 Nettoyage du contenu
+    let cleanContent = content
+      .replace(/```json|```/g, "")
+      .replace(/\\n/g, "\n")
       .replace(/\*\*/g, "")
       .replace(/#{1,6}\s*/g, "")
       .replace(/\*/g, "• ")
       .replace(/\n{2,}/g, "\n")
       .trim();
 
-    const lines = cleanContent.split("\n");
-    for (const line of lines) {
-      const chunks = line.match(/.{1,95}/g) || [" "];
-      for (const chunk of chunks) {
-        if (y < 60) ({ page, width, height, y } = createPage());
-        page.drawText(chunk, { x: margin, y, size: 11, font, color: rgb(0, 0, 0) });
+    // === 🧩 Tentative de parsing JSON (si le contenu est du JSON brut)
+    let data;
+    try {
+      data = JSON.parse(cleanContent);
+    } catch {
+      data = null;
+    }
+
+    // === 🖋️ Si JSON : format structuré avec titres dorés
+    if (data) {
+      const writeSection = (title, text, isList = false) => {
+        page.drawText(title, { x: margin, y, size: 13, font, color: gold });
         y -= lineHeight;
+        if (!text) text = "—";
+
+        const lines = Array.isArray(text)
+          ? text.map((t) => "• " + t)
+          : typeof text === "object"
+          ? Object.entries(text).map(([k, v]) => `${k} : ${v}`)
+          : text.split("\n");
+
+        lines.forEach((line) => {
+          const chunks = line.match(/.{1,95}/g) || [" "];
+          for (const chunk of chunks) {
+            if (y < 60) ({ page, width, height, y } = createPage());
+            page.drawText(chunk, { x: margin, y, size: 11, font, color: dark });
+            y -= lineHeight;
+          }
+        });
+        y -= 12;
+      };
+
+      writeSection("📂 Identification du marché", [
+        `Type : ${data.type_marche || "—"}`,
+        `Autorité : ${data.autorite || "—"}`,
+        `Date limite : ${data.date_limite || "—"}`,
+        `Contexte : ${data.contexte || "—"}`,
+      ]);
+
+      writeSection("📑 Documents exigés", data.documents_requis);
+      writeSection("📊 Analyse du profil entreprise", data.analyse_profil);
+      writeSection("💡 Recommandations", data.recommandations);
+      writeSection("📅 Plan de dépôt", data.plan_de_depot);
+      writeSection("✅ Checklist finale", data.checklist);
+      writeSection("🔢 Score global", `${data.score || "—"} / 100`);
+    } else {
+      // === Si pas JSON : affiche le texte brut proprement
+      const lines = cleanContent.split("\n");
+      for (const line of lines) {
+        const chunks = line.match(/.{1,95}/g) || [" "];
+        for (const chunk of chunks) {
+          if (y < 60) ({ page, width, height, y } = createPage());
+          page.drawText(chunk, { x: margin, y, size: 11, font, color: dark });
+          y -= lineHeight;
+        }
       }
     }
 
-    // === Pied de page discret
+    // === 📎 Pied de page
     const pages = pdfDoc.getPages();
     pages.forEach((p, i) => {
       const { width } = p.getSize();
@@ -393,7 +433,7 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
       });
     });
 
-    // === Envoi du PDF
+    // === 📤 Envoi final du PDF
     const pdfBytes = await pdfDoc.save();
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
