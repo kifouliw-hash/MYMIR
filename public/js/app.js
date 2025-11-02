@@ -376,7 +376,7 @@ document.addEventListener("click", async (e) => {
   }
 });
 // ================================
-// ⬇️ Téléchargement d’un rapport PDF
+// ⬇️ Téléchargement d’un rapport PDF (corrigé)
 // ================================
 document.addEventListener("click", async (e) => {
   if (e.target.classList.contains("download-pdf")) {
@@ -384,23 +384,32 @@ document.addEventListener("click", async (e) => {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch(`https://mymir.on***REMOVED***/api/analysis/${id}/pdf`, {
+      // ✅ Toujours utiliser un chemin relatif pour éviter un CORS interne
+      const res = await fetch(`/api/analysis/${id}/pdf`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!res.ok) throw new Error("Erreur PDF");
+      if (!res.ok) throw new Error(`Erreur PDF (${res.status})`);
 
+      // ✅ Lire la réponse comme un BLOB (binaire)
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
+
+      // ✅ Créer le lien de téléchargement
       const a = document.createElement("a");
       a.href = url;
       a.download = `analyse-${id}.pdf`;
       document.body.appendChild(a);
       a.click();
+
+      // ✅ Nettoyage
       a.remove();
+      window.URL.revokeObjectURL(url);
+
+      console.log("✅ Téléchargement PDF réussi :", a.download);
     } catch (err) {
-      console.error("Erreur téléchargement PDF :", err);
-      alert("⚠️ Impossible de télécharger le PDF.");
+      console.error("❌ Erreur téléchargement PDF :", err);
+      alert("⚠️ Impossible de télécharger le PDF. Vérifie la console pour le détail.");
     }
   }
 });
