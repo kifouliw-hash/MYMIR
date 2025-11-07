@@ -12,13 +12,13 @@
   --font-main: 'Inter', sans-serif;
 }
 /* =============================
-   🌌 FOND PREMIUM MYMÍR (VAGUE FLUIDE)
+   🌊 Fond Premium MyMír — vague lumineuse équilibrée
    ============================= */
 
 body {
-  background: linear-gradient(120deg, #0a0f1c, #16243a, #f5b841);
-  background-size: 200% 200%;
-  animation: bgWave 18s ease-in-out infinite;
+  background: linear-gradient(135deg, #0a0f1c, #16243a, #1e3358);
+  background-size: 300% 300%;
+  animation: bgWave 22s ease-in-out infinite;
   color: var(--text-light);
   font-family: var(--font-main);
   min-height: 100vh;
@@ -26,53 +26,57 @@ body {
   overflow-x: hidden;
 }
 
-/* ✨ Animation fluide horizontale droite → gauche */
+/* ✨ Animation : transition marine → dorée subtile */
 @keyframes bgWave {
   0% {
     background-position: 0% 50%;
-    background: linear-gradient(120deg, #0a0f1c, #16243a, #f5b841);
+    background: linear-gradient(135deg, #0a0f1c, #16243a, #1e3358);
   }
   25% {
     background-position: 50% 50%;
-    background: linear-gradient(120deg, #0b1325, #1b2b48, #f2c556);
+    background: linear-gradient(135deg, #0b1325, #1b2b48, #2a4474);
   }
   50% {
     background-position: 100% 50%;
-    background: linear-gradient(120deg, #101a2b, #20365b, #f8d978);
+    background: linear-gradient(135deg, #101a2b, #223b5e, #f5b84130);
   }
   75% {
     background-position: 50% 50%;
-    background: linear-gradient(120deg, #0b1325, #1b2b48, #f2c556);
+    background: linear-gradient(135deg, #0b1325, #1b2b48, #2a4474);
   }
   100% {
     background-position: 0% 50%;
-    background: linear-gradient(120deg, #0a0f1c, #16243a, #f5b841);
+    background: linear-gradient(135deg, #0a0f1c, #16243a, #1e3358);
   }
 }
-.background-waves {
+
+/* 🌟 Halo doré doux pour simuler la lumière mouvante */
+.background-glow {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
   background: radial-gradient(
-      circle at 30% 50%,
-      rgba(245, 184, 65, 0.1),
+      circle at 70% 40%,
+      rgba(245, 184, 65, 0.12),
       transparent 70%
     ),
     radial-gradient(
-      circle at 80% 40%,
-      rgba(255, 230, 150, 0.08),
+      circle at 20% 70%,
+      rgba(255, 255, 200, 0.08),
       transparent 80%
     );
-  animation: shimmer 22s ease-in-out infinite alternate;
+  animation: glowShift 30s ease-in-out infinite alternate;
   pointer-events: none;
   z-index: -1;
+  filter: blur(25px);
 }
 
-@keyframes shimmer {
-  0% { transform: translateX(0); opacity: 0.6; }
-  50% { transform: translateX(-20px) translateY(-10px); opacity: 0.8; }
-  100% { transform: translateX(0); opacity: 0.6; }
+@keyframes glowShift {
+  0%   { transform: translate(0,0) scale(1); opacity: 0.4; }
+  50%  { transform: translate(-15px, -10px) scale(1.1); opacity: 0.6; }
+  100% { transform: translate(0,0) scale(1); opacity: 0.4; }
 }
+
 
 
 
