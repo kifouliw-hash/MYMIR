@@ -6,145 +6,419 @@
   <title>Tableau de bord — MyMír</title>
   <link rel="stylesheet" href="css/app.css">
   <script defer src="js/app.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
+  <!-- 🌊 Arrière-plan animé amélioré -->
   <div class="background-waves"></div>
+  <div class="background-overlay"></div>
 
+  <!-- ======================= Tableau de bord principal ======================= -->
   <div class="dashboard">
-    <!-- Sidebar -->
+    <!-- ====== Sidebar améliorée ====== -->
     <aside class="sidebar">
-      <div>
-        <div class="logo-section">
+      <!-- Logo + Brand -->
+      <div class="logo-section">
+        <div class="logo-container">
           <img src="assets/logo/logo-mymir.png" alt="Logo MyMír" class="logo" />
-          <h1>MyMír</h1>
+          <div class="logo-glow"></div>
         </div>
-
-        <nav class="nav">
-          <a href="#" class="nav-link active" data-section="home">🏠 Accueil</a>
-          <a href="#" class="nav-link" data-section="analyse">📊 Analyse</a>
-          <a href="#" class="nav-link" data-section="aide">💡 Aide à la réponse</a><!-- 👈 AJOUT -->
-          <a href="#" class="nav-link" data-section="historique">📜 Historique</a>
-          <a href="#" class="nav-link" data-section="profil">👤 Profil</a>
-        </nav>
+        <h1 class="brand-name">MyMír</h1>
+        <div class="brand-tagline">Intelligence Stratégique</div>
       </div>
 
-      <button id="logoutBtn" class="logout-btn">🚪 Déconnexion</button>
+      <!-- Info utilisateur -->
+      <div class="user-info-card">
+        <div class="user-avatar">
+          <span id="userInitials">—</span>
+        </div>
+        <div class="user-details">
+          <p class="user-company" id="companyName">Chargement...</p>
+          <span class="user-status">
+            <span class="status-dot"></span>
+            En ligne
+          </span>
+        </div>
+      </div>
+
+      <!-- Navigation interne -->
+      <nav class="nav-section">
+        <button class="nav-link active" data-section="home">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-text">Accueil</span>
+          <span class="nav-indicator"></span>
+        </button>
+        <button class="nav-link" data-section="analyse">
+          <span class="nav-icon">📊</span>
+          <span class="nav-text">Analyse</span>
+          <span class="nav-indicator"></span>
+        </button>
+        <button class="nav-link" data-section="aide">
+          <span class="nav-icon">💡</span>
+          <span class="nav-text">Aide à la réponse</span>
+          <span class="nav-indicator"></span>
+        </button>
+        <button class="nav-link" data-section="historique">
+          <span class="nav-icon">📜</span>
+          <span class="nav-text">Historique</span>
+          <span class="nav-indicator"></span>
+        </button>
+        <button class="nav-link" data-section="profil">
+          <span class="nav-icon">👤</span>
+          <span class="nav-text">Profil</span>
+          <span class="nav-indicator"></span>
+        </button>
+      </nav>
+
+      <!-- Déconnexion -->
+      <div class="logout-section">
+        <button class="logout-btn" id="logoutBtn">
+          <span class="logout-icon">🚪</span>
+          <span>Déconnexion</span>
+        </button>
+      </div>
     </aside>
 
-    <!-- Main -->
-    <main>
-      <!-- Home -->
+    <!-- ====== Contenu principal amélioré ====== -->
+    <main class="content">
+      <!-- Header avec breadcrumb et actions -->
+      <header class="content-header">
+        <div class="breadcrumb">
+          <span class="breadcrumb-item active" id="currentSection">Accueil</span>
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn notification-btn">
+            <span class="icon">🔔</span>
+            <span class="badge">3</span>
+          </button>
+          <button class="icon-btn help-btn">
+            <span class="icon">❓</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- SECTION ACCUEIL -->
       <section id="home" class="section active">
-        <h2>👋 <span id="welcomeMessage">Bienvenue sur MyMír</span></h2>
-        <p>Commencez dès maintenant à analyser vos appels d’offres et à optimiser vos réponses.</p>
-        <button id="launchAnalyseBtn">🚀 Lancer une analyse</button>
+        <div class="welcome-container">
+          <div class="welcome-card glass-card">
+            <div class="welcome-header">
+              <h1 id="welcomeMessage" class="welcome-title">
+                Bienvenue <span class="highlight">👋</span>
+              </h1>
+              <p id="welcomeSubtext" class="welcome-subtitle">
+                Heureux de vous revoir sur MyMír. Prêt à optimiser vos appels d'offres ?
+              </p>
+            </div>
+            
+            <!-- Stats rapides -->
+            <div class="quick-stats">
+              <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                  <div class="stat-value" id="totalAnalyses">0</div>
+                  <div class="stat-label">Analyses réalisées</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-content">
+                  <div class="stat-value" id="avgScore">—</div>
+                  <div class="stat-label">Score moyen</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-content">
+                  <div class="stat-value" id="successRate">—</div>
+                  <div class="stat-label">Taux de succès</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="quick-actions">
+              <button id="launchAnalyseBtn" class="primary-action-btn">
+                <span class="btn-icon">🚀</span>
+                <span class="btn-content">
+                  <span class="btn-title">Lancer une analyse</span>
+                  <span class="btn-subtitle">Analysez un nouveau DCE</span>
+                </span>
+              </button>
+              <button class="secondary-action-btn">
+                <span class="btn-icon">📂</span>
+                <span class="btn-text">Voir l'historique</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Activité récente -->
+          <div class="recent-activity glass-card">
+            <h3 class="section-title">
+              <span class="title-icon">⚡</span>
+              Activité récente
+            </h3>
+            <div class="activity-list" id="activityList">
+              <div class="activity-item">
+                <div class="activity-icon">📄</div>
+                <div class="activity-content">
+                  <p class="activity-text">Aucune activité récente</p>
+                  <span class="activity-time">Commencez une analyse</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
-      <!-- Analyse -->
+      <!-- SECTION ANALYSE -->
       <section id="analyse" class="section">
-        <h2>📈 Analyse de vos opportunités</h2>
-        <p>Importez un DCE ou un document d’appel d’offres — MyMír détecte les critères essentiels et vous guide dans votre réponse.</p>
-
-        <div id="uploadArea">
-          <p>Glissez votre dossier DCE ici ou <span style="color: var(--gold-light); font-weight:600;">cliquez</span> pour le sélectionner.</p>
-          <input type="file" id="fileInput" hidden />
-          <button>Choisir un fichier</button>
+        <div class="section-header">
+          <h2 class="section-title">
+            <span class="title-icon">📊</span>
+            Analyse de vos opportunités
+          </h2>
+          <p class="section-description">
+            Importez un DCE ou document d'appel d'offres — MyMír détecte les critères essentiels et vous guide dans votre réponse.
+          </p>
         </div>
 
-        <div id="loading" class="hidden">⏳ Analyse en cours...</div>
-        <div id="resultArea" class="hidden"></div>
+        <!-- Zone d'upload améliorée -->
+        <div class="upload-container">
+          <div class="upload-area glass-card" id="uploadArea">
+            <div class="upload-icon">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L12 14M12 2L8 6M12 2L16 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M3 15V18C3 19.6569 4.34315 21 6 21H18C19.6569 21 21 19.6569 21 18V15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3 class="upload-title">Glissez votre document ici</h3>
+            <p class="upload-subtitle">ou cliquez pour sélectionner un fichier</p>
+            <p class="upload-formats">Formats acceptés : PDF, DOC, DOCX</p>
+            <input type="file" id="fileInput" accept=".pdf,.doc,.docx" hidden>
+            <button class="upload-btn">
+              <span>📁</span>
+              Choisir un fichier
+            </button>
+          </div>
+        </div>
+
+        <!-- Animation de chargement améliorée -->
+        <div class="loading-container hidden" id="loading">
+          <div class="loading-spinner">
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+          </div>
+          <p class="loading-text">Analyse du dossier en cours...</p>
+          <div class="loading-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <span class="progress-text" id="progressText">0%</span>
+          </div>
+        </div>
+
+        <!-- Zone de résultat améliorée -->
+        <div class="result-container hidden" id="resultArea"></div>
       </section>
 
-      <!-- Aide à la réponse -->
+      <!-- SECTION AIDE -->
       <section id="aide" class="section">
-        <h2>💡 Aide à la réponse</h2>
-        <p>Optimisez vos documents de réponse grâce à nos recommandations expertes.</p>
-        <hr class="section-divider">
-
-        <div class="helper-card">
-          <h3>📝 Lettre de candidature</h3>
-          <p>Modèle de lettre professionnelle et personnalisable selon votre entreprise.</p>
-          <button id="btnLettre" class="analysis-btn">Générer un modèle</button>
+        <div class="section-header">
+          <h2 class="section-title">
+            <span class="title-icon">💡</span>
+            Aide à la réponse
+          </h2>
+          <p class="section-description">
+            Optimisez vos documents de réponse grâce à nos recommandations expertes.
+          </p>
         </div>
 
-        <div class="helper-card">
-          <h3>📋 Description des moyens</h3>
-          <p>Rédigez automatiquement la partie sur vos moyens humains et matériels.</p>
-          <button id="btnDescriptif" class="analysis-btn">Créer un descriptif</button>
-        </div>
+        <div class="help-grid">
+          <div class="help-card glass-card">
+            <div class="help-card-icon">📝</div>
+            <h3 class="help-card-title">Lettre de candidature</h3>
+            <p class="help-card-description">
+              Modèle de lettre professionnelle et personnalisable selon votre entreprise.
+            </p>
+            <button class="help-card-btn">
+              <span>Générer un modèle</span>
+              <span class="btn-arrow">→</span>
+            </button>
+          </div>
 
-        <div class="helper-card">
-          <h3>✅ Check-list finale</h3>
-          <p>Vérifiez que votre dossier est complet avant le dépôt.</p>
-          <button id="btnChecklist" class="analysis-btn">Voir la check-list</button>
+          <div class="help-card glass-card">
+            <div class="help-card-icon">🏗️</div>
+            <h3 class="help-card-title">Description des moyens</h3>
+            <p class="help-card-description">
+              Rédigez automatiquement la partie sur vos moyens humains et matériels.
+            </p>
+            <button class="help-card-btn">
+              <span>Créer un descriptif</span>
+              <span class="btn-arrow">→</span>
+            </button>
+          </div>
+
+          <div class="help-card glass-card">
+            <div class="help-card-icon">✅</div>
+            <h3 class="help-card-title">Check-list finale</h3>
+            <p class="help-card-description">
+              Vérifiez que votre dossier est complet avant le dépôt.
+            </p>
+            <button class="help-card-btn">
+              <span>Voir la check-list</span>
+              <span class="btn-arrow">→</span>
+            </button>
+          </div>
         </div>
       </section>
 
-      <!-- Historique -->
+      <!-- SECTION HISTORIQUE -->
       <section id="historique" class="section">
-        <h2>📜 Historique des analyses</h2>
-        <table class="history-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Titre</th>
-              <th>Score</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="historyBody">
-            <tr><td colspan="4">Chargement en cours...</td></tr>
-          </tbody>
-        </table>
-      </section>
-
-      <!-- Profil -->
-      <section id="profil" class="section">
-        <h2>👤 Profil de l’entreprise</h2>
-        <button id="editProfileBtn" class="edit-btn">✏️ Modifier le profil</button>
-        <button id="saveProfileBtn" class="save-btn hidden">💾 Enregistrer</button>
-
-        <div class="profile-card" id="profileView">
-          <p><strong>Entreprise :</strong> <span id="p_company">—</span></p>
-          <p><strong>Email :</strong> <span id="p_email">—</span></p>
-          <p><strong>Pays :</strong> <span id="p_country">—</span></p>
-          <p><strong>Secteur :</strong> <span id="p_sector">—</span></p>
-          <p><strong>Sous-secteur :</strong> <span id="p_soussecteur">—</span></p>
-          <p><strong>Effectif :</strong> <span id="p_effectif">—</span></p>
-          <p><strong>Chiffre d’affaires :</strong> <span id="p_revenue">—</span></p>
-          <p><strong>Certifications :</strong> <span id="p_certifications">—</span></p>
-          <p><strong>Site web / LinkedIn :</strong> <span id="p_siteweb">—</span></p>
-          <p><strong>Description :</strong> <span id="p_description">—</span></p>
+        <div class="section-header">
+          <h2 class="section-title">
+            <span class="title-icon">📁</span>
+            Historique de vos analyses
+          </h2>
+          <div class="header-actions">
+            <button class="filter-btn">
+              <span>🔍</span>
+              Filtrer
+            </button>
+            <button class="export-btn">
+              <span>📥</span>
+              Exporter
+            </button>
+          </div>
         </div>
 
-        <form id="profileEditForm" class="hidden profile-form">
+        <div class="table-container glass-card">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Nom du marché</th>
+                <th>Score</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody">
+              <tr>
+                <td>10/10/2025</td>
+                <td>Réhabilitation école communale</td>
+                <td>
+                  <div class="score-badge score-good">88%</div>
+                </td>
+                <td>
+                  <span class="status-badge status-success">✔️ Terminé</span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="action-btn" title="Télécharger">📄</button>
+                    <button class="action-btn" title="Voir">👁️</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SECTION PROFIL -->
+      <section id="profil" class="section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span class="title-icon">👤</span>
+            Profil de l'entreprise
+          </h2>
+          <div class="profile-actions">
+            <button id="editProfileBtn" class="edit-btn">
+              <span>✏️</span>
+              Modifier le profil
+            </button>
+            <button id="saveProfileBtn" class="save-btn hidden">
+              <span>💾</span>
+              Enregistrer
+            </button>
+          </div>
+        </div>
+
+        <!-- Vue profil -->
+        <div class="profile-view glass-card" id="profileView">
+          <div class="profile-grid">
+            <div class="profile-item">
+              <label class="profile-label">Entreprise</label>
+              <p class="profile-value" id="p_company">—</p>
+            </div>
+            <div class="profile-item">
+              <label class="profile-label">Email</label>
+              <p class="profile-value" id="p_email">—</p>
+            </div>
+            <div class="profile-item">
+              <label class="profile-label">Pays</label>
+              <p class="profile-value" id="p_country">—</p>
+            </div>
+            <div class="profile-item">
+              <label class="profile-label">Secteur</label>
+              <p class="profile-value" id="p_sector">—</p>
+            </div>
+            <div class="profile-item">
+              <label class="profile-label">Sous-secteur</label>
+              <p class="profile-value" id="p_soussecteur">—</p>
+            </div>
+            <div class="profile-item">
+              <label class="profile-label">Effectif</label>
+              <p class="profile-value" id="p_effectif">—</p>
+            </div>
+            <div class="profile-item">
+              <label class="profile-label">Chiffre d'affaires</label>
+              <p class="profile-value" id="p_revenue">—</p>
+            </div>
+            <div class="profile-item">
+              <label class="profile-label">Certifications</label>
+              <p class="profile-value" id="p_certifications">—</p>
+            </div>
+            <div class="profile-item full-width">
+              <label class="profile-label">Site web / LinkedIn</label>
+              <p class="profile-value" id="p_siteweb">—</p>
+            </div>
+            <div class="profile-item full-width">
+              <label class="profile-label">Description</label>
+              <p class="profile-value" id="p_description">—</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulaire édition -->
+        <form id="profileEditForm" class="hidden profile-form glass-card">
           <div class="form-row">
             <div class="form-group">
-              <label>Entreprise :</label>
-              <input type="text" id="f_companyName">
+              <label>Entreprise</label>
+              <input type="text" id="f_companyName" placeholder="Nom de l'entreprise">
             </div>
             <div class="form-group">
-              <label>Pays :</label>
-              <input type="text" id="f_country">
+              <label>Pays</label>
+              <input type="text" id="f_country" placeholder="Pays">
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label>Secteur :</label>
-              <input type="text" id="f_sector">
+              <label>Secteur</label>
+              <input type="text" id="f_sector" placeholder="Secteur d'activité">
             </div>
             <div class="form-group">
-              <label>Sous-secteur (optionnel) :</label>
-              <input type="text" id="f_soussecteur">
+              <label>Sous-secteur (optionnel)</label>
+              <input type="text" id="f_soussecteur" placeholder="Sous-secteur">
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label>Effectif :</label>
+              <label>Effectif</label>
               <select id="f_effectif">
                 <option>1–5</option>
                 <option>6–20</option>
@@ -154,7 +428,7 @@
               </select>
             </div>
             <div class="form-group">
-              <label>Chiffre d’affaires annuel :</label>
+              <label>Chiffre d'affaires annuel</label>
               <select id="f_revenue">
                 <option value="">Sélectionner</option>
                 <option>Moins de 100 000 €</option>
@@ -168,18 +442,18 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label>Certifications :</label>
+              <label>Certifications</label>
               <input type="text" id="f_certifications" placeholder="Ex : ISO 9001, Qualibat">
             </div>
             <div class="form-group">
-              <label>Site web / LinkedIn :</label>
+              <label>Site web / LinkedIn</label>
               <input type="text" id="f_siteweb" placeholder="https://...">
             </div>
           </div>
 
           <div class="form-row full-width">
             <div class="form-group">
-              <label>Description de l’entreprise :</label>
+              <label>Description de l'entreprise</label>
               <textarea id="f_description" rows="3" placeholder="Présentez brièvement votre entreprise..."></textarea>
             </div>
           </div>
