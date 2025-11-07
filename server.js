@@ -478,6 +478,69 @@ app.get("/api/analyses", async (req, res) => {
     });
   }
 });
+// ===================================================
+// 🧩 MISE À JOUR DU PROFIL UTILISATEUR
+// ===================================================
+app.put("/api/update-profile", async (req, res) => {
+  try {
+    // 🔐 Vérifie la présence du token JWT
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ success: false, message: "Token manquant" });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
+    const userId = decoded.id;
+
+    // 📦 Champs reçus du front
+    const {
+      companyName,
+      country,
+      sector,
+      sousSecteur,
+      effectif,
+      revenue,
+      certifications,
+      siteWeb,
+      description,
+    } = req.body;
+
+    // 🧠 Vérifie que l’utilisateur existe
+    const { rows } = await pool.query("SELECT * FROM users WHERE id = $1", [userId]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: "Utilisateur introuvable" });
+    }
+
+    const currentMetadata = rows[0].metadata || {};
+
+    // 🧱 Fusionne l'ancien metadata et les nouveaux champs
+    const newMetadata = {
+      ...currentMetadata,
+      ...(companyName && { companyName }),
+      ...(country && { country }),
+      ...(sector && { sector }),
+      ...(sousSecteur && { sousSecteur }),
+      ...(effectif && { effectif }),
+      ...(revenue && { revenue }),
+      ...(certifications && { certifications }),
+      ...(siteWeb && { siteWeb }),
+      ...(description && { description }),
+    };
+
+    // 💾 Met à jour en base
+    await pool.query("UPDATE users SET metadata = $1 WHERE id = $2", [
+      JSON.stringify(newMetadata),
+      userId,
+    ]);
+
+    console.log(`✅ Profil mis à jour pour l’utilisateur ${rows[0].email}`);
+    res.json({ success: true, message: "Profil mis à jour avec succès ✅" });
+  } catch (error) {
+    console.error("❌ Erreur /api/update-profile :", error);
+    res.status(500).json({ success: false, message: "Erreur serveur lors de la mise à jour du profil." });
+  }
+});
 
 // ===================================================
 // 🌍 ROUTES FRONTEND — pour Render
