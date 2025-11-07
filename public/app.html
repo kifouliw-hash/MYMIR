@@ -6,212 +6,185 @@
   <title>Tableau de bord — MyMír</title>
   <link rel="stylesheet" href="css/app.css">
   <script defer src="js/app.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-  <!-- 🌊 Arrière-plan animé -->
   <div class="background-waves"></div>
 
-  <!-- ======================= Tableau de bord principal ======================= -->
   <div class="dashboard">
-    <!-- ====== Sidebar ====== -->
+    <!-- Sidebar -->
     <aside class="sidebar">
-      <div class="logo-section">
-        <img src="assets/logo/logo-mymir.png" alt="Logo MyMír" class="logo" />
-        <h1>MyMír</h1>
+      <div>
+        <div class="logo-section">
+          <img src="assets/logo/logo-mymir.png" alt="Logo MyMír" class="logo" />
+          <h1>MyMír</h1>
+        </div>
+
+        <nav class="nav">
+          <a href="#" class="nav-link active" data-section="home">🏠 Accueil</a>
+          <a href="#" class="nav-link" data-section="analyse">📊 Analyse</a>
+          <a href="#" class="nav-link" data-section="aide">💡 Aide à la réponse</a><!-- 👈 AJOUT -->
+          <a href="#" class="nav-link" data-section="historique">📜 Historique</a>
+          <a href="#" class="nav-link" data-section="profil">👤 Profil</a>
+        </nav>
       </div>
 
-      <div class="user-info">
-        <p id="companyName">Chargement...</p>
-      </div>
-
-      <!-- Navigation interne (SPA) -->
-      <div class="nav-section">
-        <button class="nav-link active" data-section="home">🏠 Accueil</button>
-        <button class="nav-link" data-section="analyse">📊 Analyse</button>
-        <button class="nav-link" data-section="aide">💡 Aide à la réponse</button>
-        <button class="nav-link" data-section="historique">📜 Historique</button>
-        <button class="nav-link" data-section="profil">👤 Profil</button>
-      </div>
-
-      <div class="logout-section">
-        <button class="logout-btn" id="logoutBtn">🚪 Déconnexion</button>
-      </div>
+      <button id="logoutBtn" class="logout-btn">🚪 Déconnexion</button>
     </aside>
 
-    <!-- ====== Contenu principal ====== -->
-    <main class="content">
-
-      <!-- SECTION ACCUEIL -->
+    <!-- Main -->
+    <main>
+      <!-- Home -->
       <section id="home" class="section active">
-        <div id="welcomeCard" class="welcome-card">
-          <h1 id="welcomeMessage">Bienvenue <span style="color:#facc15;">👋</span></h1>
-          <p id="welcomeSubtext">
-            Heureux de vous revoir sur MyMír, vous êtes prêt à optimiser vos appels d’offres ?
-          </p>
-          <button id="launchAnalyseBtn" class="welcome-btn">Lancer une analyse</button>
-        </div>
+        <h2>👋 <span id="welcomeMessage">Bienvenue sur MyMír</span></h2>
+        <p>Commencez dès maintenant à analyser vos appels d’offres et à optimiser vos réponses.</p>
+        <button id="launchAnalyseBtn">🚀 Lancer une analyse</button>
       </section>
 
-      <!-- SECTION ANALYSE -->
+      <!-- Analyse -->
       <section id="analyse" class="section">
-        <h2>📊 Analyse de vos opportunités</h2>
-        <p style="color:var(--text-dim); margin-bottom:25px;">
-          Importez un DCE ou document d’appel d’offres — MyMír détecte les critères essentiels
-          et vous guide dans votre réponse.
-        </p>
+        <h2>📈 Analyse de vos opportunités</h2>
+        <p>Importez un DCE ou un document d’appel d’offres — MyMír détecte les critères essentiels et vous guide dans votre réponse.</p>
 
-        <!-- Zone d'import -->
-        <div class="upload-area" id="uploadArea">
-          <p>Glissez votre dossier DCE ici ou cliquez pour le sélectionner.</p>
-          <input type="file" id="fileInput" accept=".pdf,.doc,.docx" hidden>
-          <button class="analysis-btn">Choisir un fichier</button>
+        <div id="uploadArea">
+          <p>Glissez votre dossier DCE ici ou <span style="color: var(--gold-light); font-weight:600;">cliquez</span> pour le sélectionner.</p>
+          <input type="file" id="fileInput" hidden />
+          <button>Choisir un fichier</button>
         </div>
 
-        <!-- Animation de chargement -->
-        <div class="loading hidden" id="loading">
-          <div class="spinner"></div>
-          <p>Analyse du dossier en cours...</p>
-        </div>
-
-        <!-- Zone de résultat -->
-        <div class="result-area hidden" id="resultArea"></div>
+        <div id="loading" class="hidden">⏳ Analyse en cours...</div>
+        <div id="resultArea" class="hidden"></div>
       </section>
 
-      <!-- SECTION AIDE -->
+      <!-- Aide à la réponse -->
       <section id="aide" class="section">
         <h2>💡 Aide à la réponse</h2>
         <p>Optimisez vos documents de réponse grâce à nos recommandations expertes.</p>
+        <hr class="section-divider">
 
-        <div class="cards">
-          <div class="help-card">
-            <h3>📝 Lettre de candidature</h3>
-            <p>Modèle de lettre professionnelle et personnalisable selon votre entreprise.</p>
-            <button class="secondary-btn">Générer un modèle</button>
-          </div>
+        <div class="helper-card">
+          <h3>📝 Lettre de candidature</h3>
+          <p>Modèle de lettre professionnelle et personnalisable selon votre entreprise.</p>
+          <button id="btnLettre" class="analysis-btn">Générer un modèle</button>
+        </div>
 
-          <div class="help-card">
-            <h3>🏗️ Description des moyens</h3>
-            <p>Rédigez automatiquement la partie sur vos moyens humains et matériels.</p>
-            <button class="secondary-btn">Créer un descriptif</button>
-          </div>
+        <div class="helper-card">
+          <h3>📋 Description des moyens</h3>
+          <p>Rédigez automatiquement la partie sur vos moyens humains et matériels.</p>
+          <button id="btnDescriptif" class="analysis-btn">Créer un descriptif</button>
+        </div>
 
-          <div class="help-card">
-            <h3>✅ Check-list finale</h3>
-            <p>Vérifiez que votre dossier est complet avant le dépôt.</p>
-            <button class="secondary-btn">Voir la check-list</button>
-          </div>
+        <div class="helper-card">
+          <h3>✅ Check-list finale</h3>
+          <p>Vérifiez que votre dossier est complet avant le dépôt.</p>
+          <button id="btnChecklist" class="analysis-btn">Voir la check-list</button>
         </div>
       </section>
 
-      <!-- SECTION HISTORIQUE -->
+      <!-- Historique -->
       <section id="historique" class="section">
-        <h2>📁 Historique de vos analyses</h2>
+        <h2>📜 Historique des analyses</h2>
         <table class="history-table">
           <thead>
             <tr>
               <th>Date</th>
-              <th>Nom du marché</th>
+              <th>Titre</th>
               <th>Score</th>
-              <th>Statut</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody id="historyBody">
-            <tr><td>10/10/2025</td><td>Réhabilitation école communale</td><td>88%</td><td>Terminé</td></tr>
+            <tr><td colspan="4">Chargement en cours...</td></tr>
           </tbody>
         </table>
       </section>
 
-<!-- SECTION PROFIL -->
-<section id="profil" class="section">
-  <h2>👤 Profil de l’entreprise</h2>
+      <!-- Profil -->
+      <section id="profil" class="section">
+        <h2>👤 Profil de l’entreprise</h2>
+        <button id="editProfileBtn" class="edit-btn">✏️ Modifier le profil</button>
+        <button id="saveProfileBtn" class="save-btn hidden">💾 Enregistrer</button>
 
-  <button id="editProfileBtn" class="edit-btn">✏️ Modifier le profil</button>
-  <button id="saveProfileBtn" class="save-btn hidden">💾 Enregistrer</button>
+        <div class="profile-card" id="profileView">
+          <p><strong>Entreprise :</strong> <span id="p_company">—</span></p>
+          <p><strong>Email :</strong> <span id="p_email">—</span></p>
+          <p><strong>Pays :</strong> <span id="p_country">—</span></p>
+          <p><strong>Secteur :</strong> <span id="p_sector">—</span></p>
+          <p><strong>Sous-secteur :</strong> <span id="p_soussecteur">—</span></p>
+          <p><strong>Effectif :</strong> <span id="p_effectif">—</span></p>
+          <p><strong>Chiffre d’affaires :</strong> <span id="p_revenue">—</span></p>
+          <p><strong>Certifications :</strong> <span id="p_certifications">—</span></p>
+          <p><strong>Site web / LinkedIn :</strong> <span id="p_siteweb">—</span></p>
+          <p><strong>Description :</strong> <span id="p_description">—</span></p>
+        </div>
 
-  <!-- 🧱 Vue profil -->
-  <div class="profile-card" id="profileView">
-    <p><strong>Entreprise :</strong> <span id="p_company">—</span></p>
-    <p><strong>Email :</strong> <span id="p_email">—</span></p>
-    <p><strong>Pays :</strong> <span id="p_country">—</span></p>
-    <p><strong>Secteur :</strong> <span id="p_sector">—</span></p>
-    <p><strong>Sous-secteur :</strong> <span id="p_soussecteur">—</span></p>
-    <p><strong>Effectif :</strong> <span id="p_effectif">—</span></p>
-    <p><strong>Chiffre d’affaires :</strong> <span id="p_revenue">—</span></p>
-    <p><strong>Certifications :</strong> <span id="p_certifications">—</span></p>
-    <p><strong>Site web / LinkedIn :</strong> <span id="p_siteweb">—</span></p>
-    <p><strong>Description :</strong> <span id="p_description">—</span></p>
-  </div>
+        <form id="profileEditForm" class="hidden profile-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Entreprise :</label>
+              <input type="text" id="f_companyName">
+            </div>
+            <div class="form-group">
+              <label>Pays :</label>
+              <input type="text" id="f_country">
+            </div>
+          </div>
 
-  <!-- 🧾 Formulaire édition -->
-<form id="profileEditForm" class="hidden profile-form">
-  <div class="form-row">
-    <div class="form-group">
-      <label>Entreprise :</label>
-      <input type="text" id="f_companyName">
-    </div>
-    <div class="form-group">
-      <label>Pays :</label>
-      <input type="text" id="f_country">
-    </div>
-  </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Secteur :</label>
+              <input type="text" id="f_sector">
+            </div>
+            <div class="form-group">
+              <label>Sous-secteur (optionnel) :</label>
+              <input type="text" id="f_soussecteur">
+            </div>
+          </div>
 
-  <div class="form-row">
-    <div class="form-group">
-      <label>Secteur :</label>
-      <input type="text" id="f_sector">
-    </div>
-    <div class="form-group">
-      <label>Sous-secteur (optionnel) :</label>
-      <input type="text" id="f_soussecteur">
-    </div>
-  </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Effectif :</label>
+              <select id="f_effectif">
+                <option>1–5</option>
+                <option>6–20</option>
+                <option>21–50</option>
+                <option>51–100</option>
+                <option>+100</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Chiffre d’affaires annuel :</label>
+              <select id="f_revenue">
+                <option value="">Sélectionner</option>
+                <option>Moins de 100 000 €</option>
+                <option>100 000 € – 500 000 €</option>
+                <option>500 000 € – 2 000 000 €</option>
+                <option>2 000 000 € – 10 000 000 €</option>
+                <option>Plus de 10 000 000 €</option>
+              </select>
+            </div>
+          </div>
 
-  <div class="form-row">
-    <div class="form-group">
-      <label>Effectif :</label>
-      <select id="f_effectif">
-        <option>1–5</option>
-        <option>6–20</option>
-        <option>21–50</option>
-        <option>51–100</option>
-        <option>+100</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Chiffre d’affaires annuel :</label>
-      <select id="f_revenue">
-        <option value="">Sélectionner</option>
-        <option>Moins de 100 000 €</option>
-        <option>100 000 € – 500 000 €</option>
-        <option>500 000 € – 2 000 000 €</option>
-        <option>2 000 000 € – 10 000 000 €</option>
-        <option>Plus de 10 000 000 €</option>
-      </select>
-    </div>
-  </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Certifications :</label>
+              <input type="text" id="f_certifications" placeholder="Ex : ISO 9001, Qualibat">
+            </div>
+            <div class="form-group">
+              <label>Site web / LinkedIn :</label>
+              <input type="text" id="f_siteweb" placeholder="https://...">
+            </div>
+          </div>
 
-  <div class="form-row">
-    <div class="form-group">
-      <label>Certifications :</label>
-      <input type="text" id="f_certifications" placeholder="Ex : ISO 9001, Qualibat">
-    </div>
-    <div class="form-group">
-      <label>Site web / LinkedIn :</label>
-      <input type="text" id="f_siteweb" placeholder="https://...">
-    </div>
-  </div>
-
-  <div class="form-row full-width">
-    <div class="form-group">
-      <label>Description de l’entreprise :</label>
-      <textarea id="f_description" rows="3" placeholder="Présentez brièvement votre entreprise..."></textarea>
-    </div>
-  </div>
-</form>
-</section>
+          <div class="form-row full-width">
+            <div class="form-group">
+              <label>Description de l’entreprise :</label>
+              <textarea id="f_description" rows="3" placeholder="Présentez brièvement votre entreprise..."></textarea>
+            </div>
+          </div>
+        </form>
+      </section>
     </main>
   </div>
 </body>
