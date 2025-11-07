@@ -19,22 +19,41 @@
   box-sizing: border-box;
 }
 
+/* === Fond fluide animé en vagues lumineuses === */
 body {
   font-family: var(--font-main);
   color: var(--text-light);
-  background: linear-gradient(135deg, #0a0f1c, #111827);
-  animation: bgGradient 20s ease-in-out infinite;
+  background: radial-gradient(circle at 20% 20%, #0a0f1c, #111827 40%, #0a0f1c 80%);
+  animation: waveMotion 20s ease-in-out infinite;
+  background-size: 200% 200%;
   min-height: 100vh;
   overflow-x: hidden;
+  transition: background 0.5s ease;
 }
 
-/* === Animations === */
-@keyframes bgGradient {
-  0% { background: linear-gradient(135deg, #0a0f1c, #1a2238); }
-  33% { background: linear-gradient(135deg, #111827, #1f2937); }
-  66% { background: linear-gradient(135deg, #1a2238, #0a0f1c); }
-  100% { background: linear-gradient(135deg, #0a0f1c, #111827); }
+@keyframes waveMotion {
+  0% {
+    background-position: 0% 50%;
+    background: radial-gradient(circle at 20% 20%, #0a0f1c, #111827 40%, #0a0f1c 80%);
+  }
+  25% {
+    background-position: 50% 60%;
+    background: radial-gradient(circle at 80% 30%, #111827, #1f2937 40%, #0a0f1c 90%);
+  }
+  50% {
+    background-position: 100% 50%;
+    background: radial-gradient(circle at 70% 80%, #0a0f1c, #1a2238 40%, #111827 90%);
+  }
+  75% {
+    background-position: 30% 70%;
+    background: radial-gradient(circle at 30% 70%, #111827, #0a0f1c 50%, #1f2937 90%);
+  }
+  100% {
+    background-position: 0% 50%;
+    background: radial-gradient(circle at 20% 20%, #0a0f1c, #111827 40%, #0a0f1c 80%);
+  }
 }
+
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
