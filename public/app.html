@@ -153,15 +153,56 @@
       <input type="text" id="f_companyName">
     </div>
     <div class="form-group">
-      <label>Pays :</label>
-      <input type="text" id="f_country">
-    </div>
+  <label>Pays :</label>
+  <select id="f_country">
+    <option value="">Sélectionner un pays</option>
+    <option>France</option>
+    <option>Belgique</option>
+    <option>Luxembourg</option>
+    <option>Suisse</option>
+    <option>Canada</option>
+    <option>Côte d’Ivoire</option>
+    <option>Sénégal</option>
+    <option>Maroc</option>
+    <option>Algérie</option>
+    <option>Tunisie</option>
+    <option>Mali</option>
+    <option>Burkina Faso</option>
+    <option>Niger</option>
+    <option>Togo</option>
+    <option>Bénin</option>
+    <option>Guinée</option>
+    <option>Cameroun</option>
+    <option>Gabon</option>
+    <option>RDC</option>
+    <option>Autre (spécifier manuellement)</option>
+  </select>
+  <input type="text" id="f_country_custom" placeholder="Précisez votre pays..." class="hidden">
+</div>
   </div>
+  <div class="form-group">
+  <label>Secteur :</label>
+  <select id="f_sector">
+    <option value="">Sélectionner un secteur</option>
+    <option>BTP / Travaux publics</option>
+    <option>Informatique / Logiciels</option>
+    <option>Conseil / Ingénierie</option>
+    <option>Commerce / Distribution</option>
+    <option>Transport / Logistique</option>
+    <option>Énergie / Environnement</option>
+    <option>Communication / Marketing</option>
+    <option>Formation / Éducation</option>
+    <option>Santé / Biotech</option>
+    <option>Finance / Assurance</option>
+    <option>Agroalimentaire</option>
+    <option>Immobilier</option>
+    <option>Tourisme / Hôtellerie</option>
+    <option>Industrie / Fabrication</option>
+    <option>Autre (spécifier manuellement)</option>
+  </select>
+  <input type="text" id="f_sector_custom" placeholder="Précisez votre secteur..." class="hidden">
+</div>
 
-  <div class="form-row">
-    <div class="form-group">
-      <label>Secteur :</label>
-      <input type="text" id="f_sector">
     </div>
     <div class="form-group">
       <label>Sous-secteur (optionnel) :</label>

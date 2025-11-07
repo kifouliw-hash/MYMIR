@@ -286,33 +286,41 @@ if (editBtn && saveBtn && viewCard && form) {
   });
 
   saveBtn.addEventListener("click", async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("Session expirée, veuillez vous reconnecter.");
-      return;
-    }
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("Session expirée, veuillez vous reconnecter.");
+    return;
+  }
 
-    const body = {
-      companyName: form.f_companyName.value,
-      country: form.f_country.value,
-      sector: form.f_sector.value,
-      sousSecteur: form.f_soussecteur.value,
-      effectif: form.f_effectif.value,
-      revenue: form.f_revenue.value,
-      certifications: form.f_certifications.value,
-      siteWeb: form.f_siteweb.value,
-      description: form.f_description.value,
-    };
+  // ✅ Nettoyage des champs avant envoi
+  const body = {
+  companyName: form.f_companyName.value.trim(),
+  country: form.f_country_custom?.value.trim() || form.f_country.value.trim(),
+  sector: form.f_sector_custom?.value.trim() || form.f_sector.value.trim(),
+  sousSecteur: form.f_soussecteur.value.trim(),
+  effectif: form.f_effectif.value.trim(),
+  revenue: form.f_revenue.value.trim(),
+  certifications: form.f_certifications.value.trim(),
+  siteWeb: form.f_siteweb.value.trim(),
+  description: form.f_description.value.trim(),
+};
 
-    try {
-      const res = await fetch("https://mymir.onrender.com/api/update-profile", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
-      });
+
+  // ✅ Suppression des champs vides
+  Object.keys(body).forEach(key => {
+    if (!body[key]) delete body[key];
+  });
+
+  try {
+    const res = await fetch("https://mymir.onrender.com/api/update-profile", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
+
 
       const result = await res.json();
       if (result.success) {
@@ -484,6 +492,34 @@ document.addEventListener("click", async (e) => {
     }
   }
 });
+// 🧩 Afficher champ personnalisé pour secteur
+const sectorSelect = document.getElementById("f_sector");
+const sectorCustom = document.getElementById("f_sector_custom");
+if (sectorSelect && sectorCustom) {
+  sectorSelect.addEventListener("change", () => {
+    if (sectorSelect.value === "Autre (spécifier manuellement)") {
+      sectorCustom.classList.remove("hidden");
+    } else {
+      sectorCustom.classList.add("hidden");
+      sectorCustom.value = "";
+    }
+  });
+}
+// 🌍 Afficher champ personnalisé pour pays
+const countrySelect = document.getElementById("f_country");
+const countryCustom = document.getElementById("f_country_custom");
+if (countrySelect && countryCustom) {
+  countrySelect.addEventListener("change", () => {
+    if (countrySelect.value === "Autre (spécifier manuellement)") {
+      countryCustom.classList.remove("hidden");
+    } else {
+      countryCustom.classList.add("hidden");
+      countryCustom.value = "";
+    }
+  });
+}
+
+
 
 // 🔁 Charger automatiquement l’historique au démarrage
 loadHistory();
