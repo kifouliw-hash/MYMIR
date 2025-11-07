@@ -334,37 +334,121 @@ h2 {
    ============================= */
 
 .profile-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 25px;
-  margin-top: 15px;
-  color: var(--text-light);
-  font-size: 15px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
 }
 
 .profile-card p {
-  margin-bottom: 8px;
-  line-height: 1.5;
+  color: var(--text-light);
+  font-size: 15px;
+  margin: 6px 0;
+  line-height: 1.6;
 }
 
-.edit-btn,
-.save-btn {
-  float: right;
-  margin-left: 10px;
-  font-size: 14px;
+.profile-form {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+.profile-form .form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 18px;
+}
+
+.profile-form label {
+  font-weight: 600;
+  color: var(--gold);
+  margin-bottom: 5px;
+}
+
+.profile-form input,
+.profile-form select,
+.profile-form textarea {
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
   border-radius: 8px;
-  padding: 8px 14px;
+  padding: 10px 12px;
+  font-size: 15px;
+  color: var(--text-light);
+  outline: none;
+  transition: background 0.3s;
 }
 
-.save-btn {
-  background: #4ade80;
+.profile-form input::placeholder,
+.profile-form textarea::placeholder {
+  color: #888;
+  opacity: 0.7;
+}
+
+.profile-form input:focus,
+.profile-form select:focus,
+.profile-form textarea:focus {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.profile-form select {
+  color: var(--text-light);
+  cursor: pointer;
+}
+
+.profile-form option {
+  background: #0a0f1c;
+  color: var(--text-light);
+}
+
+.form-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.form-row.full-width {
+  flex-direction: column;
+}
+
+.edit-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  padding: 8px 16px;
+  color: var(--gold);
+  border-radius: 6px;
+  font-weight: 600;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.edit-btn:hover {
+  background: var(--gold);
   color: #000;
 }
 
-.hidden {
-  display: none;
+.save-btn {
+  background: #22c55e;
+  border: none;
+  padding: 8px 16px;
+  color: #fff;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: all 0.3s;
+  cursor: pointer;
 }
+
+.save-btn:hover {
+  background: #16a34a;
+}
+
+.hidden {
+  display: none !important;
+}
+
 
 /* ===== 🎨 STYLE DU FORMULAIRE PROFIL ===== */
 .profile-form {
@@ -458,3 +542,26 @@ h2 {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
 }
+/* 🌊 Animation fluide et profondeur visuelle */
+body {
+  background: radial-gradient(circle at 30% 20%, #0a0f1c, #111827 40%, #0a0f1c 80%);
+  background-size: 200% 200%;
+  animation: waveMotion 25s ease-in-out infinite;
+}
+
+@keyframes waveMotion {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 🎨 Meilleure présentation du profil */
+.profile-form, .profile-card {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 25px 30px;
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 950px;
+  margin: 20px auto;
+}
+
