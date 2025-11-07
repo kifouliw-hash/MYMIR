@@ -528,6 +528,35 @@ if (countrySelect && countryCustom) {
     }
   });
 }
+// 🎨 Affiche "Non renseigné" à la place des tirets vides
+function afficherChampsVides() {
+  const champs = [
+    { id: "p_company", label: "Entreprise" },
+    { id: "p_email", label: "Email" },
+    { id: "p_country", label: "Pays" },
+    { id: "p_sector", label: "Secteur" },
+    { id: "p_soussecteur", label: "Sous-secteur" },
+    { id: "p_effectif", label: "Effectif" },
+    { id: "p_revenue", label: "Chiffre d’affaires" },
+    { id: "p_certifications", label: "Certifications" },
+    { id: "p_siteweb", label: "Site web / LinkedIn" },
+    { id: "p_description", label: "Description" },
+  ];
+
+  champs.forEach(champ => {
+    const el = document.getElementById(champ.id);
+    if (el && (el.textContent.trim() === "—" || el.textContent.trim() === "")) {
+      el.textContent = "Non renseigné";
+      el.classList.add("placeholder-style");
+    } else if (el) {
+      el.classList.remove("placeholder-style");
+    }
+  });
+}
+
+// Appel après chargement du profil
+window.addEventListener("load", afficherChampsVides);
+
 
 
 
