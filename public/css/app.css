@@ -23,7 +23,7 @@ body {
   font-family: var(--font-main);
   color: var(--text-light);
   background: linear-gradient(135deg, #0a0f1c, #111827);
-  animation: bgGradient 18s ease-in-out infinite;
+  animation: bgGradient 20s ease-in-out infinite;
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -51,52 +51,106 @@ body {
   overflow: hidden;
 }
 
+/* === SIDEBAR === */
 .sidebar {
   background: rgba(255, 255, 255, 0.05);
-  width: 260px;
-  padding: 20px;
+  width: 280px;
+  padding: 25px 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   border-right: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(6px);
+  transition: var(--transition);
 }
 
-.sidebar .logo-section {
-  text-align: center;
-  margin-bottom: 30px;
+/* === Logo section === */
+.logo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 35px;
 }
 
-.sidebar .logo {
-  width: 50px;
-  height: 50px;
+.logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #1e293b, #0f172a);
+  box-shadow: 0 0 10px rgba(245, 184, 65, 0.4);
   margin-bottom: 10px;
 }
 
 .sidebar h1 {
-  font-size: 20px;
+  font-size: 22px;
   color: var(--gold);
+  font-weight: 700;
   letter-spacing: 0.5px;
+  text-align: center;
 }
 
-.nav {
+/* === User Info === */
+.user-info {
+  text-align: center;
+  font-weight: 600;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 10px;
+}
+
+/* === Navigation === */
+.nav-section {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 14px;
 }
 
 .nav-link {
+  background: transparent;
+  border: none;
   color: var(--text-dim);
-  text-decoration: none;
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 15px;
   font-weight: 500;
+  border-radius: 10px;
+  cursor: pointer;
   transition: var(--transition);
-  padding: 8px 12px;
-  border-radius: 8px;
 }
 
-.nav-link:hover,
-.nav-link.active {
-  background: rgba(255, 255, 255, 0.1);
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.08);
   color: var(--gold-light);
+}
+
+.nav-link.active {
+  background: var(--gold);
+  color: #000;
+  font-weight: 600;
+  transform: scale(1.03);
+}
+
+/* === Logout button === */
+.logout-section {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.logout-btn {
+  width: 100%;
+  background: var(--gold);
+  color: #000;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  padding: 10px 0;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.logout-btn:hover {
+  background: var(--gold-light);
 }
 
 /* =============================
@@ -105,7 +159,7 @@ body {
 
 main {
   flex: 1;
-  padding: 40px;
+  padding: 45px 60px;
   overflow-y: auto;
   animation: fadeIn 0.6s ease;
 }
@@ -127,7 +181,70 @@ h2 {
   padding-bottom: 8px;
 }
 
-button {
+/* =============================
+   🏠 ACCUEIL
+   ============================= */
+
+.welcome-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 40px;
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.welcome-card h1 {
+  font-size: 28px;
+  margin-bottom: 10px;
+  color: var(--gold-light);
+}
+
+.welcome-card p {
+  color: var(--text-dim);
+  font-size: 16px;
+  margin-bottom: 25px;
+}
+
+.welcome-btn {
+  background: var(--gold);
+  color: #000;
+  padding: 12px 22px;
+  font-weight: 600;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.welcome-btn:hover {
+  background: var(--gold-light);
+}
+
+/* =============================
+   📊 SECTION ANALYSE
+   ============================= */
+
+#uploadArea {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 15px;
+  padding: 70px 30px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+#uploadArea:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+#uploadArea p {
+  color: var(--text-dim);
+}
+
+.analysis-btn {
   background: var(--gold);
   border: none;
   color: #000;
@@ -136,21 +253,72 @@ button {
   padding: 10px 18px;
   cursor: pointer;
   transition: var(--transition);
+  margin-top: 10px;
 }
 
-button:hover {
+.analysis-btn:hover {
   background: var(--gold-light);
 }
 
 /* =============================
-   🧩 SECTION PROFIL
+   💡 SECTION AIDE À LA RÉPONSE
+   ============================= */
+
+.cards {
+  display: flex;
+  gap: 25px;
+  flex-wrap: wrap;
+  margin-top: 25px;
+}
+
+.help-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 25px;
+  flex: 1 1 300px;
+  transition: var(--transition);
+}
+
+.help-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-4px);
+}
+
+.help-card h3 {
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+
+.help-card p {
+  color: var(--text-dim);
+  margin-bottom: 15px;
+}
+
+.secondary-btn {
+  background: var(--gold);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.secondary-btn:hover {
+  background: var(--gold-light);
+}
+
+/* =============================
+   🧾 SECTION PROFIL
    ============================= */
 
 .profile-card {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 20px;
+  padding: 25px;
   margin-top: 15px;
   color: var(--text-light);
   font-size: 15px;
@@ -166,6 +334,8 @@ button:hover {
   float: right;
   margin-left: 10px;
   font-size: 14px;
+  border-radius: 8px;
+  padding: 8px 14px;
 }
 
 .save-btn {
@@ -232,47 +402,6 @@ button:hover {
 }
 
 /* =============================
-   🧾 SECTION ANALYSE
-   ============================= */
-
-#uploadArea {
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px dashed rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  padding: 60px 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-#uploadArea:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-#uploadArea p {
-  color: var(--text-dim);
-}
-
-#loading {
-  text-align: center;
-  color: var(--gold-light);
-}
-
-#resultArea {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 25px;
-  margin-top: 20px;
-}
-
-.analysis-btns {
-  display: flex;
-  justify-content: flex-end;
-  gap: 15px;
-  margin-top: 15px;
-}
-
-/* =============================
    📜 SECTION HISTORIQUE
    ============================= */
 
@@ -293,24 +422,6 @@ button:hover {
   background: rgba(255, 255, 255, 0.08);
   text-align: left;
   color: var(--gold-light);
-}
-
-.download-btn,
-.download-pdf {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--gold-light);
-  border: none;
-  border-radius: 6px;
-  padding: 6px 10px;
-  cursor: pointer;
-  font-size: 13px;
-  transition: var(--transition);
-}
-
-.download-btn:hover,
-.download-pdf:hover {
-  background: var(--gold-light);
-  color: #000;
 }
 
 /* =============================
