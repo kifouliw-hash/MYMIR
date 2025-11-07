@@ -311,28 +311,38 @@ if (editBtn && saveBtn && viewCard && form) {
     if (!body[key]) delete body[key];
   });
 
-  try {
-    const res = await fetch("https://mymir.onrender.com/api/update-profile", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(body),
-    });
+ try {
+  const res = await fetch("https://mymir.onrender.com/api/update-profile", {
+    method: "PUT",
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    // ✅ astuce : Render bloque les champs undefined, donc on stringify proprement
+    body: JSON.stringify({
+      ...body,
+      timestamp: new Date().toISOString() // pour forcer une requête “fraîche”
+    }),
+  });
 
+  // 🔍 Sécurité : lecture brute puis parsing
+  const text = await res.text();
+  let result;
+  try { result = JSON.parse(text); } catch { result = { success: false }; }
 
-      const result = await res.json();
-      if (result.success) {
-        alert("✅ Profil mis à jour avec succès !");
-        setTimeout(() => window.location.reload(), 700);
-      } else {
-        alert("❌ Erreur lors de la mise à jour du profil.");
-      }
-    } catch (error) {
-      console.error("Erreur update profil :", error);
-      alert("Erreur réseau.");
-      }
+  if (res.ok && result.success) {
+    alert("✅ Profil mis à jour avec succès !");
+    setTimeout(() => window.location.reload(), 800);
+  } else {
+    console.error("⚠️ Réponse inattendue :", text);
+    alert("❌ Échec de la mise à jour du profil.");
+  }
+} catch (error) {
+  console.error("🚨 Erreur réseau :", error);
+  alert("Erreur réseau — vérifie ta connexion Render.");
+}
+
     });
   }
 
