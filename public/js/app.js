@@ -123,137 +123,130 @@ safeSet("p_description", user.metadata?.description || "—");
   if (uploadArea && fileInput) {
     uploadArea.addEventListener("click", () => fileInput.click());
 
-    fileInput.addEventListener("change", async () => {
-      const file = fileInput.files[0];
-      if (!file) return;
+fileInput.addEventListener("change", async () => {
+  const file = fileInput.files[0];
+  if (!file) return;
 
-      uploadArea.classList.add("hidden");
-      loading.classList.remove("hidden");
+  uploadArea.classList.add("hidden");
+  loading.classList.remove("hidden");
 
-      const formData = new FormData();
-      formData.append("file", file);
+  const formData = new FormData();
+  formData.append("file", file);
 
-      try {
-        console.log("📤 Envoi du fichier à /analyze :", file.name);
-
-        const response = await fetch("https://mymir.onrender.com/analyze", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
-        });
-
-        const result = await response.json();
-        console.log("📦 Résultat JSON :", result);
-
-loading.classList.add("hidden");
-
-// ===============================
-// 1️⃣ Vérification du succès IA
-// ===============================
-if (!result.success) {
-  uploadArea.classList.remove("hidden");
-  uploadArea.innerHTML = `<p>❌ Erreur : ${result.message}</p>`;
-  return;
-}
-
-// ===============================
-// 2️⃣ Parse du JSON IA
-// ===============================
-let parsed;
-try {
-  parsed = JSON.parse(result.analysis);
-} catch (e) {
-  console.error("❌ JSON IA invalide :", result.analysis);
-  alert("❌ Impossible de lire l’analyse générée.");
-  return;
-}
-
-console.log("📦 JSON PARSÉ :", parsed);
-
-// ===============================
-// 3️⃣ Préparation des données pour la sauvegarde
-// ===============================
-const payload = {
-  title: parsed.titre || "Analyse MyMír",
-  score: parsed.score || 0,
-  summary: parsed.contexte || "",
-  analysis: parsed   // 🔥 On enregistre un vrai JSON, pas une string
-};
-
-const token = localStorage.getItem("token");
-
-// ===============================
-// 4️⃣ Sauvegarde dans PostgreSQL
-// ===============================
-const saveRes = await fetch("https://mymir.onrender.com/api/save-analysis", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "Authorization": "Bearer " + token
-  },
-  body: JSON.stringify(payload)
-});
-
-const saved = await saveRes.json();
-console.log("💾 Résultat sauvegarde :", saved);
-
-if (!saved.success) {
-  alert("❌ Erreur lors de la sauvegarde de l’analyse.");
-  return;
-}
-
-const analysisId = saved.id; // 🔥 essentiel pour PDF
-
-// ===============================
-// 5️⃣ Affichage du résultat IA
-// ===============================
-resultArea.classList.remove("hidden");
-resultArea.innerHTML = `
-  <h3>🧠 Résultat de l’analyse</h3>
-  <div class="analysis-content">${formatAnalysis(parsed)}</div>
-
-  <div class="analysis-btns">
-    <button class="analysis-btn" id="downloadPdf">📥 Télécharger le rapport PDF</button>
-    <button class="analysis-btn" id="newAnalyse">🔁 Nouvelle analyse</button>
-  </div>
-`;
-
-// ===============================
-// 6️⃣ Téléchargement PDF fonctionnel
-// ===============================
-document.getElementById("downloadPdf").addEventListener("click", async () => {
   try {
-    const res = await fetch(`https://mymir.onrender.com/api/analysis/${analysisId}/pdf`, {
-      headers: { Authorization: "Bearer " + token }
+    console.log("📤 Envoi du fichier à /analyze :", file.name);
+
+    const response = await fetch("https://mymir.onrender.com/analyze", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
     });
 
-    if (!res.ok) {
-      alert("⚠️ Impossible de télécharger le rapport PDF.");
+    const result = await response.json();
+    console.log("📦 Résultat JSON brut:", result);
+
+    loading.classList.add("hidden");
+
+    // 🔥 1) Vérification succès
+    if (!result.success) {
+      uploadArea.classList.remove("hidden");
+      uploadArea.innerHTML = `<p>❌ Erreur : ${result.message}</p>`;
       return;
     }
 
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `analyse-${analysisId}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
+    // 🔥 2) Parse du JSON IA
+    let parsed;
+    try {
+      parsed = JSON.parse(result.analysis);
+    } catch (e) {
+      console.error("❌ JSON IA invalide :", result.analysis);
+      alert("❌ Impossible de lire l’analyse générée.");
+      return;
+    }
+
+    console.log("📦 JSON PARSÉ :", parsed);
+
+    // 🔥 3) Payload DB
+    const payload = {
+      title: parsed.titre || file.name.replace(/\.[^/.]+$/, ""),
+      score: parsed.score || 0,
+      summary: parsed.contexte || "",
+      analysis: parsed
+    };
+
+    // 🔥 4) Save DB
+    const saveRes = await fetch("https://mymir.onrender.com/api/save-analysis", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const saved = await saveRes.json();
+    console.log("💾 Résultat sauvegarde :", saved);
+
+    if (!saved.success) {
+      alert("❌ Erreur lors de la sauvegarde de l’analyse.");
+      return;
+    }
+
+    const analysisId = saved.id;
+
+    // 🔥 5) Affichage du résultat
+    resultArea.classList.remove("hidden");
+    resultArea.innerHTML = `
+      <h3>🧠 Résultat de l’analyse</h3>
+      <div class="analysis-content">${formatAnalysis(parsed)}</div>
+
+      <div class="analysis-btns">
+        <button class="analysis-btn" id="downloadPdf">📥 Télécharger le rapport PDF</button>
+        <button class="analysis-btn" id="newAnalyse">🔁 Nouvelle analyse</button>
+      </div>
+    `;
+
+    // 🔥 6) Téléchargement PDF
+    document.getElementById("downloadPdf").addEventListener("click", async () => {
+      try {
+        const res = await fetch(`https://mymir.onrender.com/api/analysis/${analysisId}/pdf`, {
+          headers: { Authorization: "Bearer " + token }
+        });
+
+        if (!res.ok) {
+          alert("⚠️ Impossible de télécharger le rapport PDF.");
+          return;
+        }
+
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `analyse-${analysisId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+
+      } catch (err) {
+        console.error("Erreur téléchargement PDF :", err);
+        alert("⚠️ Échec du téléchargement.");
+      }
+    });
+
+    // 🔁 Nouvelle analyse
+    document.getElementById("newAnalyse").addEventListener("click", () => {
+      window.location.reload();
+    });
 
   } catch (err) {
-    console.error("Erreur téléchargement PDF :", err);
-    alert("⚠️ Échec du téléchargement.");
+    console.error("❌ Erreur réseau :", err);
+    loading.classList.add("hidden");
+    uploadArea.classList.remove("hidden");
+    uploadArea.innerHTML = `<p>⚠️ Erreur de connexion au serveur.</p>`;
   }
 });
 
-// ===============================
-// 7️⃣ Nouvelle analyse
-// ===============================
-document.getElementById("newAnalyse").addEventListener("click", () => {
-  window.location.reload();
-});
 
 
   
