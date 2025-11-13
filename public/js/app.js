@@ -550,17 +550,26 @@ function afficherChampsVides() {
 
   champs.forEach(champ => {
     const el = document.getElementById(champ.id);
+
     if (el && (el.textContent.trim() === "—" || el.textContent.trim() === "")) {
       el.textContent = "Non renseigné";
       el.classList.add("placeholder-style");
     } else if (el) {
       el.classList.remove("placeholder-style");
     }
-    // ================================
-// 🧩 Convertit JSON -> HTML Premium
+  }); // <-- fermeture du forEach
+
+} // <-- fermeture DE LA FONCTION
+
+
+// Appel après chargement du profil
+window.addEventListener("load", afficherChampsVides);
+
+// ================================
+// 🧩 Convertit JSON -> HTML Premium (global, accessible partout)
 // ================================
 function formatAnalysis(rawText) {
-  // Nettoyage du JSON brut
+  // Nettoyage brut
   rawText = rawText
     .replace(/```json|```/g, "")
     .replace(/\n{2,}/g, "\n")
@@ -570,7 +579,6 @@ function formatAnalysis(rawText) {
   try {
     json = JSON.parse(rawText);
   } catch {
-    // pas du JSON = texte brut
     return `<div class='analysis-block'>${rawText}</div>`;
   }
 
@@ -595,13 +603,6 @@ function formatAnalysis(rawText) {
     ${section("🎯 Score", `${json.score || "---"} / 100`)}
   `;
 }
-
-  });
-}
-
-// Appel après chargement du profil
-window.addEventListener("load", afficherChampsVides);
-
 
 
 
