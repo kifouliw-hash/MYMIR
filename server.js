@@ -311,6 +311,36 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     });
   }
 });
+// ===================================================
+// 📜 HISTORIQUE DES ANALYSES (liste par utilisateur)
+// ===================================================
+app.get("/api/analyses", async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token)
+      return res.status(401).json({ success: false, message: "Token manquant" });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
+    const userId = decoded.id;
+
+    const { rows } = await pool.query(
+      "SELECT id, title, score, created_at FROM analyses WHERE user_id = $1 ORDER BY created_at DESC",
+      [userId]
+    );
+
+    res.json({
+      success: true,
+      analyses: rows || [],
+    });
+  } catch (err) {
+    console.error("❌ Erreur /api/analyses :", err);
+    res.status(500).json({
+      success: false,
+      message: "Erreur lors du chargement des analyses.",
+    });
+  }
+});
+
 
 
 // ===================================================
