@@ -159,46 +159,50 @@ if (result.success) {
   `;
 
   // 💾 Sauvegarde automatique dans PostgreSQL
-  const token = localStorage.getItem("token");
-  const title = file.name.replace(/\.[^/.]+$/, ""); // nom du fichier sans extension
-  let savedId = null;
+const token = localStorage.getItem("token");
+const title = file.name.replace(/\.[^/.]+$/, ""); // nom du fichier sans extension
+let savedId = null;
 
-  try {
-    const saveRes = await fetch("https://mymir.onrender.com/api/save-analysis", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        title,
-        score: result.score || null,
-        summary: result.summary || "",
-        analysis: result.analysis,
-      }),
-    });
+try {
+  const saveRes = await fetch("https://mymir.onrender.com/api/save-analysis", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      title,
+      score: result.score || null,
+      summary: result.summary || "",
+      analysis: result.analysis,
+    }),
+  });
 
-    const saveData = await saveRes.json();
+  const saveData = await saveRes.json();
 
-    if (saveData.success) {
-  console.log("💾 Analyse sauvegardée avec succès !");
-  savedId = saveData.id || null;
+  if (saveData.success) {
+    console.log("💾 Analyse sauvegardée avec succès !");
+    savedId = saveData.id;   // 🔥 récupère enfin l'ID renvoyé
 
-  // 🧱 Stocke l'ID dans le localStorage pour le PDF
-  if (savedId) {
-    localStorage.setItem("lastAnalysisId", savedId);
-    console.log("🧾 ID de l'analyse sauvegardée :", savedId);
+    // 🔥 Associe l'ID au bouton "Télécharger PDF"
+    const pdfBtn = document.getElementById("downloadPdf");
+    if (pdfBtn && savedId) {
+      pdfBtn.setAttribute("data-id", savedId);
+      console.log("🧾 ID assigné au bouton PDF :", savedId);
+    }
+
+  } else {
+    console.warn("⚠️ Échec de la sauvegarde :", saveData.message);
   }
-} else {
-  console.warn("⚠️ Échec de la sauvegarde :", saveData.message);
+
+} catch (saveErr) {
+  console.error("❌ Erreur lors de la sauvegarde :", saveErr);
 }
-  } catch (saveErr) {
-    console.error("❌ Erreur lors de la sauvegarde :", saveErr);
-  }
 
-  // 📥 Gestion du téléchargement PDF (version corrigée)
+// 📥 Téléchargement direct du PDF après analyse
 document.getElementById("downloadPdf").addEventListener("click", async () => {
-  const id = localStorage.getItem("lastAnalysisId");
+  const btn = document.getElementById("downloadPdf");
+  const id = btn.getAttribute("data-id"); // 🔥 prend l'ID du bouton
   const token = localStorage.getItem("token");
 
   if (!id) {
@@ -231,6 +235,7 @@ document.getElementById("downloadPdf").addEventListener("click", async () => {
     console.error("Erreur téléchargement PDF :", err);
   }
 });
+
 } else {
   // ⚠️ Gestion des erreurs d’analyse
   uploadArea.classList.remove("hidden");
