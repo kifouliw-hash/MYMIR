@@ -151,7 +151,7 @@ if (result.success) {
   resultArea.classList.remove("hidden");
   resultArea.innerHTML = `
     <h3>🧠 Résultat de l’analyse</h3>
-    <pre style="white-space: pre-wrap;">${result.analysis}</pre>
+    <div class="analysis-content">${formatAnalysis(result.analysis)}</div>
     <div class="analysis-btns">
       <button class="analysis-btn" id="downloadPdf">📥 Télécharger le rapport PDF</button>
       <button class="analysis-btn" id="newAnalyse">🔁 Nouvelle analyse</button>
@@ -551,6 +551,46 @@ function afficherChampsVides() {
     } else if (el) {
       el.classList.remove("placeholder-style");
     }
+    // ================================
+// 🧩 Convertit JSON -> HTML Premium
+// ================================
+function formatAnalysis(rawText) {
+  // Nettoyage du JSON brut
+  rawText = rawText
+    .replace(/```json|```/g, "")
+    .replace(/\n{2,}/g, "\n")
+    .trim();
+
+  let json;
+  try {
+    json = JSON.parse(rawText);
+  } catch {
+    // pas du JSON = texte brut
+    return `<div class='analysis-block'>${rawText}</div>`;
+  }
+
+  const section = (title, content) => `
+    <div class="analysis-section">
+      <h3>${title}</h3>
+      <div class="analysis-text">${content || "—"}</div>
+    </div>
+  `;
+
+  return `
+    ${section("📌 Titre", json.titre)}
+    ${section("🏛️ Autorité", json.autorite)}
+    ${section("📅 Date limite", json.date_limite)}
+    ${section("📂 Type de marché", json.type_marche)}
+    ${section("📝 Contexte", json.contexte)}
+    ${section("📑 Documents requis", (json.documents_requis || []).join("<br>"))}
+    ${section("📊 Analyse du profil", json.analyse_profil)}
+    ${section("💡 Recommandations", (json.recommandations || []).join("<br>"))}
+    ${section("📅 Plan de dépôt", (json.plan_de_depot || []).join("<br>"))}
+    ${section("🧾 Checklist", (json.checklist || []).join("<br>"))}
+    ${section("🎯 Score", `${json.score || "---"} / 100`)}
+  `;
+}
+
   });
 }
 
