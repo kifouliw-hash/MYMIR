@@ -18,6 +18,8 @@ import pkg from "multer";
 import { analyzeTender } from "./backend/ai/analyzeTender.js";
 import cookieParser from "cookie-parser";
 import { PDFDocument, rgb } from "pdf-lib";
+import { generatePdfFromAnalysis } from "./backend/pdf/generatePdf.js";
+
 
 console.log("🚀 Lancement serveur MyMír...");
 console.log("🔑 OpenAI Key:", process.env.***REMOVED*** ? "✅ détectée" : "❌ manquante");
@@ -275,9 +277,10 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
     const userId = decoded.id;
+
     const analysisId = req.params.id;
 
-    // 🧩 Récupération de l’analyse
+    // 🔎 Récupération de l’analyse dans PostgreSQL
     const { rows } = await pool.query(
       "SELECT * FROM analyses WHERE id = $1 AND user_id = $2",
       [analysisId, userId]
@@ -287,176 +290,34 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
       return res.status(404).json({ success: false, message: "Analyse introuvable" });
 
     const analysis = rows[0];
-    const title = analysis.title || "Analyse sans titre";
-    const score = analysis.score !== null ? `${analysis.score}%` : "—";
-    const summary = analysis.summary || "Aucun résumé fourni.";
-    const content = analysis.analysis || "Aucune analyse disponible.";
 
-    // 🔤 Police MyMír
-    const fontPath = path.join(__dirname, "public", "fonts", "NotoSans-Regular.ttf");
-    if (!fs.existsSync(fontPath)) {
-      console.error("❌ Police introuvable :", fontPath);
-      return res.status(500).json({ success: false, message: "Police PDF manquante." });
+    // 🔄 Conversion JSON
+    let analysis_json = {};
+    try {
+      analysis_json = JSON.parse(analysis.analysis);
+    } catch {
+      analysis_json = {};
     }
 
-    const fontBytes = fs.readFileSync(fontPath);
-    const pdfDoc = await PDFDocument.create();
-    pdfDoc.registerFontkit(fontkit);
-    const font = await pdfDoc.embedFont(fontBytes);
-
-    const createPage = () => {
-      const page = pdfDoc.addPage([595, 842]);
-      const { width, height } = page.getSize();
-      return { page, width, height, y: height - 80 };
+    const analysisData = {
+      title: analysis.title,
+      score: analysis.score,
+      summary: analysis.summary,
+      analysis_json
     };
 
-    let { page, width, height, y } = createPage();
-    const margin = 50;
-    const lineHeight = 16;
-    const gold = rgb(0.96, 0.72, 0.25);
-    const dark = rgb(0.1, 0.1, 0.1);
+    // 🧾 Génération PDF
+    generatePdfFromAnalysis(res, analysisData);
 
-    // === 🏷️ En-tête principale
-    page.drawText("MyMír — Rapport d’analyse", {
-      x: margin,
-      y,
-      size: 18,
-      font,
-      color: dark,
-    });
-    y -= 15;
-    page.drawLine({
-      start: { x: margin, y },
-      end: { x: width - margin, y },
-      thickness: 2,
-      color: gold,
-    });
-    y -= 25;
-
-    // === 🧾 Métadonnées
-    const metaLines = [
-      `Titre : ${title}`,
-      `Score : ${score}`,
-      `Date : ${new Date(analysis.created_at).toLocaleString("fr-FR")}`,
-      `Résumé : ${summary}`,
-    ];
-    metaLines.forEach((line) => {
-      page.drawText(line, { x: margin, y, size: 12, font, color: rgb(0.2, 0.2, 0.2) });
-      y -= lineHeight;
-    });
-
-    y -= 15;
-
-    // === 🔹 Nettoyage du contenu
-    let cleanContent = content
-      .replace(/```json|```/g, "")
-      .replace(/\\n/g, "\n")
-      .replace(/\*\*/g, "")
-      .replace(/#{1,6}\s*/g, "")
-      .replace(/\*/g, "• ")
-      .replace(/\n{2,}/g, "\n")
-      .trim();
-
-    // === 🧩 Tentative de parsing JSON (si le contenu est du JSON brut)
-    let data;
-    try {
-      data = JSON.parse(cleanContent);
-    } catch {
-      data = null;
-    }
-
-    // === 🖋️ Si JSON : format structuré avec titres dorés
-    if (data) {
-      const writeSection = (title, text, isList = false) => {
-        page.drawText(title, { x: margin, y, size: 13, font, color: gold });
-        y -= lineHeight;
-        if (!text) text = "—";
-
-        const lines = Array.isArray(text)
-          ? text.map((t) => "• " + t)
-          : typeof text === "object"
-          ? Object.entries(text).map(([k, v]) => `${k} : ${v}`)
-          : text.split("\n");
-
-        lines.forEach((line) => {
-          const chunks = line.match(/.{1,95}/g) || [" "];
-          for (const chunk of chunks) {
-            if (y < 60) ({ page, width, height, y } = createPage());
-            page.drawText(chunk, { x: margin, y, size: 11, font, color: dark });
-            y -= lineHeight;
-          }
-        });
-        y -= 12;
-      };
-
-      writeSection("📂 Identification du marché", [
-        `Type : ${data.type_marche || "—"}`,
-        `Autorité : ${data.autorite || "—"}`,
-        `Date limite : ${data.date_limite || "—"}`,
-        `Contexte : ${data.contexte || "—"}`,
-      ]);
-
-      writeSection("📑 Documents exigés", data.documents_requis);
-      writeSection("📊 Analyse du profil entreprise", data.analyse_profil);
-      writeSection("💡 Recommandations", data.recommandations);
-      writeSection("📅 Plan de dépôt", data.plan_de_depot);
-      writeSection("✅ Checklist finale", data.checklist);
-      writeSection("🔢 Score global", `${data.score || "—"} / 100`);
-    } else {
-      // === Si pas JSON : affiche le texte brut proprement
-      const lines = cleanContent.split("\n");
-      for (const line of lines) {
-        const chunks = line.match(/.{1,95}/g) || [" "];
-        for (const chunk of chunks) {
-          if (y < 60) ({ page, width, height, y } = createPage());
-          page.drawText(chunk, { x: margin, y, size: 11, font, color: dark });
-          y -= lineHeight;
-        }
-      }
-    }
-
-    // === 📎 Pied de page
-    const pages = pdfDoc.getPages();
-    pages.forEach((p, i) => {
-      const { width } = p.getSize();
-      p.drawLine({
-        start: { x: 50, y: 40 },
-        end: { x: width - 50, y: 40 },
-        thickness: 0.5,
-        color: rgb(0.85, 0.85, 0.85),
-      });
-      p.drawText("MyMír — Rapport confidentiel", {
-        x: 60,
-        y: 25,
-        size: 10,
-        font,
-        color: rgb(0.4, 0.4, 0.4),
-      });
-      p.drawText(`Page ${i + 1}`, {
-        x: width - 80,
-        y: 25,
-        size: 10,
-        font,
-        color: rgb(0.4, 0.4, 0.4),
-      });
-    });
-
-    // === 📤 Envoi final du PDF
-    const pdfBytes = await pdfDoc.save();
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="analyse-${analysis.id}.pdf"`
-    );
-    res.send(Buffer.from(pdfBytes));
   } catch (err) {
-    console.error("❌ Erreur génération PDF :", err);
+    console.error("❌ Erreur PDF :", err);
     res.status(500).json({
       success: false,
-      message: `Erreur lors de la génération du PDF : ${err.message}`,
+      message: "Erreur lors de la génération du PDF"
     });
   }
 });
+
 // ===================================================
 // 📜 HISTORIQUE DES ANALYSES (liste par utilisateur)
 // ===================================================
