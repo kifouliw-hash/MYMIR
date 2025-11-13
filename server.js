@@ -310,11 +310,13 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     try { clean = JSON.parse(analysis.analysis); } catch {}
 
     const data = {
-      title: analysis.title,
-      score: analysis.score,
-      summary: analysis.summary,
-      analysis_json: clean
-    };
+  title: analysis.title,
+  score: analysis.score,
+  summary: analysis.summary,
+  analysis_json: clean,
+  profilEntreprise   // <-- ajouté ici !
+};
+
 
     generatePdfFromAnalysis(res, data);
 
