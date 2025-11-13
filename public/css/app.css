@@ -11,73 +11,74 @@
   --transition: all 0.3s ease;
   --font-main: 'Inter', sans-serif;
 }
-/* =============================
-   🌊 Fond Premium MyMír — vague lumineuse équilibrée
-   ============================= */
+/* =========================================================
+   🌌 FOND 3D PREMIUM ANIMÉ — VERSION FINALE MYMÍR
+   ========================================================= */
 
 body {
-  background: linear-gradient(135deg, #0a0f1c, #16243a, #1e3358);
-  background-size: 300% 300%;
-  animation: bgWave 22s ease-in-out infinite;
-  color: var(--text-light);
-  font-family: var(--font-main);
-  min-height: 100vh;
   margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-main);
+  color: var(--text-light);
   overflow-x: hidden;
+  position: relative;
+
+  /* 🌈 Dégradé profond + 3D */
+  background: radial-gradient(circle at 30% 20%, #0a0f1c, #0d1426, #111d34, #16243c);
+  background-size: 200% 200%;
+
+  /* 🎥 Animation fluide */
+  animation: mymir3D 18s ease-in-out infinite alternate;
 }
 
-/* ✨ Animation : transition marine → dorée subtile */
-@keyframes bgWave {
+/* 💠 Animation 3D */
+@keyframes mymir3D {
   0% {
     background-position: 0% 50%;
-    background: linear-gradient(135deg, #0a0f1c, #16243a, #1e3358);
-  }
-  25% {
-    background-position: 50% 50%;
-    background: linear-gradient(135deg, #0b1325, #1b2b48, #2a4474);
+    filter: brightness(1);
   }
   50% {
-    background-position: 100% 50%;
-    background: linear-gradient(135deg, #101a2b, #223b5e, #f5b84130);
-  }
-  75% {
-    background-position: 50% 50%;
-    background: linear-gradient(135deg, #0b1325, #1b2b48, #2a4474);
+    background-position: 100% 60%;
+    filter: brightness(1.1);
   }
   100% {
-    background-position: 0% 50%;
-    background: linear-gradient(135deg, #0a0f1c, #16243a, #1e3358);
+    background-position: 50% 100%;
+    filter: brightness(1);
   }
 }
 
-/* 🌟 Halo doré doux pour simuler la lumière mouvante */
-.background-glow {
+/* ✨ Halo lumineux animé */
+#bg-halo {
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: radial-gradient(
-      circle at 70% 40%,
-      rgba(245, 184, 65, 0.12),
-      transparent 70%
-    ),
-    radial-gradient(
-      circle at 20% 70%,
-      rgba(255, 255, 200, 0.08),
-      transparent 80%
-    );
-  animation: glowShift 30s ease-in-out infinite alternate;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
   z-index: -1;
-  filter: blur(25px);
+  mix-blend-mode: screen;
+
+  background: radial-gradient(circle at 70% 40%, rgba(255, 200, 80, 0.20), transparent 70%),
+              radial-gradient(circle at 20% 80%, rgba(60, 130, 255, 0.15), transparent 75%);
+  filter: blur(40px);
+
+  animation: haloMove 22s ease-in-out infinite alternate;
 }
 
-@keyframes glowShift {
-  0%   { transform: translate(0,0) scale(1); opacity: 0.4; }
-  50%  { transform: translate(-15px, -10px) scale(1.1); opacity: 0.6; }
-  100% { transform: translate(0,0) scale(1); opacity: 0.4; }
+@keyframes haloMove {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translate(-20px, 20px) scale(1.1);
+    opacity: 0.65;
+  }
+  100% {
+    transform: translate(10px, -20px) scale(1);
+    opacity: 0.45;
+  }
 }
-
-
 
 
 /* RESET */
@@ -87,46 +88,6 @@ body {
   box-sizing: border-box;
 }
 
-/* === Fond fluide animé en vagues lumineuses === */
-body {
-  font-family: var(--font-main);
-  color: var(--text-light);
-  background: radial-gradient(circle at 20% 20%, #0a0f1c, #111827 40%, #0a0f1c 80%);
-  animation: waveMotion 20s ease-in-out infinite;
-  background-size: 200% 200%;
-  min-height: 100vh;
-  overflow-x: hidden;
-  transition: background 0.5s ease;
-}
-
-@keyframes waveMotion {
-  0% {
-    background-position: 0% 50%;
-    background: radial-gradient(circle at 20% 20%, #0a0f1c, #111827 40%, #0a0f1c 80%);
-  }
-  25% {
-    background-position: 50% 60%;
-    background: radial-gradient(circle at 80% 30%, #111827, #1f2937 40%, #0a0f1c 90%);
-  }
-  50% {
-    background-position: 100% 50%;
-    background: radial-gradient(circle at 70% 80%, #0a0f1c, #1a2238 40%, #111827 90%);
-  }
-  75% {
-    background-position: 30% 70%;
-    background: radial-gradient(circle at 30% 70%, #111827, #0a0f1c 50%, #1f2937 90%);
-  }
-  100% {
-    background-position: 0% 50%;
-    background: radial-gradient(circle at 20% 20%, #0a0f1c, #111827 40%, #0a0f1c 80%);
-  }
-}
-
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
 
 /* =============================
    🧭 LAYOUT DASHBOARD
@@ -616,55 +577,7 @@ h2 {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
 }
-/* 🌊 Animation fluide et profondeur visuelle */
-body {
-  background: radial-gradient(circle at 30% 20%, #0a0f1c, #111827 40%, #0a0f1c 80%);
-  background-size: 200% 200%;
-  animation: waveMotion 25s ease-in-out infinite;
-}
 
-@keyframes waveMotion {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* 🎨 Meilleure présentation du profil */
-.profile-form, .profile-card {
-  background: rgba(255, 255, 255, 0.05);
-  padding: 25px 30px;
-  border-radius: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  max-width: 950px;
-  margin: 20px auto;
-}
-.profile-card:hover,
-.profile-form:hover {
-  box-shadow: 0 0 35px rgba(245, 184, 65, 0.15);
-  transform: translateY(-2px);
-  transition: all 0.3s ease;
-}
-.analysis-content {
-  background: rgba(255,255,255,0.06);
-  padding: 25px;
-  border-radius: 15px;
-  border: 1px solid rgba(255,255,255,0.15);
-  line-height: 1.6;
-  color: var(--text-light);
-}
-
-.analysis-section {
-  margin-bottom: 20px;
-}
-
-.analysis-section h3 {
-  color: var(--gold);
-  margin-bottom: 8px;
-}
-
-.analysis-text {
-  color: var(--text-dim);
-  font-size: 15px;
 }
 
 
