@@ -243,19 +243,27 @@ app.post("/api/save-analysis", async (req, res) => {
     if (!title || !analysis)
       return res.status(400).json({ success: false, message: "Champs requis manquants." });
 
-    await pool.query(
+    const { rows } = await pool.query(
       `INSERT INTO analyses (user_id, title, score, summary, analysis)
-       VALUES ($1, $2, $3, $4, $5)`,
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id;`,
       [userId, title, score || null, summary || "", analysis]
     );
 
-    console.log(`✅ Nouvelle analyse enregistrée pour l’utilisateur ${userId}`);
-    res.json({ success: true, message: "Analyse sauvegardée avec succès ✅" });
+    console.log(`✅ Nouvelle analyse enregistrée ID ${rows[0].id}`);
+
+    res.json({
+      success: true,
+      id: rows[0].id,  // 🔥 ID renvoyé ici !
+      message: "Analyse sauvegardée avec succès"
+    });
+
   } catch (err) {
     console.error("❌ Erreur sauvegarde analyse :", err);
     res.status(500).json({ success: false, message: "Erreur serveur." });
   }
 });
+
 // ===================================================
 // 📄 Téléchargement du rapport PDF — Version premium stylisée MyMír
 // ===================================================
