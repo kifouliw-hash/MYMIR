@@ -456,15 +456,23 @@ app.put("/api/update-profile", async (req, res) => {
 });
 
 // ===================================================
-// 🌍 ROUTES FRONTEND — pour Render
+// 🌍 ROUTES FRONTEND FIX — Compatible Render
 // ===================================================
-app.get("/*", (req, res) => {
-  const filePath = path.join(__dirname, "public", req.path);
-  if (fs.existsSync(filePath) && fs.lstatSync(filePath).isFile()) {
-    return res.sendFile(filePath);
-  }
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+const publicDir = path.join(__dirname, "public");
+
+// Sert correctement les fichiers statiques (JS, CSS, PNG…)
+app.use(express.static(publicDir, {
+  extensions: ["html"]
+}));
+
+// Route fallback : renvoie index.html pour les pages frontend (SPA)
+app.get("*", (req, res) => {
+  // Ne pas intercepter les API !
+  if (req.path.startsWith("/api")) return res.status(404).json({ error: "Route API inconnue" });
+
+  res.sendFile(path.join(publicDir, "index.html"));
 });
+
 
 // ===================================================
 // 🚀 LANCEMENT DU SERVEUR
