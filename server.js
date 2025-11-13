@@ -219,15 +219,38 @@ const upload = multer({ storage });
 
 app.post("/analyze", upload.single("file"), async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ success: false, message: "Aucun fichier reçu." });
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token)
+      return res.status(401).json({ success: false, message: "Token manquant." });
+
+    // 🔍 Décoder l'utilisateur
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
+    const userId = decoded.id;
+
+    // 🔥 Récupérer le profil entreprise depuis la base
+    const { rows } = await pool.query(
+      "SELECT metadata FROM users WHERE id = $1",
+      [userId]
+    );
+
+    const profilEntreprise = rows[0]?.metadata || {};
+
+    if (!req.file)
+      return res.status(400).json({ success: false, message: "Aucun fichier reçu." });
+
     const filePath = req.file.path;
-    const result = await analyzeTender(filePath);
+
+    // 🔥 Appel IA avec profil utilisateur
+    const result = await analyzeTender(filePath, profilEntreprise);
+
     res.json(result);
+
   } catch (err) {
     console.error("❌ Erreur /analyze :", err);
     res.status(500).json({ success: false, message: "Erreur lors de l'analyse." });
   }
 });
+
 // ===================================================
 // 💾 Sauvegarde d'une analyse IA
 // ===================================================
