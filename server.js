@@ -280,7 +280,6 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
 
     const analysisId = req.params.id;
 
-    // 🔎 Récupération de l’analyse dans PostgreSQL
     const { rows } = await pool.query(
       "SELECT * FROM analyses WHERE id = $1 AND user_id = $2",
       [analysisId, userId]
@@ -291,29 +290,24 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
 
     const analysis = rows[0];
 
-    // 🔄 Conversion JSON
-    let analysis_json = {};
-    try {
-      analysis_json = JSON.parse(analysis.analysis);
-    } catch {
-      analysis_json = {};
-    }
+    // JSON nettoyé
+    let clean = {};
+    try { clean = JSON.parse(analysis.analysis); } catch {}
 
-    const analysisData = {
+    const data = {
       title: analysis.title,
       score: analysis.score,
       summary: analysis.summary,
-      analysis_json
+      analysis_json: clean
     };
 
-    // 🧾 Génération PDF
-    generatePdfFromAnalysis(res, analysisData);
+    generatePdfFromAnalysis(res, data);
 
   } catch (err) {
-    console.error("❌ Erreur PDF :", err);
+    console.error("❌ PDF ERROR :", err);
     res.status(500).json({
       success: false,
-      message: "Erreur lors de la génération du PDF"
+      message: "Erreur génération PDF"
     });
   }
 });
