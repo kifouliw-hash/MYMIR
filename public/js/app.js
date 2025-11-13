@@ -246,6 +246,7 @@ fileInput.addEventListener("change", async () => {
     uploadArea.innerHTML = `<p>⚠️ Erreur de connexion au serveur.</p>`;
   }
 });
+} // <-- AJOUTE CETTE ACCOLADE QUI MANQUAIT !!!
 
   
 // ================================
