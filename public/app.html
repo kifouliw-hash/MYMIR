@@ -13,20 +13,7 @@
  <div id="halo1"></div>
 <div id="halo2"></div>
 <div id="particles"></div>
-<script>
-  // Génération des particules dynamiques
-  const container = document.getElementById("particles");
-  for (let i = 0; i < 45; i++) {
-    const p = document.createElement("div");
-    p.classList.add("particle");
-    p.style.left = Math.random() * 100 + "vw";
-    p.style.bottom = Math.random() * -100 + "vh";
-    p.style.animationDuration = 8 + Math.random() * 12 + "s";
-    p.style.animationDelay = Math.random() * -20 + "s";
-    p.style.opacity = 0.3 + Math.random() * 0.5;
-    container.appendChild(p);
-  }
-</script>
+
 
 
 
@@ -281,5 +268,19 @@
 </section>
     </main>
   </div>
+  <script>
+  // Génération des particules dynamiques
+  const container = document.getElementById("particles");
+  for (let i = 0; i < 45; i++) {
+    const p = document.createElement("div");
+    p.classList.add("particle");
+    p.style.left = Math.random() * 100 + "vw";
+    p.style.bottom = Math.random() * -100 + "vh";
+    p.style.animationDuration = 8 + Math.random() * 12 + "s";
+    p.style.animationDelay = Math.random() * -20 + "s";
+    p.style.opacity = 0.3 + Math.random() * 0.5;
+    container.appendChild(p);
+  }
+</script>
 </body>
 </html>
