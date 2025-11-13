@@ -644,5 +644,27 @@ body {
   transform: translateY(-2px);
   transition: all 0.3s ease;
 }
+.analysis-content {
+  background: rgba(255,255,255,0.06);
+  padding: 25px;
+  border-radius: 15px;
+  border: 1px solid rgba(255,255,255,0.15);
+  line-height: 1.6;
+  color: var(--text-light);
+}
+
+.analysis-section {
+  margin-bottom: 20px;
+}
+
+.analysis-section h3 {
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.analysis-text {
+  color: var(--text-dim);
+  font-size: 15px;
+}
 
 
