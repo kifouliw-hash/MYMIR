@@ -19,6 +19,8 @@ body {
   color: var(--text-light);
   overflow-x: hidden;
   position: relative;
+  z-index: 0;
+
 
   /* 🎨 Gradient profond en multi-couches */
   background: radial-gradient(circle at 20% 20%, #0a0f1c, #0d1426 40%, #111d34 80%);
