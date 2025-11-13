@@ -7,41 +7,31 @@ import pool from "../../db.js";
 
 const openai = new OpenAI({ apiKey: process.env.***REMOVED*** });
 
-// ===============================================
-// 🔍 Extraction du texte depuis un PDF
-// ===============================================
+// --------------------------------------------------
+// 🔍 Extraction du texte PDF
+// --------------------------------------------------
 async function extractTextFromPDF(filePath) {
-  try {
-    const data = new Uint8Array(fs.readFileSync(filePath));
-    const loadingTask = pdfjsLib.getDocument({ data });
-    const pdf = await loadingTask.promise;
+  const data = new Uint8Array(fs.readFileSync(filePath));
+  const loadingTask = pdfjsLib.getDocument({ data });
+  const pdf = await loadingTask.promise;
 
-    let text = "";
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const content = await page.getTextContent();
-      text += content.items.map((item) => item.str).join(" ") + "\n";
-    }
-
-    if (!text.trim()) throw new Error("PDF vide ou non lisible");
-    return text;
-  } catch (err) {
-    console.error("❌ Erreur lecture PDF :", err);
-    throw new Error("Impossible de lire le PDF — format non compatible ou corrompu");
+  let text = "";
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map((item) => item.str).join(" ") + "\n";
   }
+  return text.trim();
 }
 
-// ===============================================
-// 🧠 Analyse IA MyMír (avec PROFIL UTILISATEUR)
-// ===============================================
+// --------------------------------------------------
+// 🧠 ANALYSE COMPLÈTE (avec profil réel utilisateur)
+// --------------------------------------------------
 export async function analyzeTender(filePath, token) {
   try {
-    console.log("📄 Lecture du PDF :", filePath);
     const extractedText = await extractTextFromPDF(filePath);
 
-    // ===============================================
-    // 🔐 Récupération du profil utilisateur
-    // ===============================================
+    // === 1️⃣ Charger le profil réel utilisateur
     let profilEntreprise = {
       companyName: "Non renseigné",
       sector: "Non précisé",
@@ -65,29 +55,23 @@ export async function analyzeTender(filePath, token) {
           profilEntreprise = rows[0].metadata || profilEntreprise;
         }
       } catch (err) {
-        console.warn("⚠️ Impossible de charger le profil utilisateur :", err.message);
+        console.warn("⚠️ Profil non chargé :", err.message);
       }
     }
 
-    console.log("🧩 Profil utilisé pour l'analyse :", profilEntreprise);
+    console.log("🧩 Profil utilisé :", profilEntreprise);
 
-    // ===============================================
-    // PROMPT IA — VERSION CONSULTANT EXPERT + PROFIL
-    // ===============================================
+    // --------------------------------------------------
+    // 🧠 TON PROMPT COMPLET — VERSION CORRIGÉE
+    // --------------------------------------------------
     const prompt = `
-Tu es MyMír, une IA experte en analyse d'appels d'offres.
+Tu es MyMír, un assistant expert en appels d’offres publics et privés.
+Ta mission est d’analyser le document fourni et de produire une synthèse complète, claire et exploitable.
 
-Voici le **profil réel de l’entreprise** qui souhaite candidater :
+Voici le **profil réel de l’entreprise** candidate :
 ${JSON.stringify(profilEntreprise, null, 2)}
 
-Utilise ce profil de manière INTELLIGENTE pour :
-- analyser la compatibilité réelle avec l’appel d’offre
-- expliquer les points forts / points faibles
-- évaluer si l’entreprise a des chances
-- proposer un score réaliste
-- faire des recommandations adaptées au VRAI profil
-
-Analyse selon les sections suivantes :
+Analyse selon les axes suivants :
 
 1️⃣ IDENTIFICATION DU MARCHÉ
 - Type de marché (public, privé, secteur, sous-secteur…)
@@ -104,42 +88,42 @@ Analyse selon les sections suivantes :
 - Certifications demandées (Qualibat, ISO, etc.)
 
 3️⃣ COMPARAISON AVEC LE PROFIL ENTREPRISE
-Profil entreprise :
-${entrepriseProfil}
-
 Analyse la correspondance entre l’appel d’offre et le profil ci-dessus :
-- Points forts de l’entreprise pour ce marché
+- Points forts spécifiques de CETTE entreprise
 - Points faibles ou risques
 - Ressources à mobiliser
 - Compatibilité géographique, technique et financière
+- TON évaluation réaliste et contextualisée
 
 4️⃣ OPPORTUNITÉ ET SCORE
-- Évalue la faisabilité et la pertinence de participer à ce marché.
-- Donne un score de compatibilité sur 100 :
-  - 0–49 : Risque élevé / peu compatible
-  - 50–74 : Faisable avec ajustements
-  - 75–89 : Bonne opportunité
-  - 90–100 : Très forte compatibilité
-Explique brièvement pourquoi tu donnes ce score.
+- Évalue la faisabilité et la pertinence de participer
+- Score de compatibilité sur 100 :
+  - 0–49 = Risque élevé
+  - 50–74 = Faisable avec ajustements
+  - 75–89 = Bonne opportunité
+  - 90–100 = Très forte compatibilité
+- Explique clairement ton score
 
 5️⃣ RECOMMANDATIONS STRATÉGIQUES
-- Conseils pratiques pour renforcer le dossier
-- Actions à entreprendre avant dépôt
+- Conseils pour renforcer le dossier
+- Astuces pour améliorer la pertinence du profil
+- Points à valoriser
 - Erreurs à éviter
-- Pistes pour valoriser les points forts
 
 6️⃣ PLAN DE DÉPÔT ET SUIVI
 - Étapes à suivre jusqu’au dépôt final
-- Portail ou site de dépôt s’il est mentionné
-- Checklist finale (documents à joindre, formats, signatures)
-- Phrase de rappel personnalisée
+- Portail ou site s’il est mentionné
+- Actions administratives
+- Format des documents
+- Points de vérification
 
-7️⃣ Checklist finale  
+7️⃣ CHECKLIST FINALE
+Liste claire et prête à l'emploi
 
 Voici le texte extrait du PDF :
 ${extractedText.slice(0, 15000)}
 
-RENVOIE UNIQUEMENT DU JSON STRUCTURÉ :
+RENVOIE UNIQUEMENT DU JSON VALIDE :
 {
   "titre": "",
   "type_marche": "",
@@ -156,18 +140,20 @@ RENVOIE UNIQUEMENT DU JSON STRUCTURÉ :
 }
 `;
 
+    // --------------------------------------------------
+    // 🔮 Requête IA
+    // --------------------------------------------------
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       temperature: 0.25,
       messages: [
         { role: "system", content: "Tu es MyMír, IA experte en marchés publics." },
-        { role: "user", content: prompt },
+        { role: "user", content: prompt }
       ],
     });
 
-    const analysis = completion.choices?.[0]?.message?.content || "Aucune analyse générée.";
+    const analysis = completion.choices?.[0]?.message?.content || "{}";
 
-    // Supprime le fichier PDF après traitement
     fs.unlinkSync(filePath);
 
     return {
@@ -175,11 +161,9 @@ RENVOIE UNIQUEMENT DU JSON STRUCTURÉ :
       analysis,
       generated_at: new Date().toISOString(),
     };
+
   } catch (err) {
-    console.error("❌ Erreur complète analyzeTender :", err);
-    return {
-      success: false,
-      message: "Erreur pendant l'analyse du document : " + (err.message || "Erreur inconnue."),
-    };
+    console.error("❌ Erreur analyse :", err);
+    return { success: false, message: err.message };
   }
 }
