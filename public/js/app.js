@@ -446,7 +446,8 @@ document.addEventListener("click", async (e) => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `analyse-${id}.txt`;
+      const cleanTitle = (result.title || "analyse").replace(/[^a-zA-Z0-9_-]/g, "_");
+a.download = `${cleanTitle}.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();
