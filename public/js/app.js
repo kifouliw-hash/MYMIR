@@ -247,8 +247,6 @@ fileInput.addEventListener("change", async () => {
   }
 });
 
-
-
   
 // ================================
 // 🧩 Mode édition du profil
