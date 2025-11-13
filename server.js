@@ -219,30 +219,21 @@ const upload = multer({ storage });
 
 app.post("/analyze", upload.single("file"), async (req, res) => {
   try {
+    // 1️⃣ Vérifier la présence du token
     const token = req.headers.authorization?.split(" ")[1];
     if (!token)
       return res.status(401).json({ success: false, message: "Token manquant." });
 
-    // 🔍 Décoder l'utilisateur
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
-    const userId = decoded.id;
-
-    // 🔥 Récupérer le profil entreprise depuis la base
-    const { rows } = await pool.query(
-      "SELECT metadata FROM users WHERE id = $1",
-      [userId]
-    );
-
-    const profilEntreprise = rows[0]?.metadata || {};
-
+    // 2️⃣ Vérifier que le fichier est bien envoyé
     if (!req.file)
       return res.status(400).json({ success: false, message: "Aucun fichier reçu." });
 
     const filePath = req.file.path;
 
-    // 🔥 Appel IA avec profil utilisateur
-    const result = await analyzeTender(filePath, profilEntreprise);
+    // 3️⃣ Appeler l’IA AVEC LE TOKEN (pas le profil)
+    const result = await analyzeTender(filePath, token);
 
+    // 4️⃣ Retourner le résultat
     res.json(result);
 
   } catch (err) {
@@ -250,6 +241,7 @@ app.post("/analyze", upload.single("file"), async (req, res) => {
     res.status(500).json({ success: false, message: "Erreur lors de l'analyse." });
   }
 });
+
 
 // ===================================================
 // 💾 Sauvegarde d'une analyse IA
