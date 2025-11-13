@@ -180,6 +180,8 @@ const payload = {
   analysis: parsed   // 🔥 On enregistre un vrai JSON, pas une string
 };
 
+const token = localStorage.getItem("token");
+
 // ===============================
 // 4️⃣ Sauvegarde dans PostgreSQL
 // ===============================
@@ -200,7 +202,7 @@ if (!saved.success) {
   return;
 }
 
-const analysisId = saved.id; // 🔥 essentiel pour le PDF
+const analysisId = saved.id; // 🔥 essentiel pour PDF
 
 // ===============================
 // 5️⃣ Affichage du résultat IA
@@ -217,13 +219,33 @@ resultArea.innerHTML = `
 `;
 
 // ===============================
-// 6️⃣ Bouton PDF fonctionnel
+// 6️⃣ Téléchargement PDF fonctionnel
 // ===============================
-document.getElementById("downloadPdf").addEventListener("click", () => {
-  window.open(
-    \`https://mymir.onrender.com/api/analysis/${analysisId}/pdf\`,
-    "_blank"
-  );
+document.getElementById("downloadPdf").addEventListener("click", async () => {
+  try {
+    const res = await fetch(`https://mymir.onrender.com/api/analysis/${analysisId}/pdf`, {
+      headers: { Authorization: "Bearer " + token }
+    });
+
+    if (!res.ok) {
+      alert("⚠️ Impossible de télécharger le rapport PDF.");
+      return;
+    }
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `analyse-${analysisId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+
+  } catch (err) {
+    console.error("Erreur téléchargement PDF :", err);
+    alert("⚠️ Échec du téléchargement.");
+  }
 });
 
 // ===============================
@@ -232,6 +254,7 @@ document.getElementById("downloadPdf").addEventListener("click", () => {
 document.getElementById("newAnalyse").addEventListener("click", () => {
   window.location.reload();
 });
+
 
   
 // ================================
