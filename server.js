@@ -219,28 +219,26 @@ const upload = multer({ storage });
 
 app.post("/analyze", upload.single("file"), async (req, res) => {
   try {
-    // 1️⃣ Vérifier la présence du token
     const token = req.headers.authorization?.split(" ")[1];
     if (!token)
       return res.status(401).json({ success: false, message: "Token manquant." });
 
-    // 2️⃣ Vérifier que le fichier est bien envoyé
     if (!req.file)
       return res.status(400).json({ success: false, message: "Aucun fichier reçu." });
 
     const filePath = req.file.path;
 
-    // 3️⃣ Appeler l’IA AVEC LE TOKEN (pas le profil)
+    // 🔥 Envoi du TOKEN (PAS l’objet profil)
     const result = await analyzeTender(filePath, token);
 
-    // 4️⃣ Retourner le résultat
-    res.json(result);
+    return res.json(result);
 
   } catch (err) {
     console.error("❌ Erreur /analyze :", err);
     res.status(500).json({ success: false, message: "Erreur lors de l'analyse." });
   }
 });
+
 
 
 // ===================================================
@@ -260,12 +258,12 @@ app.post("/api/save-analysis", async (req, res) => {
     if (!title || !analysis)
       return res.status(400).json({ success: false, message: "Champs requis manquants." });
 
-    const { rows } = await pool.query(
-      `INSERT INTO analyses (user_id, title, score, summary, analysis)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id;`,
-      [userId, title, score || null, summary || "", analysis]
-    );
+   const { rows } = await pool.query(
+  `INSERT INTO analyses (user_id, title, score, summary, analysis)
+   VALUES ($1, $2, $3, $4, $5)
+   RETURNING id;`,
+  [userId, title, score || null, summary || "", JSON.stringify(analysis)]
+);
 
     console.log(`✅ Nouvelle analyse enregistrée ID ${rows[0].id}`);
 
