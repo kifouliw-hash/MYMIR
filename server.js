@@ -315,7 +315,7 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
 // ===================================================
 // 📜 HISTORIQUE DES ANALYSES (liste par utilisateur)
 // ===================================================
-app.get("/api/analyses", async (req, res) => {
+app.get("/api/analysis/:id/pdf", async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token)
@@ -323,24 +323,74 @@ app.get("/api/analyses", async (req, res) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
     const userId = decoded.id;
+    const analysisId = req.params.id;
 
     const { rows } = await pool.query(
-      "SELECT id, title, score, created_at FROM analyses WHERE user_id = $1 ORDER BY created_at DESC",
-      [userId]
+      "SELECT * FROM analyses WHERE id = $1 AND user_id = $2",
+      [analysisId, userId]
     );
 
-    res.json({
-      success: true,
-      analyses: rows || [],
-    });
+    if (rows.length === 0)
+      return res.status(404).json({ success: false, message: "Analyse introuvable" });
+
+    const analysis = rows[0];
+    const title = analysis.title || "Analyse sans titre";
+    const score = analysis.score !== null ? `${analysis.score}%` : "—";
+    const summary = analysis.summary || "Aucun résumé fourni.";
+    const content = analysis.analysis || "Aucune analyse disponible.";
+
+    // === ✨ PDF PREMIUM (PDFKit) ===
+    const doc = new PDFDocument({ margin: 50 });
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${title.replace(/\s+/g, "_")}.pdf"`
+    );
+    doc.pipe(res);
+
+    // 🔥 Page de garde
+    doc
+      .fontSize(24)
+      .text("MyMír — Rapport d'analyse", { align: "center" })
+      .moveDown();
+
+    doc
+      .fontSize(14)
+      .text(`Titre : ${title}`)
+      .text(`Score : ${score}`)
+      .text(`Date : ${new Date(analysis.created_at).toLocaleString("fr-FR")}`)
+      .moveDown(2);
+
+    doc
+      .fontSize(12)
+      .fillColor("#666")
+      .text("Ce rapport a été généré automatiquement par MyMír.", {
+        align: "center",
+      });
+
+    doc.addPage();
+
+    // 🔧 Nettoyage contenu
+    let text = content
+      .replace(/```json|```/g, "")
+      .replace(/\\n/g, "\n")
+      .replace(/\*\*/g, "")
+      .replace(/#{1,6}\s*/g, "")
+      .replace(/\*/g, "• ")
+      .trim();
+
+    doc.fontSize(12).fillColor("#000").text(text, { align: "left" });
+
+    doc.end();
   } catch (err) {
-    console.error("❌ Erreur /api/analyses :", err);
+    console.error("❌ Erreur génération PDF :", err);
     res.status(500).json({
       success: false,
-      message: "Erreur lors du chargement des analyses.",
+      message: "Erreur lors de la génération du PDF.",
     });
   }
 });
+
 // ===================================================
 // 🧩 MISE À JOUR DU PROFIL UTILISATEUR
 // ===================================================
