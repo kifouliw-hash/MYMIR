@@ -1,7 +1,9 @@
 // backend/ai/analyzeTender.js
 import fs from "fs";
 import OpenAI from "openai";
-import pdfjsLib from "pdfjs-dist/legacy/build/pdf.js"; // ✅ Version stable Node-compatible
+import pdfjsLib from "pdfjs-dist/legacy/build/pdf.js";
+import jwt from "jsonwebtoken";
+import pool from "../../db.js";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -30,28 +32,62 @@ async function extractTextFromPDF(filePath) {
 }
 
 // ===============================================
-// 🧠 Analyse IA MyMír
+// 🧠 Analyse IA MyMír (avec PROFIL UTILISATEUR)
 // ===============================================
-export async function analyzeTender(filePath) {
+export async function analyzeTender(filePath, token) {
   try {
     console.log("📄 Lecture du PDF :", filePath);
     const extractedText = await extractTextFromPDF(filePath);
-    console.log("✅ Texte extrait :", extractedText.length, "caractères");
 
-    // 🔹 Profil entreprise par défaut (sera remplacé plus tard par le vrai profil utilisateur)
-const entrepriseProfil = JSON.stringify({
-  companyName: "Entreprise non renseignée",
-  secteur: "Non spécifié",
-  chiffre_affaires: "Inconnu",
-  effectif: "Inconnu",
-  certifications: "Aucune",
-  pays: "Non précisé"
-});
-const prompt = `
-Tu es MyMír, un assistant expert en appels d’offres publics et privés.
-Ta mission est d’analyser le document fourni et de produire une synthèse complète, claire et exploitable.
+    // ===============================================
+    // 🔐 Récupération du profil utilisateur
+    // ===============================================
+    let profilEntreprise = {
+      companyName: "Non renseigné",
+      sector: "Non précisé",
+      revenue: "Non précisé",
+      effectif: "Non précisé",
+      country: "Non précisé",
+      certifications: "Aucune"
+    };
 
-Analyse selon les axes suivants :
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
+        const userId = decoded.id;
+
+        const { rows } = await pool.query(
+          "SELECT metadata FROM users WHERE id = $1",
+          [userId]
+        );
+
+        if (rows.length > 0) {
+          profilEntreprise = rows[0].metadata || profilEntreprise;
+        }
+      } catch (err) {
+        console.warn("⚠️ Impossible de charger le profil utilisateur :", err.message);
+      }
+    }
+
+    console.log("🧩 Profil utilisé pour l'analyse :", profilEntreprise);
+
+    // ===============================================
+    // PROMPT IA — VERSION CONSULTANT EXPERT + PROFIL
+    // ===============================================
+    const prompt = `
+Tu es MyMír, une IA experte en analyse d'appels d'offres.
+
+Voici le **profil réel de l’entreprise** qui souhaite candidater :
+${JSON.stringify(profilEntreprise, null, 2)}
+
+Utilise ce profil de manière INTELLIGENTE pour :
+- analyser la compatibilité réelle avec l’appel d’offre
+- expliquer les points forts / points faibles
+- évaluer si l’entreprise a des chances
+- proposer un score réaliste
+- faire des recommandations adaptées au VRAI profil
+
+Analyse selon les sections suivantes :
 
 1️⃣ IDENTIFICATION DU MARCHÉ
 - Type de marché (public, privé, secteur, sous-secteur…)
@@ -98,39 +134,41 @@ Explique brièvement pourquoi tu donnes ce score.
 - Checklist finale (documents à joindre, formats, signatures)
 - Phrase de rappel personnalisée
 
-Texte extrait :
+7️⃣ Checklist finale  
+
+Voici le texte extrait du PDF :
 ${extractedText.slice(0, 15000)}
 
-Donne ta réponse au format JSON suivant :
+RENVOIE UNIQUEMENT DU JSON STRUCTURÉ :
 {
-  "titre": "...",
-  "type_marche": "...",
-  "autorite": "...",
-  "date_limite": "...",
-  "contexte": "...",
-  "documents_requis": "...",
-  "analyse_profil": "...",
-  "score": 0 à 100,
-  "opportunite": "...",
-  "recommandations": [ "...", "..." ],
-  "plan_de_depot": [ "...", "..." ],
-  "checklist": [ "...", "..." ]
+  "titre": "",
+  "type_marche": "",
+  "autorite": "",
+  "date_limite": "",
+  "contexte": "",
+  "documents_requis": [],
+  "analyse_profil": "",
+  "score": 0,
+  "opportunite": "",
+  "recommandations": [],
+  "plan_de_depot": [],
+  "checklist": []
 }
 `;
 
-
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      temperature: 0.3,
+      temperature: 0.25,
       messages: [
-        { role: "system", content: "Tu es une IA experte en marchés publics. Sois claire et concise." },
+        { role: "system", content: "Tu es MyMír, IA experte en marchés publics." },
         { role: "user", content: prompt },
       ],
     });
 
     const analysis = completion.choices?.[0]?.message?.content || "Aucune analyse générée.";
+
+    // Supprime le fichier PDF après traitement
     fs.unlinkSync(filePath);
-    console.log("✅ Analyse générée avec succès.");
 
     return {
       success: true,
