@@ -145,122 +145,94 @@ safeSet("p_description", user.metadata?.description || "—");
         const result = await response.json();
         console.log("📦 Résultat JSON :", result);
 
-        loading.classList.add("hidden");
-if (result.success) {
-  // ✅ Affichage du résultat de l’analyse
-  resultArea.classList.remove("hidden");
-  resultArea.innerHTML = `
-    <h3>🧠 Résultat de l’analyse</h3>
-    <div class="analysis-content">${formatAnalysis(result.analysis)}</div>
-    <div class="analysis-btns">
-      <button class="analysis-btn" id="downloadPdf">📥 Télécharger le rapport PDF</button>
-      <button class="analysis-btn" id="newAnalyse">🔁 Nouvelle analyse</button>
-    </div>
-  `;
+loading.classList.add("hidden");
 
-  // 💾 Sauvegarde automatique dans PostgreSQL
-const token = localStorage.getItem("token");
-const title = file.name.replace(/\.[^/.]+$/, ""); // nom du fichier sans extension
-let savedId = null;
-
-try {
-  const saveRes = await fetch("https://mymir.on***REMOVED***/api/save-analysis", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      title,
-      score: result.score || null,
-      summary: result.summary || "",
-      analysis: result.analysis,
-    }),
-  });
-
-  const saveData = await saveRes.json();
-
-  if (saveData.success) {
-    console.log("💾 Analyse sauvegardée avec succès !");
-    savedId = saveData.id;   // 🔥 récupère enfin l'ID renvoyé
-
-    // 🔥 Associe l'ID au bouton "Télécharger PDF"
-    const pdfBtn = document.getElementById("downloadPdf");
-    if (pdfBtn && savedId) {
-      pdfBtn.setAttribute("data-id", savedId);
-      console.log("🧾 ID assigné au bouton PDF :", savedId);
-    }
-
-  } else {
-    console.warn("⚠️ Échec de la sauvegarde :", saveData.message);
-  }
-
-} catch (saveErr) {
-  console.error("❌ Erreur lors de la sauvegarde :", saveErr);
-}
-
-// 📥 Téléchargement direct du PDF après analyse
-document.getElementById("downloadPdf").addEventListener("click", async () => {
-  const btn = document.getElementById("downloadPdf");
-  const id = btn.getAttribute("data-id"); // 🔥 prend l'ID du bouton
-  const token = localStorage.getItem("token");
-
-  if (!id) {
-    alert("⚠️ Aucun rapport trouvé. Essayez depuis l’historique.");
-    return;
-  }
-
-  try {
-    console.log("📡 Téléchargement du PDF pour l’analyse ID :", id);
-
-    const res = await fetch(`https://mymir.on***REMOVED***/api/analysis/${id}/pdf`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!res.ok) throw new Error("Erreur lors du téléchargement du PDF");
-
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `analyse-${id}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
-
-    console.log("✅ PDF téléchargé avec succès !");
-  } catch (err) {
-    alert("⚠️ Impossible de télécharger le rapport PDF.");
-    console.error("Erreur téléchargement PDF :", err);
-  }
-});
-
-} else {
-  // ⚠️ Gestion des erreurs d’analyse
+// ===============================
+// 1️⃣ Vérification du succès IA
+// ===============================
+if (!result.success) {
   uploadArea.classList.remove("hidden");
   uploadArea.innerHTML = `<p>❌ Erreur : ${result.message}</p>`;
+  return;
 }
 
-} catch (err) {
-  // ⚠️ Gestion des erreurs réseau
-  console.error("❌ Erreur réseau :", err);
-  loading.classList.add("hidden");
-  uploadArea.classList.remove("hidden");
-  uploadArea.innerHTML = `<p>⚠️ Erreur de connexion au serveur.</p>`;
+// ===============================
+// 2️⃣ Parse du JSON IA
+// ===============================
+let parsed;
+try {
+  parsed = JSON.parse(result.analysis);
+} catch (e) {
+  console.error("❌ JSON IA invalide :", result.analysis);
+  alert("❌ Impossible de lire l’analyse générée.");
+  return;
 }
-    });
-  }
 
-  // ================================
-  // 🔁 Réinitialisation d'une analyse
-  // ================================
-  document.addEventListener("click", (e) => {
-    if (e.target.id === "newAnalyse") {
-      resultArea.classList.add("hidden");
-      uploadArea.classList.remove("hidden");
-    }
-  });
+console.log("📦 JSON PARSÉ :", parsed);
+
+// ===============================
+// 3️⃣ Préparation des données pour la sauvegarde
+// ===============================
+const payload = {
+  title: parsed.titre || "Analyse MyMír",
+  score: parsed.score || 0,
+  summary: parsed.contexte || "",
+  analysis: parsed   // 🔥 On enregistre un vrai JSON, pas une string
+};
+
+// ===============================
+// 4️⃣ Sauvegarde dans PostgreSQL
+// ===============================
+const saveRes = await fetch("https://mymir.on***REMOVED***/api/save-analysis", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer " + token
+  },
+  body: JSON.stringify(payload)
+});
+
+const saved = await saveRes.json();
+console.log("💾 Résultat sauvegarde :", saved);
+
+if (!saved.success) {
+  alert("❌ Erreur lors de la sauvegarde de l’analyse.");
+  return;
+}
+
+const analysisId = saved.id; // 🔥 essentiel pour le PDF
+
+// ===============================
+// 5️⃣ Affichage du résultat IA
+// ===============================
+resultArea.classList.remove("hidden");
+resultArea.innerHTML = `
+  <h3>🧠 Résultat de l’analyse</h3>
+  <div class="analysis-content">${formatAnalysis(parsed)}</div>
+
+  <div class="analysis-btns">
+    <button class="analysis-btn" id="downloadPdf">📥 Télécharger le rapport PDF</button>
+    <button class="analysis-btn" id="newAnalyse">🔁 Nouvelle analyse</button>
+  </div>
+`;
+
+// ===============================
+// 6️⃣ Bouton PDF fonctionnel
+// ===============================
+document.getElementById("downloadPdf").addEventListener("click", () => {
+  window.open(
+    \`https://mymir.on***REMOVED***/api/analysis/${analysisId}/pdf\`,
+    "_blank"
+  );
+});
+
+// ===============================
+// 7️⃣ Nouvelle analyse
+// ===============================
+document.getElementById("newAnalyse").addEventListener("click", () => {
+  window.location.reload();
+});
+
   
 // ================================
 // 🧩 Mode édition du profil
