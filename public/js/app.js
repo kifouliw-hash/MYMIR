@@ -168,11 +168,12 @@ fileInput.addEventListener("change", async () => {
 
     // 🔥 3) Payload DB
     const payload = {
-      title: parsed.titre || file.name.replace(/\.[^/.]+$/, ""),
-      score: parsed.score || 0,
-      summary: parsed.contexte || "",
-      analysis: parsed
-    };
+  title: parsed.titre || file.name.replace(/\.[^/.]+$/, ""),
+  score: parsed.score || 0,
+  summary: parsed.contexte || "",
+  analysis: JSON.stringify(parsed)   // 🔥 IMPORTANT
+};
+
 
     // 🔥 4) Save DB
     const saveRes = await fetch("https://mymir.on***REMOVED***/api/save-analysis", {
