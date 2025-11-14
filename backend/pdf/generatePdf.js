@@ -1,8 +1,9 @@
 // =====================================================
-// 📄 MyMír — Générateur PDF PREMIUM (PDFKit)
+// 📄 MyMír — Générateur PDF PREMIUM (PDFKit + Police Inter)
 // =====================================================
 
 import PDFDocument from "pdfkit";
+import path from "path";
 
 // Couleurs officielles MyMír
 const GOLD = "#d4a138";
@@ -15,14 +16,18 @@ export function generatePdfFromAnalysis(res, analysisData) {
   // === Initialisation du document A4
   const doc = new PDFDocument({
     size: "A4",
-    margins: { top: 60, bottom: 50, left: 50, right: 50 }
+    margins: { top: 60, bottom: 50, left: 55, right: 55 }
   });
+
+  // === Charger police Inter
+  const fontPath = path.join("backend", "pdf", "fonts", "Inter-Regular.ttf");
+  doc.font(fontPath);
 
   // En-têtes HTTP
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader(
     "Content-Disposition",
-    `attachment; filename="${title?.replace(/[^a-zA-Z0-9]/g, "_") || "analyse"}.pdf"`
+    `attachment; filename="${title?.replace(/[^a-zA-Z0-9_-]/g, "_") || "analyse"}.pdf"`
   );
 
   doc.pipe(res);
@@ -35,21 +40,19 @@ export function generatePdfFromAnalysis(res, analysisData) {
   doc.moveDown(2);
 
   doc.fontSize(20).fillColor(DARK).text("Rapport d’analyse d’appel d’offres", {
-    align: "center",
+    align: "center"
   });
 
   doc.moveDown(2);
   doc.fontSize(16).fillColor(TEXT).text(`📌 ${title || "Sans titre"}`, {
-    align: "center",
+    align: "center"
   });
 
   doc.moveDown(1);
-  doc
-    .fontSize(12)
-    .fillColor(TEXT)
-    .text(`🕒 Généré le : ${new Date().toLocaleString("fr-FR")}`, {
-      align: "center",
-    });
+  doc.fontSize(12).fillColor(TEXT).text(
+    `🕒 Généré le : ${new Date().toLocaleString("fr-FR")}`,
+    { align: "center" }
+  );
 
   doc.moveDown(2);
   doc
@@ -69,14 +72,14 @@ export function generatePdfFromAnalysis(res, analysisData) {
   doc.fontSize(18).fillColor(GOLD).text("📂 Profil de l’entreprise");
   doc.moveDown(1);
 
-  if (profilEntreprise) {
-    doc.fontSize(12).fillColor(TEXT);
+  doc.fontSize(12).fillColor(TEXT);
 
+  if (profilEntreprise) {
     Object.entries(profilEntreprise).forEach(([key, value]) => {
       doc.text(`• ${key} : ${value}`);
     });
   } else {
-    doc.fontSize(12).fillColor(TEXT).text("Aucun profil renseigné.");
+    doc.text("—");
   }
 
   doc.moveDown(2);
@@ -110,7 +113,7 @@ export function generatePdfFromAnalysis(res, analysisData) {
     "Type de marché": analysis_json.type_marche,
     "Autorité": analysis_json.autorite,
     "Date limite": analysis_json.date_limite,
-    "Contexte": analysis_json.contexte,
+    "Contexte": analysis_json.contexte
   });
 
   section("📑 Documents requis", analysis_json.documents_requis);
@@ -126,19 +129,16 @@ export function generatePdfFromAnalysis(res, analysisData) {
   // =====================================================
 
   const addFooter = (doc) => {
-    const range = doc.bufferedPageRange();
-
-    for (let i = range.start; i < range.start + range.count; i++) {
+    const pages = doc.bufferedPageRange();
+    for (let i = 0; i < pages.count; i++) {
       doc.switchToPage(i);
-
-      doc
-        .fontSize(10)
-        .fillColor("#6b7280")
-        .text("MyMír — Rapport confidentiel © 2025", 50, doc.page.height - 40, {
-          align: "left",
-        });
-
-      doc.text(`Page ${i + 1}`, -50, doc.page.height - 40, { align: "right" });
+      doc.fontSize(10).fillColor("#6b7280");
+      doc.text("MyMír — Rapport confidentiel © 2025", 55, doc.page.height - 40, {
+        align: "left"
+      });
+      doc.text(`Page ${i + 1}`, -55, doc.page.height - 40, {
+        align: "right"
+      });
     }
   };
 
