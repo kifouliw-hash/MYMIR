@@ -4,6 +4,11 @@
 
 import PDFDocument from "pdfkit";
 import path from "path";
+import { fileURLToPath } from "url";
+
+// Needed for absolute path resolution
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Couleurs officielles MyMír
 const GOLD = "#d4a138";
@@ -19,8 +24,8 @@ export function generatePdfFromAnalysis(res, analysisData) {
     margins: { top: 60, bottom: 50, left: 55, right: 55 }
   });
 
-  // === Charger police Inter
-  const fontPath = path.join("backend", "pdf", "fonts", "Inter-Regular.ttf");
+  // === 🔥 Charger police Inter avec CHEMIN ABSOLU
+  const fontPath = path.join(__dirname, "fonts", "Inter-Regular.ttf");
   doc.font(fontPath);
 
   // En-têtes HTTP
@@ -143,6 +148,5 @@ export function generatePdfFromAnalysis(res, analysisData) {
   };
 
   addFooter(doc);
-
   doc.end();
 }
