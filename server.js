@@ -293,6 +293,7 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
 
     const analysisId = req.params.id;
 
+    // 🔍 Récupérer l'analyse
     const { rows } = await pool.query(
       "SELECT * FROM analyses WHERE id = $1 AND user_id = $2",
       [analysisId, userId]
@@ -303,19 +304,42 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
 
     const analysis = rows[0];
 
-    // JSON nettoyé
     let clean = {};
     try { clean = JSON.parse(analysis.analysis); } catch {}
 
+    // 🔍 Charger profil utilisateur (obligatoire pour PDF)
+    let profilEntreprise = {
+      companyName: "Non renseigné",
+      sector: "Non précisé",
+      revenue: "Non précisé",
+      effectif: "Non précisé",
+      country: "Non précisé",
+      certifications: "Aucune"
+    };
+
+    try {
+      const userRes = await pool.query(
+        "SELECT metadata FROM users WHERE id = $1",
+        [userId]
+      );
+
+      if (userRes.rows.length > 0) {
+        profilEntreprise = userRes.rows[0].metadata || profilEntreprise;
+      }
+    } catch (err) {
+      console.warn("⚠️ Impossible de charger le profil entreprise :", err.message);
+    }
+
+    // 🔥 DONNÉES COMPLÈTES POUR LE PDF
     const data = {
-  title: analysis.title,
-  score: analysis.score,
-  summary: analysis.summary,
-  analysis_json: clean,
-  profilEntreprise   // <-- ajouté ici !
-};
+      title: analysis.title,
+      score: analysis.score,
+      summary: analysis.summary,
+      analysis_json: clean,
+      profilEntreprise
+    };
 
-
+    // 📄 Génération
     generatePdfFromAnalysis(res, data);
 
   } catch (err) {
@@ -326,6 +350,7 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     });
   }
 });
+
 // ===================================================
 // 📜 HISTORIQUE DES ANALYSES (liste par utilisateur)
 // ===================================================
