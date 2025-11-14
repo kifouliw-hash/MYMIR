@@ -1,7 +1,3 @@
-// =====================================================
-// 📄 MyMír — Générateur PDF PREMIUM (PDFKit + Police Inter)
-// =====================================================
-
 import PDFDocument from "pdfkit";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -18,15 +14,13 @@ export function generatePdfFromAnalysis(res, analysisData) {
     const { title, score, analysis_json, profilEntreprise } = analysisData;
 
     const doc = new PDFDocument({
-      size: "A4",
+      autoFirstPage: false, // <-- IMPORTANT
       margins: { top: 60, bottom: 50, left: 55, right: 55 }
     });
 
-    // === POLICE (chemin exact)
+    // Police
     const fontPath = path.join(__dirname, "fonts", "Inter", "static", "Inter_24pt-Regular.ttf");
-    doc.font(fontPath);
 
-    // En-têtes HTTP
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
@@ -36,33 +30,60 @@ export function generatePdfFromAnalysis(res, analysisData) {
     doc.pipe(res);
 
     // =====================================================
-    // PAGE DE GARDE
+    // FOOTER AUTOMATIQUE PAR PAGE
     // =====================================================
+    const addFooterToCurrentPage = () => {
+      const y = doc.page.height - 40;
+
+      doc.fontSize(10)
+        .fillColor("#6b7280")
+        .text("MyMír — Rapport confidentiel © 2025", 55, y, { align: "left" });
+
+      doc.text(`Page ${doc.pageNumber}`, -55, y, { align: "right" });
+    };
+
+    doc.on("pageAdded", () => {
+      doc.font(fontPath);
+      addFooterToCurrentPage();
+    });
+
+    // =====================================================
+    // PAGE 1
+    // =====================================================
+    doc.addPage();
+    doc.font(fontPath);
+
     doc.fontSize(28).fillColor(GOLD).text("MyMír", { align: "center" });
     doc.moveDown(2);
+
     doc.fontSize(20).fillColor(DARK).text("Rapport d’analyse d’appel d’offres", { align: "center" });
+
     doc.moveDown(2);
     doc.fontSize(16).fillColor(TEXT).text(`📌 ${title || "Sans titre"}`, { align: "center" });
+
     doc.moveDown(1);
     doc.fontSize(12).fillColor(TEXT).text(
-      `🕒 Généré le : ${new Date().toLocaleString("fr-FR")}`,{ align: "center" }
+      `🕒 Généré le : ${new Date().toLocaleString("fr-FR")}`,
+      { align: "center" }
     );
+
     doc.moveDown(2);
     doc.fontSize(26)
       .fillColor(score >= 70 ? "#16a34a" : score >= 40 ? "#facc15" : "#dc2626")
       .text(`Score : ${score || "--"} / 100`, { align: "center" });
+
     doc.moveDown(2);
     doc.strokeColor(GOLD).lineWidth(2).moveTo(50, doc.y).lineTo(545, doc.y).stroke();
 
+    // =====================================================
+    // PAGE 2 - PROFIL
+    // =====================================================
     doc.addPage();
-
-    // =====================================================
-    // PROFIL ENTREPRISE
-    // =====================================================
     doc.fontSize(18).fillColor(GOLD).text("📂 Profil de l’entreprise");
     doc.moveDown(1);
 
     doc.fontSize(12).fillColor(TEXT);
+
     if (profilEntreprise) {
       Object.entries(profilEntreprise).forEach(([key, value]) => {
         doc.text(`• ${key} : ${value}`);
@@ -72,7 +93,7 @@ export function generatePdfFromAnalysis(res, analysisData) {
     }
 
     // =====================================================
-    // SECTIONS JSON
+    // UTILITAIRE
     // =====================================================
     const section = (titre, contenu) => {
       doc.moveDown(1);
@@ -94,6 +115,10 @@ export function generatePdfFromAnalysis(res, analysisData) {
       }
     };
 
+    // =====================================================
+    // SECTIONS JSON
+    // =====================================================
+
     section("🏛️ Identité du marché", {
       "Type de marché": analysis_json.type_marche,
       "Autorité": analysis_json.autorite,
@@ -106,32 +131,10 @@ export function generatePdfFromAnalysis(res, analysisData) {
     section("💡 Recommandations", analysis_json.recommandations);
     section("📅 Plan de dépôt", analysis_json.plan_de_depot);
     section("📝 Checklist finale", analysis_json.checklist);
-
     section("🎯 Score final", `${analysis_json.score || "--"} / 100`);
 
     // =====================================================
-    // PIED DE PAGE (AVANT doc.end !) — SAFE
-    // =====================================================
-    const pages = doc.bufferedPageRange();
-    for (let i = 0; i < pages.count; i++) {
-      doc.switchToPage(i);
-      doc.fontSize(10).fillColor("#6b7280");
-
-      doc.text("MyMír — Rapport confidentiel © 2025",
-        55,
-        doc.page.height - 40,
-        { align: "left" }
-      );
-
-      doc.text(`Page ${i + 1}`,
-        -55,
-        doc.page.height - 40,
-        { align: "right" }
-      );
-    }
-
-    // =====================================================
-    // FIN DU DOCUMENT (une seule fois)
+    // FIN
     // =====================================================
     doc.end();
 
