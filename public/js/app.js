@@ -556,18 +556,24 @@ window.addEventListener("load", afficherChampsVides);
 // ================================
 // 🧩 Convertit JSON -> HTML Premium (global, accessible partout)
 // ================================
-function formatAnalysis(rawText) {
-  // Nettoyage brut
-  rawText = rawText
-    .replace(/```json|```/g, "")
-    .replace(/\n{2,}/g, "\n")
-    .trim();
-
+function formatAnalysis(raw) {
   let json;
-  try {
-    json = JSON.parse(rawText);
-  } catch {
-    return `<div class='analysis-block'>${rawText}</div>`;
+
+  // 🟦 Si raw est déjà un objet JSON
+  if (typeof raw === "object") {
+    json = raw;
+  } else {
+    // 🟨 Sinon on nettoie et on parse
+    try {
+      raw = raw
+        .replace(/```json|```/g, "")
+        .replace(/\n{2,}/g, "\n")
+        .trim();
+
+      json = JSON.parse(raw);
+    } catch {
+      return `<div class='analysis-block'>${raw}</div>`;
+    }
   }
 
   const section = (title, content) => `
@@ -591,6 +597,7 @@ function formatAnalysis(rawText) {
     ${section("🎯 Score", `${json.score || "---"} / 100`)}
   `;
 }
+
 
 
 
