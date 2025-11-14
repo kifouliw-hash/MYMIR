@@ -293,7 +293,6 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
 
     const analysisId = req.params.id;
 
-    // 🔍 Récupérer l'analyse
     const { rows } = await pool.query(
       "SELECT * FROM analyses WHERE id = $1 AND user_id = $2",
       [analysisId, userId]
@@ -307,30 +306,11 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
     let clean = {};
     try { clean = JSON.parse(analysis.analysis); } catch {}
 
-    // 🔍 Charger profil utilisateur (obligatoire pour PDF)
-    let profilEntreprise = {
-      companyName: "Non renseigné",
-      sector: "Non précisé",
-      revenue: "Non précisé",
-      effectif: "Non précisé",
-      country: "Non précisé",
-      certifications: "Aucune"
-    };
+    // Charger profil entreprise
+    let profilEntreprise = {};
+    const userRes = await pool.query("SELECT metadata FROM users WHERE id = $1", [userId]);
+    if (userRes.rows.length > 0) profilEntreprise = userRes.rows[0].metadata;
 
-    try {
-      const userRes = await pool.query(
-        "SELECT metadata FROM users WHERE id = $1",
-        [userId]
-      );
-
-      if (userRes.rows.length > 0) {
-        profilEntreprise = userRes.rows[0].metadata || profilEntreprise;
-      }
-    } catch (err) {
-      console.warn("⚠️ Impossible de charger le profil entreprise :", err.message);
-    }
-
-    // 🔥 DONNÉES COMPLÈTES POUR LE PDF
     const data = {
       title: analysis.title,
       score: analysis.score,
@@ -339,17 +319,18 @@ app.get("/api/analysis/:id/pdf", async (req, res) => {
       profilEntreprise
     };
 
-    // 📄 Génération
-    generatePdfFromAnalysis(res, data);
+    // 🔥 IMPORTANT : RETURN sinon Express écrit 2 fois
+    return generatePdfFromAnalysis(res, data);
 
   } catch (err) {
     console.error("❌ PDF ERROR :", err);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Erreur génération PDF"
     });
   }
 });
+
 
 // ===================================================
 // 📜 HISTORIQUE DES ANALYSES (liste par utilisateur)
