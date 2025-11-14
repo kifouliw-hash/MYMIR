@@ -6,7 +6,7 @@ import PDFDocument from "pdfkit";
 import path from "path";
 import { fileURLToPath } from "url";
 
-// Needed for absolute path resolution
+// Chemin absolu compatible Render + Mac
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -24,8 +24,15 @@ export function generatePdfFromAnalysis(res, analysisData) {
     margins: { top: 60, bottom: 50, left: 55, right: 55 }
   });
 
-  // === 🔥 Charger police Inter avec CHEMIN ABSOLU
-  const fontPath = path.join(__dirname, "fonts", "Inter-Regular.ttf");
+  // === 🔥 Charger police Inter (chemin EXACT selon ta structure)
+  const fontPath = path.join(
+    __dirname,
+    "fonts",
+    "Inter",
+    "static",
+    "Inter_24pt-Regular.ttf"
+  );
+
   doc.font(fontPath);
 
   // En-têtes HTTP
