@@ -4,14 +4,11 @@ const webpack = require('webpack');
 
 // Déterminer l'URL de l'API selon l'environnement
 const getApiUrl = () => {
-  if (process.env.REACT_APP_API_URL) {
-    return process.env.REACT_APP_API_URL;
-  }
-  // En production, utiliser l'URL du serveur Render backend
+  // Toujours utiliser le backend Render en production
   if (process.env.NODE_ENV === 'production') {
     return 'https://mymir.onrender.com';
   }
-  // En développement, utiliser localhost
+  // En développement local uniquement
   return 'http://localhost:3000';
 };
 
