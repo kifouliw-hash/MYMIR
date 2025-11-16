@@ -1,6 +1,6 @@
 /* =========================================================
    ✨ MYMIR DASHBOARD — ULTRA PREMIUM 3D
-   Style Stripe / Revolut / Apple niveau mondial
+   Style Stripe avec fond animé élégant (SANS grillage)
    ========================================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
@@ -25,6 +25,7 @@
   --accent-green: #10b981;
   --accent-purple: #8b5cf6;
   --accent-orange: #f59e0b;
+  --accent-pink: #ec4899;
   
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -68,42 +69,125 @@ body {
   overflow: hidden;
 }
 
-/* ===== ANIMATED BACKGROUNDS ===== */
+/* ===== ANIMATED BACKGROUND STYLE STRIPE ===== */
 .background-gradient {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
-              radial-gradient(circle at 80% 80%, rgba(250, 204, 21, 0.06) 0%, transparent 50%);
   z-index: 0;
-  animation: gradientShift 20s ease-in-out infinite;
+  overflow: hidden;
 }
 
-@keyframes gradientShift {
-  0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
-  50% { opacity: 0.8; transform: scale(1.1) rotate(5deg); }
+/* Orbes colorés animés */
+.background-gradient::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -30%;
+  width: 80%;
+  height: 80%;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+  animation: floatOrb1 25s ease-in-out infinite;
+  filter: blur(80px);
 }
 
+.background-gradient::after {
+  content: '';
+  position: absolute;
+  bottom: -50%;
+  right: -30%;
+  width: 80%;
+  height: 80%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%);
+  animation: floatOrb2 30s ease-in-out infinite;
+  filter: blur(80px);
+}
+
+@keyframes floatOrb1 {
+  0%, 100% { 
+    transform: translate(0, 0) scale(1);
+    opacity: 0.6;
+  }
+  25% { 
+    transform: translate(20%, 15%) scale(1.1);
+    opacity: 0.8;
+  }
+  50% { 
+    transform: translate(10%, 30%) scale(0.95);
+    opacity: 0.7;
+  }
+  75% { 
+    transform: translate(-10%, 20%) scale(1.05);
+    opacity: 0.75;
+  }
+}
+
+@keyframes floatOrb2 {
+  0%, 100% { 
+    transform: translate(0, 0) scale(1);
+    opacity: 0.5;
+  }
+  33% { 
+    transform: translate(-15%, -20%) scale(1.08);
+    opacity: 0.7;
+  }
+  66% { 
+    transform: translate(-25%, -10%) scale(0.92);
+    opacity: 0.6;
+  }
+}
+
+/* Orbe doré central */
 .mesh-gradient {
   position: fixed;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: 
-    linear-gradient(90deg, transparent 0%, rgba(250, 204, 21, 0.03) 50%, transparent 100%),
-    linear-gradient(0deg, transparent 0%, rgba(59, 130, 246, 0.03) 50%, transparent 100%);
-  background-size: 80px 80px;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  height: 70%;
+  background: radial-gradient(circle, rgba(250, 204, 21, 0.08) 0%, transparent 60%);
+  filter: blur(100px);
   z-index: 0;
-  animation: meshMove 30s linear infinite;
+  animation: centralGlow 20s ease-in-out infinite;
   pointer-events: none;
 }
 
-@keyframes meshMove {
-  0% { transform: translate(0, 0); }
-  100% { transform: translate(80px, 80px); }
+@keyframes centralGlow {
+  0%, 100% { 
+    opacity: 0.4;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% { 
+    opacity: 0.7;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+}
+
+/* Effet de lueur rose en bas */
+.dashboard::before {
+  content: '';
+  position: fixed;
+  bottom: -40%;
+  left: 20%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, transparent 65%);
+  filter: blur(90px);
+  z-index: 0;
+  animation: pinkGlow 35s ease-in-out infinite;
+}
+
+@keyframes pinkGlow {
+  0%, 100% { 
+    opacity: 0.3;
+    transform: translate(0, 0);
+  }
+  50% { 
+    opacity: 0.6;
+    transform: translate(-10%, 5%);
+  }
 }
 
 /* ===== SIDEBAR ===== */
