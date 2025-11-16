@@ -6,18 +6,37 @@ import '../styles/Dashboard.css';
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const [activeSection, setActiveSection] = useState('home');
-  const [profileData, setProfileData] = useState(null);
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileData, setProfileData] = useState({
+    companyName: '',
+    name: '',
+    email: '',
+    sector: '',
+    sousSecteur: '',
+    effectif: '',
+    country: '',
+    revenue: '',
+    certifications: '',
+    siteWeb: '',
+    description: ''
+  });
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
 
   useEffect(() => {
     if (user) {
-      // Fusionner user et metadata pour faciliter l'accès
       setProfileData({
-        ...user,
-        ...(user.metadata || {})
+        companyName: user.metadata?.companyName || '',
+        name: user.name || '',
+        email: user.email || '',
+        sector: user.metadata?.sector || '',
+        sousSecteur: user.metadata?.sousSecteur || '',
+        effectif: user.metadata?.employees || user.metadata?.effectif || '',
+        country: user.metadata?.country || '',
+        revenue: user.metadata?.revenue || '',
+        certifications: user.metadata?.certifications || '',
+        siteWeb: user.metadata?.siteWeb || '',
+        description: user.metadata?.description || ''
       });
     }
 
@@ -58,15 +77,28 @@ const Dashboard = () => {
     }
   };
 
-  const handleProfileUpdate = async () => {
+  const handleProfileUpdate = async (e) => {
+    e.preventDefault();
     setLoading(true);
+    
     try {
-      await userAPI.updateProfile(profileData);
-      alert('Profil mis à jour avec succès !');
-      setIsEditingProfile(false);
+      const dataToSend = {
+        companyName: profileData.companyName,
+        country: profileData.country,
+        sector: profileData.sector,
+        sousSecteur: profileData.sousSecteur,
+        effectif: profileData.effectif,
+        revenue: profileData.revenue,
+        certifications: profileData.certifications,
+        siteWeb: profileData.siteWeb,
+        description: profileData.description
+      };
+
+      await userAPI.updateProfile(dataToSend);
+      alert('✅ Profil mis à jour avec succès !');
     } catch (error) {
       console.error('Erreur lors de la mise à jour:', error);
-      alert('Erreur lors de la mise à jour du profil');
+      alert('❌ Erreur lors de la mise à jour du profil');
     } finally {
       setLoading(false);
     }
@@ -81,12 +113,14 @@ const Dashboard = () => {
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="logo-section">
-          <img src="/assets/logo/logo-mymir.png" alt="Logo MyMír" className="logo" />
+          <div className="logo-circle">
+            <span style={{ fontSize: '24px' }}>M</span>
+          </div>
           <h1>MyMír</h1>
         </div>
 
         <div className="user-info">
-          <p id="companyName">{profileData?.companyName || profileData?.name || 'Chargement...'}</p>
+          <p id="companyName">{profileData.companyName || profileData.name || 'Chargement...'}</p>
         </div>
 
         <div className="nav-section">
@@ -135,7 +169,7 @@ const Dashboard = () => {
         {activeSection === 'home' && (
           <section id="home" className="section active">
             <div className="welcome-card">
-              <h1>Bienvenue {profileData?.name || ''} <span style={{ color: '#facc15' }}>👋</span></h1>
+              <h1>Bienvenue {profileData.name} <span style={{ color: '#facc15' }}>👋</span></h1>
               <p>
                 Heureux de vous revoir sur MyMír, vous êtes prêt à optimiser vos appels d'offres ?
               </p>
@@ -153,7 +187,7 @@ const Dashboard = () => {
         {activeSection === 'analyse' && (
           <section id="analyse" className="section active">
             <h2>📊 Analyse de vos opportunités</h2>
-            <p style={{ color: 'var(--text-dim)', marginBottom: '25px' }}>
+            <p style={{ color: '#94a3b8', marginBottom: '25px' }}>
               Importez un DCE ou document d'appel d'offres — MyMír détecte les critères essentiels
               et vous guide dans votre réponse.
             </p>
@@ -195,7 +229,9 @@ const Dashboard = () => {
         {activeSection === 'aide' && (
           <section id="aide" className="section active">
             <h2>💡 Aide à la réponse</h2>
-            <p>Optimisez vos documents de réponse grâce à nos recommandations expertes.</p>
+            <p style={{ color: '#94a3b8', marginBottom: '25px' }}>
+              Optimisez vos documents de réponse grâce à nos recommandations expertes.
+            </p>
 
             <div className="cards">
               <div className="help-card">
@@ -247,104 +283,141 @@ const Dashboard = () => {
         {/* Section Profil */}
         {activeSection === 'profil' && (
           <section id="profil" className="section active">
-            <h2>👤 Profil de l'entreprise</h2>
+            <div className="profile-header">
+              <h2>👤 Profil de l'entreprise</h2>
+              <button
+                className="save-btn-header"
+                onClick={handleProfileUpdate}
+                disabled={loading}
+              >
+                💾 {loading ? 'Enregistrement...' : 'Enregistrer'}
+              </button>
+            </div>
 
-            {!isEditingProfile && profileData && (
-              <>
-                <button
-                  className="edit-btn"
-                  onClick={() => setIsEditingProfile(true)}
-                >
-                  ✏️ Modifier le profil
-                </button>
-
-                <div className="profile-card">
-                  <p><strong>Nom :</strong> {profileData.name || '—'}</p>
-                  <p><strong>Email :</strong> {profileData.email || '—'}</p>
-                  <p><strong>Entreprise :</strong> {profileData.companyName || '—'}</p>
-                  <p><strong>Pays :</strong> {profileData.country || '—'}</p>
-                  <p><strong>Secteur :</strong> {profileData.sector || '—'}</p>
-                  <p><strong>Effectif :</strong> {profileData.employees || '—'}</p>
-                  <p><strong>Chiffre d'affaires :</strong> {profileData.revenue || '—'}</p>
-                  <p><strong>Certifications :</strong> {profileData.certifications || '—'}</p>
+            <form className="profile-form-grid" onSubmit={handleProfileUpdate}>
+              {/* Colonne gauche */}
+              <div className="form-column">
+                <div className="form-group-modern">
+                  <label>Entreprise :</label>
+                  <input
+                    type="text"
+                    value={profileData.companyName}
+                    onChange={(e) => setProfileData({ ...profileData, companyName: e.target.value })}
+                    placeholder="Ex : Atelier BTP Côte d'Azur"
+                  />
                 </div>
-              </>
-            )}
 
-            {isEditingProfile && profileData && (
-              <>
-                <button
-                  className="save-btn"
-                  onClick={handleProfileUpdate}
-                  disabled={loading}
-                >
-                  💾 {loading ? 'Enregistrement...' : 'Enregistrer'}
-                </button>
-                <button
-                  className="cancel-btn"
-                  onClick={() => setIsEditingProfile(false)}
-                  style={{ marginLeft: '10px' }}
-                >
-                  Annuler
-                </button>
+                <div className="form-group-modern">
+                  <label>Secteur :</label>
+                  <select
+                    value={profileData.sector}
+                    onChange={(e) => setProfileData({ ...profileData, sector: e.target.value })}
+                  >
+                    <option value="">Sélectionner un secteur</option>
+                    <option value="BTP / Construction">BTP / Construction</option>
+                    <option value="Conseil / Ingénierie">Conseil / Ingénierie</option>
+                    <option value="Informatique / Numérique">Informatique / Numérique</option>
+                    <option value="Services aux entreprises">Services aux entreprises</option>
+                    <option value="Santé / Social">Santé / Social</option>
+                    <option value="Transport / Logistique">Transport / Logistique</option>
+                    <option value="Environnement / Énergie">Environnement / Énergie</option>
+                    <option value="Autre">Autre</option>
+                  </select>
+                </div>
 
-                <form className="profile-form">
-                  <div className="form-group">
-                    <label>Entreprise :</label>
-                    <input
-                      type="text"
-                      value={profileData.companyName || ''}
-                      onChange={(e) => setProfileData({ ...profileData, companyName: e.target.value })}
-                    />
-                  </div>
+                <div className="form-group-modern">
+                  <label>Effectif :</label>
+                  <select
+                    value={profileData.effectif}
+                    onChange={(e) => setProfileData({ ...profileData, effectif: e.target.value })}
+                  >
+                    <option value="">Sélectionner</option>
+                    <option value="1">1 (auto-entrepreneur)</option>
+                    <option value="2-5">2-5</option>
+                    <option value="6-20">6-20</option>
+                    <option value="21-50">21-50</option>
+                    <option value="51-100">51-100</option>
+                    <option value="100+">100+</option>
+                  </select>
+                </div>
 
-                  <div className="form-group">
-                    <label>Pays :</label>
-                    <input
-                      type="text"
-                      value={profileData.country || ''}
-                      onChange={(e) => setProfileData({ ...profileData, country: e.target.value })}
-                    />
-                  </div>
+                <div className="form-group-modern">
+                  <label>Certifications :</label>
+                  <input
+                    type="text"
+                    value={profileData.certifications}
+                    onChange={(e) => setProfileData({ ...profileData, certifications: e.target.value })}
+                    placeholder="Ex : ISO 9001, Qualibat"
+                  />
+                </div>
+              </div>
 
-                  <div className="form-group">
-                    <label>Secteur :</label>
-                    <input
-                      type="text"
-                      value={profileData.sector || ''}
-                      onChange={(e) => setProfileData({ ...profileData, sector: e.target.value })}
-                    />
-                  </div>
+              {/* Colonne droite */}
+              <div className="form-column">
+                <div className="form-group-modern">
+                  <label>Pays :</label>
+                  <select
+                    value={profileData.country}
+                    onChange={(e) => setProfileData({ ...profileData, country: e.target.value })}
+                  >
+                    <option value="">Sélectionner un pays</option>
+                    <option value="France">France</option>
+                    <option value="Belgique">Belgique</option>
+                    <option value="Suisse">Suisse</option>
+                    <option value="Luxembourg">Luxembourg</option>
+                    <option value="Canada">Canada</option>
+                    <option value="Autre">Autre</option>
+                  </select>
+                </div>
 
-                  <div className="form-group">
-                    <label>Effectif :</label>
-                    <input
-                      type="text"
-                      value={profileData.employees || ''}
-                      onChange={(e) => setProfileData({ ...profileData, employees: e.target.value })}
-                    />
-                  </div>
+                <div className="form-group-modern">
+                  <label>Sous-secteur (optionnel) :</label>
+                  <input
+                    type="text"
+                    value={profileData.sousSecteur}
+                    onChange={(e) => setProfileData({ ...profileData, sousSecteur: e.target.value })}
+                    placeholder="Ex : Génie civil, Électricité..."
+                  />
+                </div>
 
-                  <div className="form-group">
-                    <label>Chiffre d'affaires :</label>
-                    <input
-                      type="text"
-                      value={profileData.revenue || ''}
-                      onChange={(e) => setProfileData({ ...profileData, revenue: e.target.value })}
-                    />
-                  </div>
+                <div className="form-group-modern">
+                  <label>Chiffre d'affaires annuel :</label>
+                  <select
+                    value={profileData.revenue}
+                    onChange={(e) => setProfileData({ ...profileData, revenue: e.target.value })}
+                  >
+                    <option value="">Sélectionner</option>
+                    <option value="Moins de 100 000 €">Moins de 100 000 €</option>
+                    <option value="100 000 € - 500 000 €">100 000 € - 500 000 €</option>
+                    <option value="500 000 € - 1 M€">500 000 € - 1 M€</option>
+                    <option value="1 M€ - 5 M€">1 M€ - 5 M€</option>
+                    <option value="5 M€ - 10 M€">5 M€ - 10 M€</option>
+                    <option value="Plus de 10 M€">Plus de 10 M€</option>
+                  </select>
+                </div>
 
-                  <div className="form-group">
-                    <label>Certifications :</label>
-                    <input
-                      type="text"
-                      value={profileData.certifications || ''}
-                      onChange={(e) => setProfileData({ ...profileData, certifications: e.target.value })}
-                    />
-                  </div>
-                </form>
-              </>
-            )}
+                <div className="form-group-modern">
+                  <label>Site web / LinkedIn :</label>
+                  <input
+                    type="url"
+                    value={profileData.siteWeb}
+                    onChange={(e) => setProfileData({ ...profileData, siteWeb: e.target.value })}
+                    placeholder="https://votre-site.com"
+                  />
+                </div>
+              </div>
+
+              {/* Description pleine largeur */}
+              <div className="form-group-modern full-width">
+                <label>Description de l'entreprise (optionnel) :</label>
+                <textarea
+                  rows="4"
+                  value={profileData.description}
+                  onChange={(e) => setProfileData({ ...profileData, description: e.target.value })}
+                  placeholder="Présentez brièvement votre activité..."
+                />
+              </div>
+            </form>
           </section>
         )}
       </main>
