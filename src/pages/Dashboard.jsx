@@ -6,6 +6,7 @@ import '../styles/Dashboard.css';
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const [activeSection, setActiveSection] = useState('home');
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileData, setProfileData] = useState({
     companyName: '',
     name: '',
@@ -38,20 +39,6 @@ const Dashboard = () => {
         siteWeb: user.metadata?.siteWeb || '',
         description: user.metadata?.description || ''
       });
-    }
-
-    // Particules
-    const container = document.getElementById('particles');
-    if (container && container.childNodes.length === 0) {
-      for (let i = 0; i < 50; i++) {
-        const p = document.createElement('div');
-        p.classList.add('particle');
-        p.style.left = Math.random() * 100 + 'vw';
-        p.style.bottom = Math.random() * -100 + 'vh';
-        p.style.animationDuration = 8 + Math.random() * 12 + 's';
-        p.style.animationDelay = Math.random() * -20 + 's';
-        container.appendChild(p);
-      }
     }
   }, [user]);
 
@@ -95,6 +82,7 @@ const Dashboard = () => {
 
       await userAPI.updateProfile(dataToSend);
       alert('✅ Profil mis à jour avec succès !');
+      setIsEditingProfile(false);
     } catch (error) {
       console.error('Erreur MAJ profil:', error);
       alert('❌ Erreur lors de la mise à jour');
@@ -105,114 +93,134 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard">
-      <div id="halo1"></div>
-      <div id="halo2"></div>
-      <div id="particles"></div>
+      <div className="background-gradient"></div>
+      <div className="mesh-gradient"></div>
 
       {/* SIDEBAR */}
       <aside className="sidebar">
         <div className="logo-section">
-          <div className="logo-circle">
-            <span>M</span>
+          <div className="logo-container">
+            <div className="logo-circle">
+              <span className="logo-letter">M</span>
+            </div>
+            <div className="logo-glow"></div>
           </div>
-          <h1>MyMír</h1>
+          <h1 className="brand-name">MyMír</h1>
         </div>
 
-        <div className="user-info">
+        <div className="user-profile-card">
           <div className="user-avatar">
-            {(profileData.companyName || profileData.name || 'U').charAt(0).toUpperCase()}
+            <span>{(profileData.companyName || profileData.name || 'U').charAt(0).toUpperCase()}</span>
+            <div className="avatar-ring"></div>
           </div>
-          <p className="user-company">{profileData.companyName || profileData.name || 'Chargement...'}</p>
+          <div className="user-details">
+            <p className="user-name">{profileData.name}</p>
+            <p className="user-company">{profileData.companyName || 'Entreprise'}</p>
+          </div>
         </div>
 
         <nav className="nav-section">
           <button
-            className={`nav-link ${activeSection === 'home' ? 'active' : ''}`}
+            className={`nav-item ${activeSection === 'home' ? 'active' : ''}`}
             onClick={() => setActiveSection('home')}
           >
             <span className="nav-icon">🏠</span>
-            <span>Accueil</span>
+            <span className="nav-text">Accueil</span>
+            <span className="nav-indicator"></span>
           </button>
           <button
-            className={`nav-link ${activeSection === 'analyse' ? 'active' : ''}`}
+            className={`nav-item ${activeSection === 'analyse' ? 'active' : ''}`}
             onClick={() => setActiveSection('analyse')}
           >
             <span className="nav-icon">📊</span>
-            <span>Analyse</span>
+            <span className="nav-text">Analyse</span>
+            <span className="nav-indicator"></span>
           </button>
           <button
-            className={`nav-link ${activeSection === 'aide' ? 'active' : ''}`}
+            className={`nav-item ${activeSection === 'aide' ? 'active' : ''}`}
             onClick={() => setActiveSection('aide')}
           >
             <span className="nav-icon">💡</span>
-            <span>Aide</span>
+            <span className="nav-text">Aide</span>
+            <span className="nav-indicator"></span>
           </button>
           <button
-            className={`nav-link ${activeSection === 'historique' ? 'active' : ''}`}
+            className={`nav-item ${activeSection === 'historique' ? 'active' : ''}`}
             onClick={() => setActiveSection('historique')}
           >
             <span className="nav-icon">📜</span>
-            <span>Historique</span>
+            <span className="nav-text">Historique</span>
+            <span className="nav-indicator"></span>
           </button>
           <button
-            className={`nav-link ${activeSection === 'profil' ? 'active' : ''}`}
+            className={`nav-item ${activeSection === 'profil' ? 'active' : ''}`}
             onClick={() => setActiveSection('profil')}
           >
             <span className="nav-icon">👤</span>
-            <span>Profil</span>
+            <span className="nav-text">Profil</span>
+            <span className="nav-indicator"></span>
           </button>
         </nav>
 
         <div className="logout-section">
           <button className="logout-btn" onClick={logout}>
-            <span>🚪</span>
+            <span className="logout-icon">→</span>
             <span>Déconnexion</span>
           </button>
         </div>
       </aside>
 
       {/* CONTENU PRINCIPAL */}
-      <main className="content">
+      <main className="main-content">
         {/* ACCUEIL */}
         {activeSection === 'home' && (
-          <section className="section active fade-in">
-            <div className="welcome-card glass-card">
-              <h1 className="welcome-title">
-                Bienvenue {profileData.name} <span className="wave">👋</span>
+          <section className="section">
+            <div className="hero-card">
+              <h1 className="hero-title">
+                Bienvenue {profileData.name} 
+                <span className="wave-emoji">👋</span>
               </h1>
-              <p className="welcome-subtitle">
-                Heureux de vous revoir sur MyMír. Prêt à optimiser vos appels d'offres ?
+              <p className="hero-subtitle">
+                Optimisez vos appels d'offres avec l'intelligence artificielle
               </p>
-              <button
-                className="cta-button"
-                onClick={() => setActiveSection('analyse')}
-              >
-                <span>Lancer une analyse</span>
-                <span className="arrow">→</span>
+              <button className="cta-primary" onClick={() => setActiveSection('analyse')}>
+                <span>Nouvelle analyse</span>
+                <span className="cta-arrow">→</span>
               </button>
             </div>
 
-            <div className="stats-grid">
-              <div className="stat-card glass-card">
-                <div className="stat-icon">📊</div>
-                <div className="stat-content">
-                  <h3>15</h3>
-                  <p>Analyses effectuées</p>
+            <div className="metrics-grid">
+              <div className="metric-card">
+                <div className="metric-icon-wrapper">
+                  <span className="metric-icon">📊</span>
                 </div>
+                <div className="metric-content">
+                  <h3 className="metric-value">24</h3>
+                  <p className="metric-label">Analyses</p>
+                </div>
+                <div className="metric-trend positive">↗ +12%</div>
               </div>
-              <div className="stat-card glass-card">
-                <div className="stat-icon">✅</div>
-                <div className="stat-content">
-                  <h3>87%</h3>
-                  <p>Taux de réussite</p>
+
+              <div className="metric-card">
+                <div className="metric-icon-wrapper">
+                  <span className="metric-icon">✅</span>
                 </div>
+                <div className="metric-content">
+                  <h3 className="metric-value">89%</h3>
+                  <p className="metric-label">Taux de réussite</p>
+                </div>
+                <div className="metric-trend positive">↗ +5%</div>
               </div>
-              <div className="stat-card glass-card">
-                <div className="stat-icon">⏱️</div>
-                <div className="stat-content">
-                  <h3>48h</h3>
-                  <p>Gain de temps moyen</p>
+
+              <div className="metric-card">
+                <div className="metric-icon-wrapper">
+                  <span className="metric-icon">⏱️</span>
                 </div>
+                <div className="metric-content">
+                  <h3 className="metric-value">36h</h3>
+                  <p className="metric-label">Temps économisé</p>
+                </div>
+                <div className="metric-trend positive">↗ +8h</div>
               </div>
             </div>
           </section>
@@ -220,16 +228,15 @@ const Dashboard = () => {
 
         {/* ANALYSE */}
         {activeSection === 'analyse' && (
-          <section className="section active fade-in">
-            <h2 className="section-title">📊 Analyse de vos opportunités</h2>
-            <p className="section-subtitle">
-              Importez un DCE ou document d'appel d'offres — MyMír détecte les critères essentiels.
-            </p>
+          <section className="section">
+            <div className="section-header">
+              <h2 className="section-title">Analyse d'opportunités</h2>
+              <p className="section-description">
+                Importez un DCE et obtenez une analyse complète en quelques secondes
+              </p>
+            </div>
 
-            <div className="upload-zone glass-card">
-              <div className="upload-icon">📁</div>
-              <h3>Glissez votre dossier DCE ici</h3>
-              <p>ou cliquez pour sélectionner</p>
+            <div className="upload-container">
               <input
                 type="file"
                 id="fileInput"
@@ -237,26 +244,30 @@ const Dashboard = () => {
                 onChange={handleFileUpload}
                 hidden
               />
-              <button
-                className="upload-button"
+              <div 
+                className="upload-dropzone"
                 onClick={() => document.getElementById('fileInput').click()}
-                disabled={uploadProgress}
               >
-                {uploadProgress ? 'Analyse en cours...' : 'Choisir un fichier'}
-              </button>
+                <div className="upload-icon">📁</div>
+                <h3 className="upload-title">Glissez votre document ici</h3>
+                <p className="upload-subtitle">ou cliquez pour parcourir</p>
+                <button className="upload-btn" disabled={uploadProgress}>
+                  {uploadProgress ? 'Analyse en cours...' : 'Sélectionner un fichier'}
+                </button>
+              </div>
             </div>
 
             {uploadProgress && (
-              <div className="loading-container">
-                <div className="spinner"></div>
-                <p>Analyse du dossier en cours...</p>
+              <div className="progress-card">
+                <div className="progress-spinner"></div>
+                <p className="progress-text">Analyse en cours...</p>
               </div>
             )}
 
             {analysisResult && (
-              <div className="result-card glass-card">
-                <h3>✅ Résultats de l'analyse</h3>
-                <pre>{JSON.stringify(analysisResult, null, 2)}</pre>
+              <div className="result-card">
+                <h3 className="result-title">✅ Analyse terminée</h3>
+                <pre className="result-content">{JSON.stringify(analysisResult, null, 2)}</pre>
               </div>
             )}
           </section>
@@ -264,32 +275,40 @@ const Dashboard = () => {
 
         {/* AIDE */}
         {activeSection === 'aide' && (
-          <section className="section active fade-in">
-            <h2 className="section-title">💡 Aide à la réponse</h2>
-            <p className="section-subtitle">
-              Optimisez vos documents de réponse grâce à nos recommandations.
-            </p>
+          <section className="section">
+            <div className="section-header">
+              <h2 className="section-title">Outils d'aide à la réponse</h2>
+              <p className="section-description">
+                Gagnez du temps avec nos templates et assistants intelligents
+              </p>
+            </div>
 
-            <div className="cards-grid">
-              <div className="help-card glass-card">
-                <div className="card-icon">📝</div>
-                <h3>Lettre de candidature</h3>
-                <p>Modèle professionnel personnalisable selon votre entreprise.</p>
-                <button className="secondary-btn">Générer →</button>
+            <div className="tools-grid">
+              <div className="tool-card">
+                <div className="tool-icon">📝</div>
+                <h3 className="tool-title">Lettre de candidature</h3>
+                <p className="tool-description">
+                  Générez une lettre professionnelle adaptée à votre entreprise
+                </p>
+                <button className="tool-btn">Générer →</button>
               </div>
 
-              <div className="help-card glass-card">
-                <div className="card-icon">🏗️</div>
-                <h3>Description des moyens</h3>
-                <p>Rédigez automatiquement vos moyens humains et matériels.</p>
-                <button className="secondary-btn">Créer →</button>
+              <div className="tool-card">
+                <div className="tool-icon">🏗️</div>
+                <h3 className="tool-title">Moyens techniques</h3>
+                <p className="tool-description">
+                  Décrivez vos moyens humains et matériels automatiquement
+                </p>
+                <button className="tool-btn">Créer →</button>
               </div>
 
-              <div className="help-card glass-card">
-                <div className="card-icon">✅</div>
-                <h3>Check-list finale</h3>
-                <p>Vérifiez que votre dossier est complet avant dépôt.</p>
-                <button className="secondary-btn">Voir →</button>
+              <div className="tool-card">
+                <div className="tool-icon">✅</div>
+                <h3 className="tool-title">Check-list</h3>
+                <p className="tool-description">
+                  Vérifiez la complétude de votre dossier avant envoi
+                </p>
+                <button className="tool-btn">Vérifier →</button>
               </div>
             </div>
           </section>
@@ -297,15 +316,18 @@ const Dashboard = () => {
 
         {/* HISTORIQUE */}
         {activeSection === 'historique' && (
-          <section className="section active fade-in">
-            <h2 className="section-title">📁 Historique de vos analyses</h2>
-            
-            <div className="table-container glass-card">
-              <table className="modern-table">
+          <section className="section">
+            <div className="section-header">
+              <h2 className="section-title">Historique des analyses</h2>
+              <p className="section-description">Consultez vos analyses précédentes</p>
+            </div>
+
+            <div className="table-card">
+              <table className="data-table">
                 <thead>
                   <tr>
                     <th>Date</th>
-                    <th>Nom du marché</th>
+                    <th>Marché</th>
                     <th>Score</th>
                     <th>Statut</th>
                     <th>Actions</th>
@@ -313,23 +335,23 @@ const Dashboard = () => {
                 </thead>
                 <tbody>
                   <tr>
-                    <td>16/11/2025</td>
-                    <td>Réhabilitation école communale</td>
-                    <td><span className="badge badge-success">88%</span></td>
-                    <td><span className="status status-done">Terminé</span></td>
-                    <td>
-                      <button className="icon-btn">📄</button>
-                      <button className="icon-btn">📥</button>
+                    <td className="table-date">16 Nov 2025</td>
+                    <td className="table-title">Réhabilitation école communale</td>
+                    <td><span className="score-badge high">88%</span></td>
+                    <td><span className="status-badge success">Terminé</span></td>
+                    <td className="table-actions">
+                      <button className="action-btn">📄</button>
+                      <button className="action-btn">📥</button>
                     </td>
                   </tr>
                   <tr>
-                    <td>12/11/2025</td>
-                    <td>Construction centre sportif</td>
-                    <td><span className="badge badge-warning">72%</span></td>
-                    <td><span className="status status-progress">En cours</span></td>
-                    <td>
-                      <button className="icon-btn">📄</button>
-                      <button className="icon-btn">📥</button>
+                    <td className="table-date">12 Nov 2025</td>
+                    <td className="table-title">Construction centre sportif</td>
+                    <td><span className="score-badge medium">72%</span></td>
+                    <td><span className="status-badge pending">En cours</span></td>
+                    <td className="table-actions">
+                      <button className="action-btn">📄</button>
+                      <button className="action-btn">📥</button>
                     </td>
                   </tr>
                 </tbody>
@@ -340,35 +362,80 @@ const Dashboard = () => {
 
         {/* PROFIL */}
         {activeSection === 'profil' && (
-          <section className="section active fade-in">
-            <div className="profile-header">
-              <h2 className="section-title">👤 Profil de l'entreprise</h2>
-              <button
-                className="save-btn-header"
-                onClick={handleProfileUpdate}
-                disabled={loading}
-              >
-                {loading ? '⏳ Enregistrement...' : '💾 Enregistrer'}
-              </button>
+          <section className="section">
+            <div className="profile-header-bar">
+              <div>
+                <h2 className="section-title">Profil de l'entreprise</h2>
+                <p className="section-description">Gérez les informations de votre entreprise</p>
+              </div>
+              <div className="profile-actions">
+                {!isEditingProfile ? (
+                  <button 
+                    className="btn-secondary"
+                    onClick={() => setIsEditingProfile(true)}
+                  >
+                    <span>✏️</span>
+                    <span>Modifier</span>
+                  </button>
+                ) : (
+                  <>
+                    <button 
+                      className="btn-secondary"
+                      onClick={() => setIsEditingProfile(false)}
+                    >
+                      Annuler
+                    </button>
+                    <button 
+                      className="btn-primary"
+                      onClick={handleProfileUpdate}
+                      disabled={loading}
+                    >
+                      <span>{loading ? '⏳' : '💾'}</span>
+                      <span>{loading ? 'Enregistrement...' : 'Enregistrer'}</span>
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
 
-            <form className="profile-form-grid glass-card" onSubmit={handleProfileUpdate}>
-              <div className="form-column">
-                <div className="form-group-modern">
-                  <label>Entreprise</label>
+            <form className="profile-form" onSubmit={handleProfileUpdate}>
+              <div className="form-grid">
+                <div className="form-field">
+                  <label className="field-label">Entreprise</label>
                   <input
                     type="text"
+                    className="field-input"
                     value={profileData.companyName}
                     onChange={(e) => setProfileData({ ...profileData, companyName: e.target.value })}
-                    placeholder="Ex : Atelier BTP Côte d'Azur"
+                    placeholder="Nom de l'entreprise"
+                    disabled={!isEditingProfile}
                   />
                 </div>
 
-                <div className="form-group-modern">
-                  <label>Secteur</label>
+                <div className="form-field">
+                  <label className="field-label">Pays</label>
                   <select
+                    className="field-input"
+                    value={profileData.country}
+                    onChange={(e) => setProfileData({ ...profileData, country: e.target.value })}
+                    disabled={!isEditingProfile}
+                  >
+                    <option value="">Sélectionner</option>
+                    <option value="France">France</option>
+                    <option value="Belgique">Belgique</option>
+                    <option value="Suisse">Suisse</option>
+                    <option value="Luxembourg">Luxembourg</option>
+                    <option value="Canada">Canada</option>
+                  </select>
+                </div>
+
+                <div className="form-field">
+                  <label className="field-label">Secteur d'activité</label>
+                  <select
+                    className="field-input"
                     value={profileData.sector}
                     onChange={(e) => setProfileData({ ...profileData, sector: e.target.value })}
+                    disabled={!isEditingProfile}
                   >
                     <option value="">Sélectionner</option>
                     <option value="BTP / Construction">BTP / Construction</option>
@@ -381,11 +448,25 @@ const Dashboard = () => {
                   </select>
                 </div>
 
-                <div className="form-group-modern">
-                  <label>Effectif</label>
+                <div className="form-field">
+                  <label className="field-label">Sous-secteur</label>
+                  <input
+                    type="text"
+                    className="field-input"
+                    value={profileData.sousSecteur}
+                    onChange={(e) => setProfileData({ ...profileData, sousSecteur: e.target.value })}
+                    placeholder="Ex : Génie civil"
+                    disabled={!isEditingProfile}
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label className="field-label">Effectif</label>
                   <select
+                    className="field-input"
                     value={profileData.effectif}
                     onChange={(e) => setProfileData({ ...profileData, effectif: e.target.value })}
+                    disabled={!isEditingProfile}
                   >
                     <option value="">Sélectionner</option>
                     <option value="1">1</option>
@@ -397,78 +478,59 @@ const Dashboard = () => {
                   </select>
                 </div>
 
-                <div className="form-group-modern">
-                  <label>Certifications</label>
+                <div className="form-field">
+                  <label className="field-label">Chiffre d'affaires annuel</label>
+                  <select
+                    className="field-input"
+                    value={profileData.revenue}
+                    onChange={(e) => setProfileData({ ...profileData, revenue: e.target.value })}
+                    disabled={!isEditingProfile}
+                  >
+                    <option value="">Sélectionner</option>
+                    <option value="< 100k €">{"< 100k €"}</option>
+                    <option value="100k - 500k €">100k - 500k €</option>
+                    <option value="500k - 1M €">500k - 1M €</option>
+                    <option value="1M - 5M €">1M - 5M €</option>
+                    <option value="5M - 10M €">5M - 10M €</option>
+                    <option value="> 10M €">{"> 10M €"}</option>
+                  </select>
+                </div>
+
+                <div className="form-field">
+                  <label className="field-label">Certifications</label>
                   <input
                     type="text"
+                    className="field-input"
                     value={profileData.certifications}
                     onChange={(e) => setProfileData({ ...profileData, certifications: e.target.value })}
                     placeholder="Ex : ISO 9001, Qualibat"
-                  />
-                </div>
-              </div>
-
-              <div className="form-column">
-                <div className="form-group-modern">
-                  <label>Pays</label>
-                  <select
-                    value={profileData.country}
-                    onChange={(e) => setProfileData({ ...profileData, country: e.target.value })}
-                  >
-                    <option value="">Sélectionner</option>
-                    <option value="France">France</option>
-                    <option value="Belgique">Belgique</option>
-                    <option value="Suisse">Suisse</option>
-                    <option value="Luxembourg">Luxembourg</option>
-                    <option value="Canada">Canada</option>
-                  </select>
-                </div>
-
-                <div className="form-group-modern">
-                  <label>Sous-secteur (optionnel)</label>
-                  <input
-                    type="text"
-                    value={profileData.sousSecteur}
-                    onChange={(e) => setProfileData({ ...profileData, sousSecteur: e.target.value })}
-                    placeholder="Ex : Génie civil"
+                    disabled={!isEditingProfile}
                   />
                 </div>
 
-                <div className="form-group-modern">
-                  <label>Chiffre d'affaires annuel</label>
-                  <select
-                    value={profileData.revenue}
-                    onChange={(e) => setProfileData({ ...profileData, revenue: e.target.value })}
-                  >
-                    <option value="">Sélectionner</option>
-                    <option value="Moins de 100 000 €">{"< 100k €"}</option>
-                    <option value="100 000 € - 500 000 €">100k - 500k €</option>
-                    <option value="500 000 € - 1 M€">500k - 1M €</option>
-                    <option value="1 M€ - 5 M€">1M - 5M €</option>
-                    <option value="5 M€ - 10 M€">5M - 10M €</option>
-                    <option value="Plus de 10 M€">{"> 10M €"}</option>
-                  </select>
-                </div>
-
-                <div className="form-group-modern">
-                  <label>Site web / LinkedIn</label>
+                <div className="form-field">
+                  <label className="field-label">Site web</label>
                   <input
                     type="url"
+                    className="field-input"
                     value={profileData.siteWeb}
                     onChange={(e) => setProfileData({ ...profileData, siteWeb: e.target.value })}
                     placeholder="https://votre-site.com"
+                    disabled={!isEditingProfile}
                   />
                 </div>
-              </div>
 
-              <div className="form-group-modern full-width">
-                <label>Description de l'entreprise</label>
-                <textarea
-                  rows="4"
-                  value={profileData.description}
-                  onChange={(e) => setProfileData({ ...profileData, description: e.target.value })}
-                  placeholder="Présentez brièvement votre activité..."
-                />
+                <div className="form-field full-width">
+                  <label className="field-label">Description</label>
+                  <textarea
+                    className="field-textarea"
+                    rows="4"
+                    value={profileData.description}
+                    onChange={(e) => setProfileData({ ...profileData, description: e.target.value })}
+                    placeholder="Présentez brièvement votre activité..."
+                    disabled={!isEditingProfile}
+                  />
+                </div>
               </div>
             </form>
           </section>
