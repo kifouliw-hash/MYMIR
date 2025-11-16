@@ -14,7 +14,11 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (user) {
-      setProfileData(user);
+      // Fusionner user et metadata pour faciliter l'accès
+      setProfileData({
+        ...user,
+        ...(user.metadata || {})
+      });
     }
 
     // Générer les particules
@@ -82,7 +86,7 @@ const Dashboard = () => {
         </div>
 
         <div className="user-info">
-          <p id="companyName">{user?.companyName || 'Chargement...'}</p>
+          <p id="companyName">{profileData?.companyName || profileData?.name || 'Chargement...'}</p>
         </div>
 
         <div className="nav-section">
@@ -131,7 +135,7 @@ const Dashboard = () => {
         {activeSection === 'home' && (
           <section id="home" className="section active">
             <div className="welcome-card">
-              <h1>Bienvenue <span style={{ color: '#facc15' }}>👋</span></h1>
+              <h1>Bienvenue {profileData?.name || ''} <span style={{ color: '#facc15' }}>👋</span></h1>
               <p>
                 Heureux de vous revoir sur MyMír, vous êtes prêt à optimiser vos appels d'offres ?
               </p>
@@ -147,7 +151,7 @@ const Dashboard = () => {
 
         {/* Section Analyse */}
         {activeSection === 'analyse' && (
-          <section id="analyse" className="section">
+          <section id="analyse" className="section active">
             <h2>📊 Analyse de vos opportunités</h2>
             <p style={{ color: 'var(--text-dim)', marginBottom: '25px' }}>
               Importez un DCE ou document d'appel d'offres — MyMír détecte les critères essentiels
@@ -189,7 +193,7 @@ const Dashboard = () => {
 
         {/* Section Aide */}
         {activeSection === 'aide' && (
-          <section id="aide" className="section">
+          <section id="aide" className="section active">
             <h2>💡 Aide à la réponse</h2>
             <p>Optimisez vos documents de réponse grâce à nos recommandations expertes.</p>
 
@@ -217,7 +221,7 @@ const Dashboard = () => {
 
         {/* Section Historique */}
         {activeSection === 'historique' && (
-          <section id="historique" className="section">
+          <section id="historique" className="section active">
             <h2>📁 Historique de vos analyses</h2>
             <table className="history-table">
               <thead>
@@ -242,10 +246,10 @@ const Dashboard = () => {
 
         {/* Section Profil */}
         {activeSection === 'profil' && (
-          <section id="profil" className="section">
+          <section id="profil" className="section active">
             <h2>👤 Profil de l'entreprise</h2>
 
-            {!isEditingProfile && (
+            {!isEditingProfile && profileData && (
               <>
                 <button
                   className="edit-btn"
@@ -255,14 +259,14 @@ const Dashboard = () => {
                 </button>
 
                 <div className="profile-card">
-                  <p><strong>Entreprise :</strong> {profileData?.companyName || '—'}</p>
-                  <p><strong>Email :</strong> {profileData?.email || '—'}</p>
-                  <p><strong>Pays :</strong> {profileData?.country || '—'}</p>
-                  <p><strong>Secteur :</strong> {profileData?.sector || '—'}</p>
-                  <p><strong>Effectif :</strong> {profileData?.employees || '—'}</p>
-                  <p><strong>Chiffre d'affaires :</strong> {profileData?.revenue || '—'}</p>
-                  <p><strong>Certifications :</strong> {profileData?.certifications || '—'}</p>
-                  <p><strong>Description :</strong> {profileData?.description || '—'}</p>
+                  <p><strong>Nom :</strong> {profileData.name || '—'}</p>
+                  <p><strong>Email :</strong> {profileData.email || '—'}</p>
+                  <p><strong>Entreprise :</strong> {profileData.companyName || '—'}</p>
+                  <p><strong>Pays :</strong> {profileData.country || '—'}</p>
+                  <p><strong>Secteur :</strong> {profileData.sector || '—'}</p>
+                  <p><strong>Effectif :</strong> {profileData.employees || '—'}</p>
+                  <p><strong>Chiffre d'affaires :</strong> {profileData.revenue || '—'}</p>
+                  <p><strong>Certifications :</strong> {profileData.certifications || '—'}</p>
                 </div>
               </>
             )}
@@ -313,11 +317,29 @@ const Dashboard = () => {
                   </div>
 
                   <div className="form-group">
-                    <label>Description :</label>
-                    <textarea
-                      rows="3"
-                      value={profileData.description || ''}
-                      onChange={(e) => setProfileData({ ...profileData, description: e.target.value })}
+                    <label>Effectif :</label>
+                    <input
+                      type="text"
+                      value={profileData.employees || ''}
+                      onChange={(e) => setProfileData({ ...profileData, employees: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Chiffre d'affaires :</label>
+                    <input
+                      type="text"
+                      value={profileData.revenue || ''}
+                      onChange={(e) => setProfileData({ ...profileData, revenue: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Certifications :</label>
+                    <input
+                      type="text"
+                      value={profileData.certifications || ''}
+                      onChange={(e) => setProfileData({ ...profileData, certifications: e.target.value })}
                     />
                   </div>
                 </form>
