@@ -2,6 +2,19 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 
+// Déterminer l'URL de l'API selon l'environnement
+const getApiUrl = () => {
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  // En production, utiliser l'URL du serveur Render backend
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://mymir.onrender.com';
+  }
+  // En développement, utiliser localhost
+  return 'http://localhost:3000';
+};
+
 module.exports = {
   entry: './src/index.js',
   output: {
@@ -44,7 +57,7 @@ module.exports = {
       minify: false, // Évite l'évaluation du code pendant le build
     }),
     new webpack.DefinePlugin({
-      'process.env.REACT_APP_API_URL': JSON.stringify(process.env.REACT_APP_API_URL || 'http://localhost:3000'),
+      'process.env.REACT_APP_API_URL': JSON.stringify(getApiUrl()),
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
     }),
   ],
