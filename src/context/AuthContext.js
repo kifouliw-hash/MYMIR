@@ -17,16 +17,18 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Vérifier si l'utilisateur est déjà connecté
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('myMirUser');
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      const userData = localStorage.getItem('myMirUser');
 
-    if (token && userData) {
-      try {
-        setUser(JSON.parse(userData));
-      } catch (error) {
-        console.error('Erreur lors du parsing des données utilisateur:', error);
-        localStorage.removeItem('token');
-        localStorage.removeItem('myMirUser');
+      if (token && userData) {
+        try {
+          setUser(JSON.parse(userData));
+        } catch (error) {
+          console.error('Erreur lors du parsing des données utilisateur:', error);
+          localStorage.removeItem('token');
+          localStorage.removeItem('myMirUser');
+        }
       }
     }
     setLoading(false);
@@ -38,8 +40,10 @@ export const AuthProvider = ({ children }) => {
       const { data } = response;
 
       if (data.success && data.token) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('myMirUser', JSON.stringify(data.user));
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('myMirUser', JSON.stringify(data.user));
+        }
         setUser(data.user);
         return { success: true };
       } else {
@@ -76,7 +80,9 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     authAPI.logout();
     setUser(null);
-    window.location.href = '/';
+    if (typeof window !== 'undefined') {
+      window.location.href = '/';
+    }
   };
 
   const value = {

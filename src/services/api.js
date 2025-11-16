@@ -12,9 +12,11 @@ const api = axios.create({
 // Intercepteur pour ajouter le token à chaque requête
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
@@ -27,7 +29,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (typeof window !== 'undefined' && error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('myMirUser');
       window.location.href = '/login';
@@ -40,8 +42,10 @@ export const authAPI = {
   login: (email, password) => api.post('/login', { email, password }),
   register: (userData) => api.post('/register', userData),
   logout: () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('myMirUser');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('myMirUser');
+    }
   },
 };
 

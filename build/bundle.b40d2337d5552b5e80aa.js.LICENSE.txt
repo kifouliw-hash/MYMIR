@@ -2,7 +2,7 @@
 
 /**
  * @license React
- * react-dom-client.production.js
+ * react-dom-client.development.js
  *
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -12,7 +12,7 @@
 
 /**
  * @license React
- * react-dom.production.js
+ * react-dom.development.js
  *
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -22,17 +22,7 @@
 
 /**
  * @license React
- * react.production.js
- *
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-/**
- * @license React
- * scheduler.production.js
+ * scheduler.development.js
  *
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
