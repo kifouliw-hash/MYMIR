@@ -40,17 +40,16 @@ const Dashboard = () => {
       });
     }
 
-    // Générer les particules
+    // Particules
     const container = document.getElementById('particles');
-    if (container) {
-      for (let i = 0; i < 45; i++) {
+    if (container && container.childNodes.length === 0) {
+      for (let i = 0; i < 50; i++) {
         const p = document.createElement('div');
         p.classList.add('particle');
         p.style.left = Math.random() * 100 + 'vw';
         p.style.bottom = Math.random() * -100 + 'vh';
         p.style.animationDuration = 8 + Math.random() * 12 + 's';
         p.style.animationDelay = Math.random() * -20 + 's';
-        p.style.opacity = 0.3 + Math.random() * 0.5;
         container.appendChild(p);
       }
     }
@@ -70,8 +69,8 @@ const Dashboard = () => {
       const response = await analysisAPI.uploadDocument(formData);
       setAnalysisResult(response.data);
     } catch (error) {
-      console.error('Erreur lors de l\'upload:', error);
-      alert('Erreur lors de l\'analyse du document');
+      console.error('Erreur upload:', error);
+      alert('❌ Erreur lors de l\'analyse');
     } finally {
       setUploadProgress(false);
     }
@@ -80,7 +79,7 @@ const Dashboard = () => {
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       const dataToSend = {
         companyName: profileData.companyName,
@@ -97,8 +96,8 @@ const Dashboard = () => {
       await userAPI.updateProfile(dataToSend);
       alert('✅ Profil mis à jour avec succès !');
     } catch (error) {
-      console.error('Erreur lors de la mise à jour:', error);
-      alert('❌ Erreur lors de la mise à jour du profil');
+      console.error('Erreur MAJ profil:', error);
+      alert('❌ Erreur lors de la mise à jour');
     } finally {
       setLoading(false);
     }
@@ -110,90 +109,127 @@ const Dashboard = () => {
       <div id="halo2"></div>
       <div id="particles"></div>
 
-      {/* Sidebar */}
+      {/* SIDEBAR */}
       <aside className="sidebar">
         <div className="logo-section">
           <div className="logo-circle">
-            <span style={{ fontSize: '24px' }}>M</span>
+            <span>M</span>
           </div>
           <h1>MyMír</h1>
         </div>
 
         <div className="user-info">
-          <p id="companyName">{profileData.companyName || profileData.name || 'Chargement...'}</p>
+          <div className="user-avatar">
+            {(profileData.companyName || profileData.name || 'U').charAt(0).toUpperCase()}
+          </div>
+          <p className="user-company">{profileData.companyName || profileData.name || 'Chargement...'}</p>
         </div>
 
-        <div className="nav-section">
+        <nav className="nav-section">
           <button
             className={`nav-link ${activeSection === 'home' ? 'active' : ''}`}
             onClick={() => setActiveSection('home')}
           >
-            🏠 Accueil
+            <span className="nav-icon">🏠</span>
+            <span>Accueil</span>
           </button>
           <button
             className={`nav-link ${activeSection === 'analyse' ? 'active' : ''}`}
             onClick={() => setActiveSection('analyse')}
           >
-            📊 Analyse
+            <span className="nav-icon">📊</span>
+            <span>Analyse</span>
           </button>
           <button
             className={`nav-link ${activeSection === 'aide' ? 'active' : ''}`}
             onClick={() => setActiveSection('aide')}
           >
-            💡 Aide à la réponse
+            <span className="nav-icon">💡</span>
+            <span>Aide</span>
           </button>
           <button
             className={`nav-link ${activeSection === 'historique' ? 'active' : ''}`}
             onClick={() => setActiveSection('historique')}
           >
-            📜 Historique
+            <span className="nav-icon">📜</span>
+            <span>Historique</span>
           </button>
           <button
             className={`nav-link ${activeSection === 'profil' ? 'active' : ''}`}
             onClick={() => setActiveSection('profil')}
           >
-            👤 Profil
+            <span className="nav-icon">👤</span>
+            <span>Profil</span>
           </button>
-        </div>
+        </nav>
 
         <div className="logout-section">
           <button className="logout-btn" onClick={logout}>
-            🚪 Déconnexion
+            <span>🚪</span>
+            <span>Déconnexion</span>
           </button>
         </div>
       </aside>
 
-      {/* Contenu principal */}
+      {/* CONTENU PRINCIPAL */}
       <main className="content">
-        {/* Section Accueil */}
+        {/* ACCUEIL */}
         {activeSection === 'home' && (
-          <section id="home" className="section active">
-            <div className="welcome-card">
-              <h1>Bienvenue {profileData.name} <span style={{ color: '#facc15' }}>👋</span></h1>
-              <p>
-                Heureux de vous revoir sur MyMír, vous êtes prêt à optimiser vos appels d'offres ?
+          <section className="section active fade-in">
+            <div className="welcome-card glass-card">
+              <h1 className="welcome-title">
+                Bienvenue {profileData.name} <span className="wave">👋</span>
+              </h1>
+              <p className="welcome-subtitle">
+                Heureux de vous revoir sur MyMír. Prêt à optimiser vos appels d'offres ?
               </p>
               <button
-                className="welcome-btn"
+                className="cta-button"
                 onClick={() => setActiveSection('analyse')}
               >
-                Lancer une analyse
+                <span>Lancer une analyse</span>
+                <span className="arrow">→</span>
               </button>
+            </div>
+
+            <div className="stats-grid">
+              <div className="stat-card glass-card">
+                <div className="stat-icon">📊</div>
+                <div className="stat-content">
+                  <h3>15</h3>
+                  <p>Analyses effectuées</p>
+                </div>
+              </div>
+              <div className="stat-card glass-card">
+                <div className="stat-icon">✅</div>
+                <div className="stat-content">
+                  <h3>87%</h3>
+                  <p>Taux de réussite</p>
+                </div>
+              </div>
+              <div className="stat-card glass-card">
+                <div className="stat-icon">⏱️</div>
+                <div className="stat-content">
+                  <h3>48h</h3>
+                  <p>Gain de temps moyen</p>
+                </div>
+              </div>
             </div>
           </section>
         )}
 
-        {/* Section Analyse */}
+        {/* ANALYSE */}
         {activeSection === 'analyse' && (
-          <section id="analyse" className="section active">
-            <h2>📊 Analyse de vos opportunités</h2>
-            <p style={{ color: '#94a3b8', marginBottom: '25px' }}>
-              Importez un DCE ou document d'appel d'offres — MyMír détecte les critères essentiels
-              et vous guide dans votre réponse.
+          <section className="section active fade-in">
+            <h2 className="section-title">📊 Analyse de vos opportunités</h2>
+            <p className="section-subtitle">
+              Importez un DCE ou document d'appel d'offres — MyMír détecte les critères essentiels.
             </p>
 
-            <div className="upload-area">
-              <p>Glissez votre dossier DCE ici ou cliquez pour le sélectionner.</p>
+            <div className="upload-zone glass-card">
+              <div className="upload-icon">📁</div>
+              <h3>Glissez votre dossier DCE ici</h3>
+              <p>ou cliquez pour sélectionner</p>
               <input
                 type="file"
                 id="fileInput"
@@ -202,103 +238,124 @@ const Dashboard = () => {
                 hidden
               />
               <button
-                className="analysis-btn"
+                className="upload-button"
                 onClick={() => document.getElementById('fileInput').click()}
+                disabled={uploadProgress}
               >
-                Choisir un fichier
+                {uploadProgress ? 'Analyse en cours...' : 'Choisir un fichier'}
               </button>
             </div>
 
             {uploadProgress && (
-              <div className="loading">
+              <div className="loading-container">
                 <div className="spinner"></div>
                 <p>Analyse du dossier en cours...</p>
               </div>
             )}
 
             {analysisResult && (
-              <div className="result-area">
-                <h3>Résultats de l'analyse</h3>
+              <div className="result-card glass-card">
+                <h3>✅ Résultats de l'analyse</h3>
                 <pre>{JSON.stringify(analysisResult, null, 2)}</pre>
               </div>
             )}
           </section>
         )}
 
-        {/* Section Aide */}
+        {/* AIDE */}
         {activeSection === 'aide' && (
-          <section id="aide" className="section active">
-            <h2>💡 Aide à la réponse</h2>
-            <p style={{ color: '#94a3b8', marginBottom: '25px' }}>
-              Optimisez vos documents de réponse grâce à nos recommandations expertes.
+          <section className="section active fade-in">
+            <h2 className="section-title">💡 Aide à la réponse</h2>
+            <p className="section-subtitle">
+              Optimisez vos documents de réponse grâce à nos recommandations.
             </p>
 
-            <div className="cards">
-              <div className="help-card">
-                <h3>📝 Lettre de candidature</h3>
-                <p>Modèle de lettre professionnelle et personnalisable selon votre entreprise.</p>
-                <button className="secondary-btn">Générer un modèle</button>
+            <div className="cards-grid">
+              <div className="help-card glass-card">
+                <div className="card-icon">📝</div>
+                <h3>Lettre de candidature</h3>
+                <p>Modèle professionnel personnalisable selon votre entreprise.</p>
+                <button className="secondary-btn">Générer →</button>
               </div>
 
-              <div className="help-card">
-                <h3>🏗️ Description des moyens</h3>
-                <p>Rédigez automatiquement la partie sur vos moyens humains et matériels.</p>
-                <button className="secondary-btn">Créer un descriptif</button>
+              <div className="help-card glass-card">
+                <div className="card-icon">🏗️</div>
+                <h3>Description des moyens</h3>
+                <p>Rédigez automatiquement vos moyens humains et matériels.</p>
+                <button className="secondary-btn">Créer →</button>
               </div>
 
-              <div className="help-card">
-                <h3>✅ Check-list finale</h3>
-                <p>Vérifiez que votre dossier est complet avant le dépôt.</p>
-                <button className="secondary-btn">Voir la check-list</button>
+              <div className="help-card glass-card">
+                <div className="card-icon">✅</div>
+                <h3>Check-list finale</h3>
+                <p>Vérifiez que votre dossier est complet avant dépôt.</p>
+                <button className="secondary-btn">Voir →</button>
               </div>
             </div>
           </section>
         )}
 
-        {/* Section Historique */}
+        {/* HISTORIQUE */}
         {activeSection === 'historique' && (
-          <section id="historique" className="section active">
-            <h2>📁 Historique de vos analyses</h2>
-            <table className="history-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Nom du marché</th>
-                  <th>Score</th>
-                  <th>Statut</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>10/10/2025</td>
-                  <td>Réhabilitation école communale</td>
-                  <td>88%</td>
-                  <td>Terminé</td>
-                </tr>
-              </tbody>
-            </table>
+          <section className="section active fade-in">
+            <h2 className="section-title">📁 Historique de vos analyses</h2>
+            
+            <div className="table-container glass-card">
+              <table className="modern-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Nom du marché</th>
+                    <th>Score</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>16/11/2025</td>
+                    <td>Réhabilitation école communale</td>
+                    <td><span className="badge badge-success">88%</span></td>
+                    <td><span className="status status-done">Terminé</span></td>
+                    <td>
+                      <button className="icon-btn">📄</button>
+                      <button className="icon-btn">📥</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>12/11/2025</td>
+                    <td>Construction centre sportif</td>
+                    <td><span className="badge badge-warning">72%</span></td>
+                    <td><span className="status status-progress">En cours</span></td>
+                    <td>
+                      <button className="icon-btn">📄</button>
+                      <button className="icon-btn">📥</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </section>
         )}
 
-        {/* Section Profil */}
+        {/* PROFIL */}
         {activeSection === 'profil' && (
-          <section id="profil" className="section active">
+          <section className="section active fade-in">
             <div className="profile-header">
-              <h2>👤 Profil de l'entreprise</h2>
+              <h2 className="section-title">👤 Profil de l'entreprise</h2>
               <button
                 className="save-btn-header"
                 onClick={handleProfileUpdate}
                 disabled={loading}
               >
-                💾 {loading ? 'Enregistrement...' : 'Enregistrer'}
+                {loading ? '⏳ Enregistrement...' : '💾 Enregistrer'}
               </button>
             </div>
 
-            <form className="profile-form-grid" onSubmit={handleProfileUpdate}>
-              {/* Colonne gauche */}
+            <form className="profile-form-grid glass-card" onSubmit={handleProfileUpdate}>
               <div className="form-column">
                 <div className="form-group-modern">
-                  <label>Entreprise :</label>
+                  <label>Entreprise</label>
                   <input
                     type="text"
                     value={profileData.companyName}
@@ -308,31 +365,30 @@ const Dashboard = () => {
                 </div>
 
                 <div className="form-group-modern">
-                  <label>Secteur :</label>
+                  <label>Secteur</label>
                   <select
                     value={profileData.sector}
                     onChange={(e) => setProfileData({ ...profileData, sector: e.target.value })}
                   >
-                    <option value="">Sélectionner un secteur</option>
+                    <option value="">Sélectionner</option>
                     <option value="BTP / Construction">BTP / Construction</option>
                     <option value="Conseil / Ingénierie">Conseil / Ingénierie</option>
-                    <option value="Informatique / Numérique">Informatique / Numérique</option>
-                    <option value="Services aux entreprises">Services aux entreprises</option>
-                    <option value="Santé / Social">Santé / Social</option>
-                    <option value="Transport / Logistique">Transport / Logistique</option>
-                    <option value="Environnement / Énergie">Environnement / Énergie</option>
-                    <option value="Autre">Autre</option>
+                    <option value="Informatique">Informatique</option>
+                    <option value="Services">Services</option>
+                    <option value="Santé">Santé</option>
+                    <option value="Transport">Transport</option>
+                    <option value="Environnement">Environnement</option>
                   </select>
                 </div>
 
                 <div className="form-group-modern">
-                  <label>Effectif :</label>
+                  <label>Effectif</label>
                   <select
                     value={profileData.effectif}
                     onChange={(e) => setProfileData({ ...profileData, effectif: e.target.value })}
                   >
                     <option value="">Sélectionner</option>
-                    <option value="1">1 (auto-entrepreneur)</option>
+                    <option value="1">1</option>
                     <option value="2-5">2-5</option>
                     <option value="6-20">6-20</option>
                     <option value="21-50">21-50</option>
@@ -342,7 +398,7 @@ const Dashboard = () => {
                 </div>
 
                 <div className="form-group-modern">
-                  <label>Certifications :</label>
+                  <label>Certifications</label>
                   <input
                     type="text"
                     value={profileData.certifications}
@@ -352,52 +408,50 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Colonne droite */}
               <div className="form-column">
                 <div className="form-group-modern">
-                  <label>Pays :</label>
+                  <label>Pays</label>
                   <select
                     value={profileData.country}
                     onChange={(e) => setProfileData({ ...profileData, country: e.target.value })}
                   >
-                    <option value="">Sélectionner un pays</option>
+                    <option value="">Sélectionner</option>
                     <option value="France">France</option>
                     <option value="Belgique">Belgique</option>
                     <option value="Suisse">Suisse</option>
                     <option value="Luxembourg">Luxembourg</option>
                     <option value="Canada">Canada</option>
-                    <option value="Autre">Autre</option>
                   </select>
                 </div>
 
                 <div className="form-group-modern">
-                  <label>Sous-secteur (optionnel) :</label>
+                  <label>Sous-secteur (optionnel)</label>
                   <input
                     type="text"
                     value={profileData.sousSecteur}
                     onChange={(e) => setProfileData({ ...profileData, sousSecteur: e.target.value })}
-                    placeholder="Ex : Génie civil, Électricité..."
+                    placeholder="Ex : Génie civil"
                   />
                 </div>
 
                 <div className="form-group-modern">
-                  <label>Chiffre d'affaires annuel :</label>
+                  <label>Chiffre d'affaires annuel</label>
                   <select
                     value={profileData.revenue}
                     onChange={(e) => setProfileData({ ...profileData, revenue: e.target.value })}
                   >
                     <option value="">Sélectionner</option>
-                    <option value="Moins de 100 000 €">Moins de 100 000 €</option>
-                    <option value="100 000 € - 500 000 €">100 000 € - 500 000 €</option>
-                    <option value="500 000 € - 1 M€">500 000 € - 1 M€</option>
-                    <option value="1 M€ - 5 M€">1 M€ - 5 M€</option>
-                    <option value="5 M€ - 10 M€">5 M€ - 10 M€</option>
-                    <option value="Plus de 10 M€">Plus de 10 M€</option>
+                    <option value="Moins de 100 000 €">{"< 100k €"}</option>
+                    <option value="100 000 € - 500 000 €">100k - 500k €</option>
+                    <option value="500 000 € - 1 M€">500k - 1M €</option>
+                    <option value="1 M€ - 5 M€">1M - 5M €</option>
+                    <option value="5 M€ - 10 M€">5M - 10M €</option>
+                    <option value="Plus de 10 M€">{"> 10M €"}</option>
                   </select>
                 </div>
 
                 <div className="form-group-modern">
-                  <label>Site web / LinkedIn :</label>
+                  <label>Site web / LinkedIn</label>
                   <input
                     type="url"
                     value={profileData.siteWeb}
@@ -407,9 +461,8 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Description pleine largeur */}
               <div className="form-group-modern full-width">
-                <label>Description de l'entreprise (optionnel) :</label>
+                <label>Description de l'entreprise</label>
                 <textarea
                   rows="4"
                   value={profileData.description}
