@@ -429,21 +429,32 @@ app.put("/api/update-profile", async (req, res) => {
 });
 
 // ===================================================
-// 🌍 ROUTES FRONTEND FIX — Compatible Render
+// 🌍 ROUTES FRONTEND — React App
 // ===================================================
-const publicDir = path.join(__dirname, "public");
+// En production, servir les fichiers React build
+// En développement, servir les fichiers HTML statiques
+const isProduction = process.env.NODE_ENV === 'production';
+const frontendDir = isProduction
+  ? path.join(__dirname, "build")
+  : path.join(__dirname, "public");
+
+console.log(`📂 Serving frontend from: ${frontendDir}`);
+console.log(`🔧 Mode: ${isProduction ? 'PRODUCTION (React)' : 'DEVELOPMENT (Static HTML)'}`);
 
 // Sert correctement les fichiers statiques (JS, CSS, PNG…)
-app.use(express.static(publicDir, {
-  extensions: ["html"]
-}));
+app.use(express.static(frontendDir));
 
 // Route fallback : renvoie index.html pour les pages frontend (SPA)
 app.get("*", (req, res) => {
   // Ne pas intercepter les API !
   if (req.path.startsWith("/api")) return res.status(404).json({ error: "Route API inconnue" });
 
-  res.sendFile(path.join(publicDir, "index.html"));
+  const indexPath = path.join(frontendDir, "index.html");
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).send("Application non disponible. Veuillez exécuter 'npm run build' en production.");
+  }
 });
 
 
