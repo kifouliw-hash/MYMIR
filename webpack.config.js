@@ -36,7 +36,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: './public/index-react.html',
+      template: './public/index.html',
       filename: 'index.html',
     }),
   ],
