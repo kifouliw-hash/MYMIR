@@ -39,6 +39,9 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './public/index.html',
       filename: 'index.html',
+      inject: 'body',
+      scriptLoading: 'defer',
+      minify: false, // Évite l'évaluation du code pendant le build
     }),
     new webpack.DefinePlugin({
       'process.env.REACT_APP_API_URL': JSON.stringify(process.env.REACT_APP_API_URL || 'http://localhost:3000'),
