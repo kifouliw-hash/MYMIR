@@ -28,9 +28,15 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+  background: linear-gradient(135deg, #b1c5ff 0%, #d5b3ff 40%, #ffc1d2 100%);
+animation: bgShift 12s ease-in-out infinite;
   position: relative;
   overflow-x: hidden;
+}
+@keyframes bgShift {
+  0% { filter: hue-rotate(0deg); }
+  50% { filter: hue-rotate(25deg); }
+  100% { filter: hue-rotate(0deg); }
 }
 
 /* Dégradés doux en arrière-plan - Style Stripe */
@@ -60,33 +66,81 @@
   }
 }
 
-/* ===== NAVBAR ===== */
+
+/* =========================================================
+   ✨ HOME + NAVBAR — VERSION PREMIUM STYLE STRIPE
+   Dégradé lumineux, diagonal, animations douces
+   ========================================================= */
+
+.home-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #c7d5ff 0%, #d8c0ff 40%, #ffd3e0 100%);
+  animation: bgShift 12s ease-in-out infinite;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Animation fond qui change très légèrement la teinte */
+@keyframes bgShift {
+  0%   { filter: hue-rotate(0deg); }
+  50%  { filter: hue-rotate(20deg); }
+  100% { filter: hue-rotate(0deg); }
+}
+
+
+/* Dégradé lumineux diagonal — style Stripe */
+.home-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    linear-gradient(165deg,
+      rgba(255, 255, 255, 0.45) 0%,
+      rgba(255, 255, 255, 0) 70%
+    ),
+    radial-gradient(circle at 20% 20%, rgba(139, 92, 246, 0.25) 0%, transparent 60%),
+    radial-gradient(circle at 80% 60%, rgba(236, 72, 153, 0.2) 0%, transparent 60%),
+    radial-gradient(circle at 50% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 60%);
+  filter: blur(70px);
+  opacity: 0.8;
+  transform: rotate(-1deg);
+  z-index: 0;
+}
+
+
+/* =========================================================
+   NAVBAR — VERSION PREMIUM CLAIRE LUMINEUSE (STYLE STRIPE)
+   ========================================================= */
+
 .navbar {
   position: sticky;
   top: 0;
-  background: rgba(15, 23, 42, 0.8);
-  backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 16px 8%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 18px 8%;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(18px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
   z-index: 1000;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  transition: all var(--transition-smooth);
+  transition: all 300ms ease;
 }
 
 .navbar.scrolled {
-  background: rgba(15, 23, 42, 0.95);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
 }
 
-/* Logo Section */
+
+/* LOGO */
 .nav-left {
   display: flex;
   align-items: center;
   gap: 12px;
-  z-index: 1001;
+  cursor: pointer;
 }
 
 .logo {
@@ -101,67 +155,83 @@
   font-size: 24px;
   color: var(--slate-900);
   box-shadow: 0 6px 20px rgba(251, 191, 36, 0.3),
-              0 0 0 3px rgba(251, 191, 36, 0.1);
-  transition: all var(--transition-smooth);
-  cursor: pointer;
+              0 0 0 3px rgba(251, 191, 36, 0.15);
+  transition: all 300ms ease;
 }
 
 .logo:hover {
   transform: scale(1.08) rotate(-5deg);
-  box-shadow: 0 10px 30px rgba(251, 191, 36, 0.4),
-              0 0 0 4px rgba(251, 191, 36, 0.15);
 }
 
+
+/* MARQUE */
 .brand {
   font-size: 24px;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: -0.5px;
-  cursor: pointer;
 }
 
-/* Nav Links */
+
+/* LIENS NAVIGATION — STYLE STRIPE FIN ET MODERNE */
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 32px;
 }
 
 .nav-links a {
-  padding: 10px 20px;
-  color: rgba(255, 255, 255, 0.7);
-  text-decoration: none;
+  font-size: 16px;
   font-weight: 600;
-  font-size: 15px;
-  border-radius: 10px;
-  transition: all var(--transition-smooth);
+  text-decoration: none;
+  padding: 6px 0;
+  color: #1f2937;
   position: relative;
+  transition: color 250ms ease;
 }
 
 .nav-links a:hover {
-  color: rgba(255, 255, 255, 0.95);
-  background: rgba(255, 255, 255, 0.05);
+  color: #622aff;
 }
 
+/* Soulignement animé style Stripe */
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0%;
+  height: 2px;
+  background: #8b5cf6;
+  transition: width 0.25s ease;
+  border-radius: 4px;
+}
+
+.nav-links a:hover::after {
+  width: 100%;
+}
+
+
+/* BOUTON CONNEXION */
 .login-btn {
-  padding: 10px 24px;
+  padding: 10px 22px;
   background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-  color: var(--slate-900);
+  color: #111;
   text-decoration: none;
-  font-weight: 700;
   font-size: 15px;
-  border-radius: 10px;
-  transition: all var(--transition-smooth);
+  font-weight: 700;
+  border-radius: 12px;
   box-shadow: 0 4px 12px rgba(251, 191, 36, 0.25);
-  margin-left: 16px;
+  transition: all 250ms ease;
 }
 
 .login-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(251, 191, 36, 0.35);
 }
+
 
 /* Burger Menu */
 .burger {

@@ -6,7 +6,7 @@
   min-height: 100vh;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-evenly;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
   position: relative;
   overflow: hidden;
@@ -68,7 +68,11 @@
 .login-logo {
   text-align: center;
   margin-bottom: 48px;
+
+  /* 👉 AJOUT pour pousser légèrement vers la gauche */
+  margin-right: 40px;
 }
+
 
 .login-logo-circle {
   width: 88px;
