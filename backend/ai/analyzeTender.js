@@ -5,7 +5,7 @@ import pdfjsLib from "pdfjs-dist/legacy/build/pdf.js";
 import jwt from "jsonwebtoken";
 import pool from "../../db.js";
 
-const openai = new OpenAI({ apiKey: process.env.***REMOVED*** });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // --------------------------------------------------
 // 🔍 Extraction du texte PDF
