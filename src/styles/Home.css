@@ -40,18 +40,10 @@
 }
 
 @keyframes floatingOrbs {
-  0%, 100% { 
-    transform: translate(0, 0) rotate(0deg) scale(1);
-  }
-  25% { 
-    transform: translate(5%, -5%) rotate(90deg) scale(1.05);
-  }
-  50% { 
-    transform: translate(-5%, 5%) rotate(180deg) scale(1.1);
-  }
-  75% { 
-    transform: translate(5%, 5%) rotate(270deg) scale(1.05);
-  }
+  0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  25% { transform: translate(5%, -5%) rotate(90deg) scale(1.05); }
+  50% { transform: translate(-5%, 5%) rotate(180deg) scale(1.1); }
+  75% { transform: translate(5%, 5%) rotate(270deg) scale(1.05); }
 }
 
 .home-page::after {
@@ -69,34 +61,27 @@
 }
 
 @keyframes pulseGlow {
-  0%, 100% { 
-    opacity: 0.6;
-    transform: scale(1);
-  }
-  50% { 
-    opacity: 1;
-    transform: scale(1.1);
-  }
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
 }
 
 .navbar {
   position: sticky;
   top: 0;
-  background: rgba(30, 41, 59, 0.7);
-  backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(251, 191, 36, 0.15);
-  padding: 16px 8%;
+  background: transparent;
+  backdrop-filter: none;
+  border-bottom: none;
+  padding: 24px 8%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   z-index: 1000;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   transition: all var(--transition-smooth);
 }
 
 .navbar.scrolled {
-  background: rgba(30, 41, 59, 0.85);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  background: rgba(30, 41, 59, 0.3);
+  backdrop-filter: blur(10px);
 }
 
 .nav-left {
@@ -145,13 +130,12 @@
 
 .nav-links a {
   padding: 10px 20px;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
   font-weight: 600;
   font-size: 15px;
   border-radius: 10px;
   transition: all var(--transition-smooth);
-  position: relative;
 }
 
 .nav-links a:hover {
@@ -185,11 +169,6 @@
   height: 20px;
   cursor: pointer;
   z-index: 1001;
-  transition: transform var(--transition-smooth);
-}
-
-.burger:hover {
-  transform: scale(1.1);
 }
 
 .burger-line {
@@ -258,14 +237,8 @@
 }
 
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .hero h1 {
@@ -283,7 +256,6 @@
   background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--pink));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  position: relative;
 }
 
 .hero p {
@@ -447,9 +419,9 @@
 }
 
 footer {
-  background: rgba(30, 41, 59, 0.6);
-  backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(251, 191, 36, 0.15);
+  background: transparent;
+  backdrop-filter: none;
+  border-top: none;
   padding: 60px 10% 40px;
   text-align: center;
   margin-top: auto;
@@ -497,13 +469,13 @@ footer {
 
 .footer-bottom {
   padding-top: 32px;
-  border-top: 1px solid rgba(251, 191, 36, 0.15);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.65);
   font-size: 14px;
 }
 
 @media (max-width: 900px) {
-  .navbar { padding: 16px 5%; }
+  .navbar { padding: 20px 5%; }
   .nav-links {
     position: fixed;
     top: 0;
