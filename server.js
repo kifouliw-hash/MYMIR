@@ -37,10 +37,26 @@ const __dirname = path.dirname(__filename);
 
 // Middlewares
 app.use(cookieParser());
+
+const allowedOrigins = [
+  "https://mymir.onrender.com",
+  "https://mymir-react.onrender.com",
+  "http://localhost:3000"
+];
+
 app.use(cors({
-  origin: "https://mymir.on***REMOVED***",
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
 }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
