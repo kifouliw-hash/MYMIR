@@ -7,7 +7,7 @@ const { Pool } = pkg;
 
 // Connexion à la base Render via la variable d'environnement
 const pool = new Pool({
-  connectionString: process.env.***REMOVED***,
+  connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
 
