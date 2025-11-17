@@ -1165,3 +1165,39 @@ body {
     padding: 24px 20px;
   }
 }
+.analysis-summary {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+.summary-item strong {
+  color: #f4b223;
+  font-size: 14px;
+}
+
+.param-content {
+  padding: 20px;
+}
+
+.param-content h3 {
+  color: #f4b223;
+  margin-bottom: 15px;
+}
+
+.param-content p {
+  margin: 10px 0;
+  color: rgba(255, 255, 255, 0.8);
+}

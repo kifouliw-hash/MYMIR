@@ -24,6 +24,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [activeParam, setActiveParam] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -40,8 +42,24 @@ const Dashboard = () => {
         siteWeb: user.metadata?.siteWeb || '',
         description: user.metadata?.description || ''
       });
+      loadHistory();
     }
   }, [user]);
+
+  const loadHistory = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/api/analyses`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setHistory(data);
+      }
+    } catch (error) {
+      console.error('Erreur chargement historique:', error);
+    }
+  };
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -66,6 +84,7 @@ const Dashboard = () => {
       const data = await response.json();
       if (response.ok) {
         setAnalysisResult(data);
+        loadHistory();
       } else {
         alert('❌ ' + (data.message || 'Erreur lors de l\'analyse'));
       }
@@ -75,6 +94,35 @@ const Dashboard = () => {
     } finally {
       setUploadProgress(false);
     }
+  };
+
+  const downloadPDF = async (analysisId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/api/analyses/${analysisId}/pdf`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `analyse-${analysisId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }
+    } catch (error) {
+      console.error('Erreur téléchargement PDF:', error);
+      alert('❌ Erreur lors du téléchargement');
+    }
+  };
+
+  const newAnalysis = () => {
+    setAnalysisResult(null);
+    document.getElementById('fileInput').value = '';
   };
 
   const handleProfileUpdate = async (e) => {
@@ -105,7 +153,6 @@ const Dashboard = () => {
       });
 
       const data = await response.json();
-      
       if (response.ok) {
         alert('✅ Profil mis à jour avec succès !');
         setIsEditingProfile(false);
@@ -120,12 +167,67 @@ const Dashboard = () => {
     }
   };
 
+  const renderParamContent = (param) => {
+    const contents = {
+      support: (
+        <div className="param-content">
+          <h3>Support technique</h3>
+          <p>Email : support@mymir.com</p>
+          <p>Téléphone : +33 1 23 45 67 89</p>
+          <p>Disponible 24/7</p>
+        </div>
+      ),
+      legal: (
+        <div className="param-content">
+          <h3>Mentions légales</h3>
+          <p>MyMír SAS - Capital social : 50 000 €</p>
+          <p>SIRET : 123 456 789 00012</p>
+          <p>Siège social : 123 rue de la Tech, 75001 Paris</p>
+        </div>
+      ),
+      privacy: (
+        <div className="param-content">
+          <h3>Confidentialité</h3>
+          <p>Vos données sont cryptées et sécurisées.</p>
+          <p>Nous ne partageons jamais vos informations.</p>
+          <p>Conformité RGPD garantie.</p>
+        </div>
+      ),
+      terms: (
+        <div className="param-content">
+          <h3>CGU & CGV</h3>
+          <p>Conditions générales d'utilisation</p>
+          <p>Conditions générales de vente</p>
+          <p>Dernière mise à jour : 17/11/2025</p>
+        </div>
+      ),
+      language: (
+        <div className="param-content">
+          <h3>Langue</h3>
+          <select className="field-input">
+            <option>Français (France)</option>
+            <option>English (US)</option>
+            <option>Español</option>
+          </select>
+        </div>
+      ),
+      about: (
+        <div className="param-content">
+          <h3>À propos de MyMír</h3>
+          <p>Version 1.0.0</p>
+          <p>© 2025 MyMír - Tous droits réservés</p>
+          <p>Plateforme d'analyse d'appels d'offres par IA</p>
+        </div>
+      )
+    };
+    return contents[param] || null;
+  };
+
   return (
     <div className="dashboard">
       <div className="background-gradient"></div>
       <div className="mesh-gradient"></div>
 
-      {/* SIDEBAR */}
       <aside className="sidebar">
         <div className="logo-section">
           <div className="logo-container">
@@ -156,6 +258,7 @@ const Dashboard = () => {
             <span className="nav-text">Accueil</span>
             <span className="nav-indicator"></span>
           </button>
+
           <button
             className={`nav-item ${activeSection === 'analyse' ? 'active' : ''}`}
             onClick={() => setActiveSection('analyse')}
@@ -164,6 +267,7 @@ const Dashboard = () => {
             <span className="nav-text">Analyse</span>
             <span className="nav-indicator"></span>
           </button>
+
           <button
             className={`nav-item ${activeSection === 'aide' ? 'active' : ''}`}
             onClick={() => setActiveSection('aide')}
@@ -172,6 +276,7 @@ const Dashboard = () => {
             <span className="nav-text">Aide</span>
             <span className="nav-indicator"></span>
           </button>
+
           <button
             className={`nav-item ${activeSection === 'historique' ? 'active' : ''}`}
             onClick={() => setActiveSection('historique')}
@@ -180,6 +285,7 @@ const Dashboard = () => {
             <span className="nav-text">Historique</span>
             <span className="nav-indicator"></span>
           </button>
+
           <button
             className={`nav-item ${activeSection === 'profil' ? 'active' : ''}`}
             onClick={() => setActiveSection('profil')}
@@ -188,6 +294,7 @@ const Dashboard = () => {
             <span className="nav-text">Profil</span>
             <span className="nav-indicator"></span>
           </button>
+
           <button
             className={`nav-item ${activeSection === 'parametres' ? 'active' : ''}`}
             onClick={() => setActiveSection('parametres')}
@@ -206,9 +313,7 @@ const Dashboard = () => {
         </div>
       </aside>
 
-      {/* CONTENU PRINCIPAL */}
       <main className="main-content">
-        {/* ACCUEIL */}
         {activeSection === 'home' && (
           <section className="section">
             <div className="hero-card">
@@ -231,7 +336,7 @@ const Dashboard = () => {
                   <span className="metric-icon">📊</span>
                 </div>
                 <div className="metric-content">
-                  <h3 className="metric-value">24</h3>
+                  <h3 className="metric-value">{history.length}</h3>
                   <p className="metric-label">Analyses</p>
                 </div>
                 <div className="metric-trend positive">↗ +12%</div>
@@ -262,7 +367,6 @@ const Dashboard = () => {
           </section>
         )}
 
-        {/* ANALYSE */}
         {activeSection === 'analyse' && (
           <section className="section">
             <div className="section-header">
@@ -302,14 +406,40 @@ const Dashboard = () => {
 
             {analysisResult && (
               <div className="result-card">
-                <h3 className="result-title">✅ Analyse terminée</h3>
-                <pre className="result-content">{JSON.stringify(analysisResult, null, 2)}</pre>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+                  <h3 className="result-title">✅ Analyse terminée</h3>
+                  <div style={{display: 'flex', gap: '10px'}}>
+                    <button className="btn-primary" onClick={() => downloadPDF(analysisResult._id)}>
+                      📥 Télécharger PDF
+                    </button>
+                    <button className="btn-secondary" onClick={newAnalysis}>
+                      🔄 Nouvelle analyse
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="analysis-summary">
+                  <div className="summary-item">
+                    <strong>Marché :</strong> {analysisResult.analysis?.title || 'N/A'}
+                  </div>
+                  <div className="summary-item">
+                    <strong>Score :</strong> <span className="score-badge high">{analysisResult.analysis?.opportunity || 'N/A'}</span>
+                  </div>
+                  <div className="summary-item">
+                    <strong>Date limite :</strong> {analysisResult.analysis?.date_limite || 'N/A'}
+                  </div>
+                  <div className="summary-item">
+                    <strong>Contexte :</strong> {analysisResult.analysis?.contexte || 'N/A'}
+                  </div>
+                  <div className="summary-item">
+                    <strong>Recommandations :</strong> {analysisResult.analysis?.recommendations || 'N/A'}
+                  </div>
+                </div>
               </div>
             )}
           </section>
         )}
 
-        {/* AIDE */}
         {activeSection === 'aide' && (
           <section className="section">
             <div className="section-header">
@@ -350,7 +480,6 @@ const Dashboard = () => {
           </section>
         )}
 
-        {/* HISTORIQUE */}
         {activeSection === 'historique' && (
           <section className="section">
             <div className="section-header">
@@ -370,33 +499,23 @@ const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td className="table-date">16 Nov 2025</td>
-                    <td className="table-title">Réhabilitation école communale</td>
-                    <td><span className="score-badge high">88%</span></td>
-                    <td><span className="status-badge success">Terminé</span></td>
-                    <td className="table-actions">
-                      <button className="action-btn">📄</button>
-                      <button className="action-btn">📥</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="table-date">12 Nov 2025</td>
-                    <td className="table-title">Construction centre sportif</td>
-                    <td><span className="score-badge medium">72%</span></td>
-                    <td><span className="status-badge pending">En cours</span></td>
-                    <td className="table-actions">
-                      <button className="action-btn">📄</button>
-                      <button className="action-btn">📥</button>
-                    </td>
-                  </tr>
+                  {history.map((item) => (
+                    <tr key={item._id}>
+                      <td className="table-date">{new Date(item.generated_at).toLocaleDateString('fr-FR')}</td>
+                      <td className="table-title">{item.analysis?.title || 'Sans titre'}</td>
+                      <td><span className="score-badge high">{item.analysis?.opportunity || 'N/A'}</span></td>
+                      <td><span className="status-badge success">Terminé</span></td>
+                      <td className="table-actions">
+                        <button className="action-btn" onClick={() => downloadPDF(item._id)}>📥</button>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           </section>
         )}
 
-        {/* PROFIL */}
         {activeSection === 'profil' && (
           <section className="section">
             <div className="profile-header-bar">
@@ -572,7 +691,6 @@ const Dashboard = () => {
           </section>
         )}
 
-        {/* PARAMÈTRES */}
         {activeSection === 'parametres' && (
           <section className="section">
             <div className="section-header">
@@ -581,7 +699,7 @@ const Dashboard = () => {
             </div>
 
             <div className="tools-grid">
-              <div className="tool-card">
+              <div className="tool-card" onClick={() => setActiveParam(activeParam === 'support' ? null : 'support')}>
                 <div className="tool-icon">📧</div>
                 <h3 className="tool-title">Support technique</h3>
                 <p className="tool-description">
@@ -590,7 +708,7 @@ const Dashboard = () => {
                 <button className="tool-btn">Contacter →</button>
               </div>
 
-              <div className="tool-card">
+              <div className="tool-card" onClick={() => setActiveParam(activeParam === 'legal' ? null : 'legal')}>
                 <div className="tool-icon">📄</div>
                 <h3 className="tool-title">Mentions légales</h3>
                 <p className="tool-description">
@@ -599,7 +717,7 @@ const Dashboard = () => {
                 <button className="tool-btn">Consulter →</button>
               </div>
 
-              <div className="tool-card">
+              <div className="tool-card" onClick={() => setActiveParam(activeParam === 'privacy' ? null : 'privacy')}>
                 <div className="tool-icon">🔒</div>
                 <h3 className="tool-title">Confidentialité</h3>
                 <p className="tool-description">
@@ -608,7 +726,7 @@ const Dashboard = () => {
                 <button className="tool-btn">Lire →</button>
               </div>
 
-              <div className="tool-card">
+              <div className="tool-card" onClick={() => setActiveParam(activeParam === 'terms' ? null : 'terms')}>
                 <div className="tool-icon">📋</div>
                 <h3 className="tool-title">CGU & CGV</h3>
                 <p className="tool-description">
@@ -617,7 +735,7 @@ const Dashboard = () => {
                 <button className="tool-btn">Consulter →</button>
               </div>
 
-              <div className="tool-card">
+              <div className="tool-card" onClick={() => setActiveParam(activeParam === 'language' ? null : 'language')}>
                 <div className="tool-icon">🌐</div>
                 <h3 className="tool-title">Langue</h3>
                 <p className="tool-description">
@@ -626,7 +744,7 @@ const Dashboard = () => {
                 <button className="tool-btn">Modifier →</button>
               </div>
 
-              <div className="tool-card">
+              <div className="tool-card" onClick={() => setActiveParam(activeParam === 'about' ? null : 'about')}>
                 <div className="tool-icon">ℹ️</div>
                 <h3 className="tool-title">À propos</h3>
                 <p className="tool-description">
@@ -635,6 +753,12 @@ const Dashboard = () => {
                 <button className="tool-btn">Découvrir →</button>
               </div>
             </div>
+
+            {activeParam && (
+              <div className="result-card" style={{marginTop: '30px'}}>
+                {renderParamContent(activeParam)}
+              </div>
+            )}
           </section>
         )}
       </main>
