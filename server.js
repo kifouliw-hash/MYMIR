@@ -298,7 +298,7 @@ app.post("/api/save-analysis", async (req, res) => {
 // ===================================================
 // 📄 Téléchargement du rapport PDF — Version premium stylisée MyMír
 // ===================================================
-app.get("/api/analysis/:id/pdf", async (req, res) => {
+app.get("/api/analyses/:id/pdf", async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token)
@@ -361,24 +361,25 @@ app.get("/api/analyses", async (req, res) => {
     const userId = decoded.id;
 
     const { rows } = await pool.query(
-      "SELECT id, title, score, created_at FROM analyses WHERE user_id = $1 ORDER BY created_at DESC",
+      "SELECT id, title, score, analysis, created_at FROM analyses WHERE user_id = $1 ORDER BY created_at DESC",
       [userId]
     );
 
-    res.json({
-      success: true,
-      analyses: rows || [],
-    });
+    // Parse l'objet analysis pour chaque ligne
+    const analyses = rows.map(row => ({
+      _id: row.id,
+      title: row.title,
+      score: row.score,
+      analysis: typeof row.analysis === 'string' ? JSON.parse(row.analysis) : row.analysis,
+      generated_at: row.created_at
+    }));
+
+    res.json(analyses);
   } catch (err) {
     console.error("❌ Erreur /api/analyses :", err);
-    res.status(500).json({
-      success: false,
-      message: "Erreur lors du chargement des analyses.",
-    });
+    res.status(500).json({ success: false, message: "Erreur lors du chargement des analyses." });
   }
 });
-
-
 
 // ===================================================
 // 🧩 MISE À JOUR DU PROFIL UTILISATEUR
