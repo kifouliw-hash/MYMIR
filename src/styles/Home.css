@@ -23,114 +23,145 @@
   --shadow-soft: 0 10px 40px rgba(0, 0, 0, 0.08);
 }
 
-/* ===== PAGE BACKGROUND – STYLE STRIPE DOUX ================================== */
-
+/* ===== PAGE CONTAINER ===== */
 .home-page {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #dbeafe 0%, #c7d2fe 40%, #e9d5ff 100%);
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #334155 100%);
   position: relative;
   overflow-x: hidden;
 }
 
-/* Dégradé dynamique flottant */
+/* Dégradés doux en arrière-plan - Style Stripe */
 .home-page::before {
   content: '';
   position: fixed;
   top: 0;
   left: 0;
-  width: 140%;
-  height: 140%;
+  width: 100%;
+  height: 100%;
   background: 
-    radial-gradient(circle at 20% 30%, rgba(147, 197, 253, 0.35) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(196, 181, 253, 0.40) 0%, transparent 55%),
-    radial-gradient(circle at 50% 80%, rgba(216, 180, 254, 0.35) 0%, transparent 50%);
-  filter: blur(40px);
-  animation: softFlow 22s ease-in-out infinite;
+    radial-gradient(circle at 20% 20%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 80% 60%, rgba(236, 72, 153, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 50%);
   z-index: 0;
+  animation: gradientShift 15s ease-in-out infinite;
 }
 
-@keyframes softFlow {
-  0%   { transform: translate(-5%, -5%) scale(1); opacity: 0.65; }
-  50%  { transform: translate(5%, 5%) scale(1.08); opacity: 0.85; }
-  100% { transform: translate(-5%, -5%) scale(1); opacity: 0.65; }
+@keyframes gradientShift {
+  0%, 100% { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+  50% { 
+    opacity: 0.8; 
+    transform: scale(1.05); 
+  }
 }
 
-
-/* ===== NAVBAR INSPIRÉE STRIPE ============================================= */
-
+/* ===== NAVBAR ===== */
 .navbar {
   position: sticky;
   top: 0;
-  padding: 20px 8%;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px 8%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  backdrop-filter: blur(25px) saturate(180%);
-  background: rgba(255, 255, 255, 0.08);   /* plus clair que ton ancienne */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   z-index: 1000;
-  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all var(--transition-smooth);
 }
 
 .navbar.scrolled {
-  background: rgba(255, 255, 255, 0.20);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+  background: rgba(15, 23, 42, 0.95);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
 }
 
-/* Logo MyMir */
-.logo {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+/* Logo Section */
+.nav-left {
   display: flex;
-  justify-content: center;
   align-items: center;
-  color: #1e1e1e;
+  gap: 12px;
+  z-index: 1001;
+}
+
+.logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: 800;
-  font-size: 20px;
-  box-shadow: 0 4px 14px rgba(251,191,36,0.35);
+  font-size: 24px;
+  color: var(--slate-900);
+  box-shadow: 0 6px 20px rgba(251, 191, 36, 0.3),
+              0 0 0 3px rgba(251, 191, 36, 0.1);
+  transition: all var(--transition-smooth);
+  cursor: pointer;
+}
+
+.logo:hover {
+  transform: scale(1.08) rotate(-5deg);
+  box-shadow: 0 10px 30px rgba(251, 191, 36, 0.4),
+              0 0 0 4px rgba(251, 191, 36, 0.15);
 }
 
 .brand {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
-  background: linear-gradient(135deg, #fcd34d, #fbbf24);
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
+  cursor: pointer;
 }
 
-/* Liens */
+/* Nav Links */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .nav-links a {
-  padding: 10px 18px;
+  padding: 10px 20px;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-weight: 600;
   font-size: 15px;
-  color: rgba(255, 255, 255, 0.85);
   border-radius: 10px;
-  transition: all .3s ease;
+  transition: all var(--transition-smooth);
+  position: relative;
 }
 
 .nav-links a:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.05);
 }
 
-/* Bouton Connexion */
 .login-btn {
   padding: 10px 24px;
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
-  color: #1e1e1e;
-  border-radius: 10px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: var(--slate-900);
+  text-decoration: none;
   font-weight: 700;
-  box-shadow: 0 4px 12px rgba(251,191,36,0.25);
+  font-size: 15px;
+  border-radius: 10px;
+  transition: all var(--transition-smooth);
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.25);
+  margin-left: 16px;
 }
 
 .login-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(251,191,36,0.35);
+  box-shadow: 0 6px 20px rgba(251, 191, 36, 0.35);
 }
-
 
 /* Burger Menu */
 .burger {

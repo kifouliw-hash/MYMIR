@@ -68,7 +68,6 @@ const Register = () => {
     }
   };
 
-  /* LISTES DÉROULANTES */
   const sectors = [
     'BTP / Travaux publics', 'Architecture / Ingénierie', 'Électricité / Éclairage public',
     'Plomberie / Chauffage / Climatisation', 'Peinture / Finitions', 'Menuiserie / Serrurerie',
@@ -100,25 +99,21 @@ const Register = () => {
       <div className="register-container">
         <div className="register-box">
 
-          {/* TITRE CENTRÉ + SOUFFLE VISUEL */}
           <div className="register-header">
-            <h1>Créer un compte <span>MyMír</span></h1>
+            <h1>Créer un compte <span>MyMir</span></h1>
             <p className="subtitle">
-              ✨ En moins d'une minute, démarrez avec <strong>MyMír</strong> et optimisez vos appels d'offres.
+              ✨ En moins d'une minute, démarrez avec <strong>MyMir</strong> et optimisez vos appels d'offres.
             </p>
           </div>
 
-          {/* Messages d'erreur */}
           {error && <div className="error-message">{error}</div>}
           {success && <div className="success-message">{success}</div>}
 
-          {/* FORMULAIRE */}
           <form onSubmit={handleSubmit}>
 
-            {/* Identité entreprise */}
             <div className="row">
               <div>
-                <label>Nom de l'entreprise</label>
+                <label htmlFor="companyName">Nom de l'entreprise</label>
                 <input
                   type="text"
                   id="companyName"
@@ -130,7 +125,7 @@ const Register = () => {
               </div>
 
               <div>
-                <label>Nom du responsable</label>
+                <label htmlFor="managerName">Nom du responsable</label>
                 <input
                   type="text"
                   id="managerName"
@@ -142,26 +137,25 @@ const Register = () => {
               </div>
             </div>
 
-            {/* Email */}
-            <label>Email professionnel</label>
-            <input
-              type="email"
-              id="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Ex : contact@entreprise.com"
-              required
-            />
+            <div>
+              <label htmlFor="email">Email professionnel</label>
+              <input
+                type="email"
+                id="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Ex : contact@entreprise.com"
+                required
+              />
+            </div>
 
-            {/* Secteur + Effectif */}
             <div className="row">
               <div>
-                <label>Secteur d'activité</label>
+                <label htmlFor="sector">Secteur d'activité</label>
                 <select id="sector" value={formData.sector} onChange={handleChange} required>
                   <option value="">Sélectionner un secteur</option>
                   {sectors.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
-
                 {showSectorOther && (
                   <input
                     type="text"
@@ -169,12 +163,13 @@ const Register = () => {
                     value={formData.sectorOther}
                     onChange={handleChange}
                     placeholder="Précisez votre secteur..."
+                    style={{ marginTop: '10px' }}
                   />
                 )}
               </div>
 
               <div>
-                <label>Effectif</label>
+                <label htmlFor="employees">Effectif</label>
                 <select id="employees" value={formData.employees} onChange={handleChange} required>
                   <option value="">Sélectionner</option>
                   <option>1–5</option>
@@ -186,15 +181,13 @@ const Register = () => {
               </div>
             </div>
 
-            {/* Pays + Certifications */}
             <div className="row">
               <div>
-                <label>Pays / région principale</label>
+                <label htmlFor="country">Pays / région principale</label>
                 <select id="country" value={formData.country} onChange={handleChange} required>
                   <option value="">Sélectionner un pays</option>
                   {countries.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
-
                 {showCountryOther && (
                   <input
                     type="text"
@@ -202,12 +195,13 @@ const Register = () => {
                     value={formData.countryOther}
                     onChange={handleChange}
                     placeholder="Précisez votre pays..."
+                    style={{ marginTop: '10px' }}
                   />
                 )}
               </div>
 
               <div>
-                <label>Certifications (optionnel)</label>
+                <label htmlFor="certifications">Certifications (optionnel)</label>
                 <input
                   type="text"
                   id="certifications"
@@ -218,45 +212,45 @@ const Register = () => {
               </div>
             </div>
 
-            {/* CA */}
-            <label>Chiffre d'affaires annuel</label>
-            <select id="revenue" value={formData.revenue} onChange={handleChange} required>
-              <option value="">Sélectionner</option>
-              <option>Moins de 100 000 €</option>
-              <option>100 000 € – 500 000 €</option>
-              <option>500 000 € – 2 000 000 €</option>
-              <option>2 000 000 € – 10 000 000 €</option>
-              <option>Plus de 10 000 000 €</option>
-            </select>
+            <div>
+              <label htmlFor="revenue">Chiffre d'affaires annuel</label>
+              <select id="revenue" value={formData.revenue} onChange={handleChange} required>
+                <option value="">Sélectionner</option>
+                <option>Moins de 100 000 €</option>
+                <option>100 000 € – 500 000 €</option>
+                <option>500 000 € – 2 000 000 €</option>
+                <option>2 000 000 € – 10 000 000 €</option>
+                <option>Plus de 10 000 000 €</option>
+              </select>
+            </div>
 
-            {/* Description */}
-            <label>Description de l'entreprise (optionnel)</label>
-            <textarea
-              id="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows="3"
-              placeholder="Présentez brièvement votre activité..."
-            ></textarea>
+            <div>
+              <label htmlFor="description">Description de l'entreprise (optionnel)</label>
+              <textarea
+                id="description"
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="Présentez brièvement votre activité..."
+              />
+            </div>
 
-            {/* Mot de passe */}
-            <label>Mot de passe</label>
-            <input
-              type="password"
-              id="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="••••••••"
-              required
-            />
+            <div>
+              <label htmlFor="password">Mot de passe</label>
+              <input
+                type="password"
+                id="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                required
+              />
+            </div>
 
-            {/* Bouton */}
             <button type="submit" disabled={loading}>
               {loading ? 'Création...' : 'Créer le compte'}
             </button>
           </form>
 
-          {/* Footer */}
           <p className="footer">
             Déjà un compte ? <Link to="/login">Se connecter</Link><br />
             <Link to="/">← Retour à l'accueil</Link>
