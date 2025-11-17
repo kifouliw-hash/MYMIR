@@ -8,6 +8,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -23,11 +24,8 @@ const Login = () => {
     setLoading(true);
     try {
       const result = await login(email, password);
-      if (result.success) {
-        navigate('/app');
-      } else {
-        setError(result.message || 'Identifiants incorrects ou compte non trouvé.');
-      }
+      if (result.success) navigate('/app');
+      else setError(result.message || 'Identifiants incorrects ou compte non trouvé.');
     } catch (err) {
       setError('Impossible de se connecter au serveur.');
     } finally {
@@ -37,37 +35,69 @@ const Login = () => {
 
   return (
     <div className="login-page">
+
+      {/* ===== LOGO + TITRE ===== */}
+      <div className="login-logo">
+        <div className="login-logo-circle">M</div>
+        <h1 className="login-title">Connexion MyMír</h1>
+        <p className="login-subtitle">Ravi de vous revoir 👋</p>
+      </div>
+
+      {/* ===== CARD ===== */}
       <div className="login-container">
-        <h1>Connexion MyMír</h1>
+        <div className="login-card">
 
-        {error && <div className="error-message">{error}</div>}
+          {error && <div className="error-message">{error}</div>}
 
-        <form onSubmit={handleSubmit}>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Adresse e-mail"
-            required
-            disabled={loading}
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Mot de passe"
-            required
-            disabled={loading}
-          />
-          <button type="submit" disabled={loading}>
-            {loading ? 'Connexion...' : 'Se connecter'}
-          </button>
-        </form>
+          <form className="login-form" onSubmit={handleSubmit}>
 
-        <div className="links">
-          <p><Link to="/forgot">Mot de passe oublié ?</Link></p>
-          <p>Pas encore de compte ? <Link to="/register">Créer un compte</Link></p>
-          <p><Link to="/">← Retour à l'accueil</Link></p>
+            {/* Email */}
+            <div className="form-group">
+              <label className="form-label">Adresse e-mail</label>
+              <input
+                type="email"
+                className="form-input"
+                placeholder="exemple@entreprise.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+                required
+              />
+            </div>
+
+            {/* Mot de passe */}
+            <div className="form-group">
+              <label className="form-label">Mot de passe</label>
+              <input
+                type="password"
+                className="form-input"
+                placeholder="Votre mot de passe"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                required
+              />
+            </div>
+
+            {/* Bouton */}
+            <button className="submit-btn" type="submit" disabled={loading}>
+              <span>{loading ? 'Connexion…' : 'Se connecter'}</span>
+            </button>
+          </form>
+
+          {/* Liens */}
+          <div className="forgot-password">
+            <Link to="/forgot">Mot de passe oublié ?</Link>
+          </div>
+
+          <div className="signup-link">
+            Pas encore de compte ? <Link to="/register">Créer un compte</Link>
+          </div>
+
+          <div className="back-link">
+            <Link to="/">← Retour à l'accueil</Link>
+          </div>
+
         </div>
       </div>
     </div>
