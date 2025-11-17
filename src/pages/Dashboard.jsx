@@ -171,52 +171,572 @@ const Dashboard = () => {
     const contents = {
       support: (
         <div className="param-content">
-          <h3>Support technique</h3>
-          <p>Email : support@mymir.com</p>
-          <p>Téléphone : +33 1 23 45 67 89</p>
-          <p>Disponible 24/7</p>
+          <h3>📧 Support technique</h3>
+          <div style={{marginBottom: '30px'}}>
+            <h4>Besoin d'assistance ?</h4>
+            <p>Notre équipe support est disponible 24/7 pour répondre à toutes vos questions et résoudre vos problèmes techniques.</p>
+          </div>
+          
+          <div style={{marginBottom: '20px', padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+            <h4>📞 Coordonnées</h4>
+            <p><strong>Email :</strong> support@mymir.com</p>
+            <p><strong>Téléphone :</strong> +33 (0)1 23 45 67 89</p>
+            <p><strong>Horaires :</strong> Disponible 24h/24, 7j/7</p>
+            <p><strong>Temps de réponse moyen :</strong> Moins de 2 heures</p>
+          </div>
+
+          <div style={{marginBottom: '20px', padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+            <h4>🎯 Types de support disponibles</h4>
+            <ul style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+              <li><strong>Support technique :</strong> Problèmes de connexion, bugs, erreurs système</li>
+              <li><strong>Aide à l'utilisation :</strong> Questions sur les fonctionnalités et la navigation</li>
+              <li><strong>Accompagnement métier :</strong> Conseils sur l'analyse des appels d'offres</li>
+              <li><strong>Formation :</strong> Sessions de formation personnalisées sur demande</li>
+              <li><strong>Développement custom :</strong> Demandes de fonctionnalités spécifiques</li>
+            </ul>
+          </div>
+
+          <div style={{marginBottom: '20px', padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+            <h4>💬 Formulaire de contact rapide</h4>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '15px'}}>
+              <select className="field-input">
+                <option>Sélectionner le type de demande</option>
+                <option>Problème technique</option>
+                <option>Question sur l'utilisation</option>
+                <option>Demande de fonctionnalité</option>
+                <option>Facturation</option>
+                <option>Autre</option>
+              </select>
+              <textarea 
+                className="field-textarea" 
+                rows="4" 
+                placeholder="Décrivez votre demande en détail..."
+              />
+              <button className="btn-primary" style={{width: 'fit-content'}}>
+                Envoyer la demande →
+              </button>
+            </div>
+          </div>
+
+          <div style={{padding: '15px', background: 'rgba(244, 178, 35, 0.1)', borderRadius: '10px', borderLeft: '4px solid #f4b223'}}>
+            <strong>💡 Astuce :</strong> Pour un support prioritaire, incluez votre ID d'utilisateur et des captures d'écran si possible.
+          </div>
         </div>
       ),
+
       legal: (
         <div className="param-content">
-          <h3>Mentions légales</h3>
-          <p>MyMír SAS - Capital social : 50 000 €</p>
-          <p>SIRET : 123 456 789 00012</p>
-          <p>Siège social : 123 rue de la Tech, 75001 Paris</p>
+          <h3>📄 Mentions légales</h3>
+          
+          <div style={{marginBottom: '25px'}}>
+            <h4>Informations générales</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', lineHeight: '1.8'}}>
+              <p><strong>Raison sociale :</strong> MyMír SAS</p>
+              <p><strong>Forme juridique :</strong> Société par Actions Simplifiée</p>
+              <p><strong>Capital social :</strong> 50 000 €</p>
+              <p><strong>SIRET :</strong> 123 456 789 00012</p>
+              <p><strong>TVA Intracommunautaire :</strong> FR12345678900</p>
+              <p><strong>Code APE/NAF :</strong> 6201Z (Programmation informatique)</p>
+            </div>
+          </div>
+
+          <div style={{marginBottom: '25px'}}>
+            <h4>Siège social</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+              <p>123 rue de la Technologie</p>
+              <p>75001 Paris, France</p>
+              <p><strong>Téléphone :</strong> +33 (0)1 23 45 67 89</p>
+              <p><strong>Email :</strong> contact@mymir.com</p>
+            </div>
+          </div>
+
+          <div style={{marginBottom: '25px'}}>
+            <h4>Direction de la publication</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+              <p><strong>Directeur de la publication :</strong> Jean Dupont</p>
+              <p><strong>Fonction :</strong> Président</p>
+              <p><strong>Contact :</strong> direction@mymir.com</p>
+            </div>
+          </div>
+
+          <div style={{marginBottom: '25px'}}>
+            <h4>Hébergement</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+              <p><strong>Hébergeur :</strong> Render Technologies Inc.</p>
+              <p><strong>Adresse :</strong> 525 Brannan Street, San Francisco, CA 94107, USA</p>
+              <p><strong>Site web :</strong> https://render.com</p>
+            </div>
+          </div>
+
+          <div style={{marginBottom: '25px'}}>
+            <h4>Propriété intellectuelle</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', lineHeight: '1.8'}}>
+              <p>L'ensemble du contenu de ce site (structure, textes, logos, images, vidéos, bases de données) est la propriété exclusive de MyMír SAS, sauf mention contraire.</p>
+              <p style={{marginTop: '10px'}}>Toute reproduction, représentation, modification, publication ou adaptation de tout ou partie des éléments du site, quel que soit le moyen ou le procédé utilisé, est interdite, sauf autorisation écrite préalable de MyMír SAS.</p>
+              <p style={{marginTop: '10px'}}><strong>© 2025 MyMír - Tous droits réservés</strong></p>
+            </div>
+          </div>
+
+          <div style={{padding: '15px', background: 'rgba(244, 178, 35, 0.1)', borderRadius: '10px', borderLeft: '4px solid #f4b223'}}>
+            <strong>⚖️ Loi applicable :</strong> Les présentes mentions légales sont soumises au droit français. Tout litige relatif à l'utilisation du site relève de la compétence exclusive des tribunaux français.
+          </div>
         </div>
       ),
+
       privacy: (
         <div className="param-content">
-          <h3>Confidentialité</h3>
-          <p>Vos données sont cryptées et sécurisées.</p>
-          <p>Nous ne partageons jamais vos informations.</p>
-          <p>Conformité RGPD garantie.</p>
+          <h3>🔒 Politique de confidentialité</h3>
+          
+          <div style={{marginBottom: '25px'}}>
+            <h4>Notre engagement RGPD</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', lineHeight: '1.8'}}>
+              <p>MyMír est pleinement conforme au Règlement Général sur la Protection des Données (RGPD) et s'engage à protéger la confidentialité et la sécurité de vos données personnelles.</p>
+              <p style={{marginTop: '10px'}}><strong>Responsable du traitement :</strong> MyMír SAS</p>
+              <p><strong>DPO (Délégué à la Protection des Données) :</strong> dpo@mymir.com</p>
+            </div>
+          </div>
+
+          <div style={{marginBottom: '25px'}}>
+            <h4>1. Données collectées</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+              <ul style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                <li><strong>Données d'identification :</strong> nom, prénom, email, téléphone</li>
+                <li><strong>Données professionnelles :</strong> entreprise, secteur d'activité, effectif</li>
+                <li><strong>Données de connexion :</strong> adresse IP, logs de connexion, cookies</li>
+                <li><strong>Données d'utilisation :</strong> analyses effectuées, documents uploadés</li>
+                <li><strong>Données financières :</strong> informations de facturation (cryptées)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div style={{marginBottom: '25px'}}>
+            <h4>2. Finalités du traitement</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+              <ul style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                <li>Fourniture et amélioration des services MyMír</li>
+                <li>Gestion de votre compte utilisateur</li>
+                <li>Traitement de vos analyses d'appels d'offres</li>
+                <li>Communication commerciale (avec votre consentement)</li>
+                <li>Facturation et comptabilité</li>
+                <li>Respect des obligations légales</li>
+                <li>Statistiques et amélioration de l'expérience utilisateur</li>
+              </ul>
+            </div>
+          </div>
+
+          <div style={{marginBottom: '25px'}}>
+            <h4>3. Sécurité des données</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+              <ul style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                <li>🔐 <strong>Cryptage SSL/TLS</strong> pour toutes les communications</li>
+                <li>🛡️ <strong>Encryption AES-256</strong> pour le stockage des données sensibles</li>
+                <li>🔒 <strong>Authentification sécurisée</strong> avec tokens JWT</li>
+                <li>💾 <strong>Sauvegardes automatiques</strong> quotidiennes</li>
+                <li>🚨 <strong>Monitoring 24/7</strong> et détection d'intrusions</li>
+                <li>👥 <strong>Accès restreints</strong> au personnel autorisé uniquement</li>
+                <li>📋 <strong>Audits de sécurité</strong> réguliers par des experts tiers</li>
+              </ul>
+            </div>
+          </div>
+
+          <div style={{marginBottom: '25px'}}>
+            <h4>4. Vos droits</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+              <p style={{marginBottom: '15px'}}>Conformément au RGPD, vous disposez des droits suivants :</p>
+              <ul style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                <li><strong>Droit d'accès :</strong> obtenir une copie de vos données</li>
+                <li><strong>Droit de rectification :</strong> corriger vos données inexactes</li>
+                <li><strong>Droit à l'effacement :</strong> supprimer vos données (« droit à l'oubli »)</li>
+                <li><strong>Droit à la limitation :</strong> limiter le traitement de vos données</li>
+                <li><strong>Droit à la portabilité :</strong> récupérer vos données dans un format structuré</li>
+                <li><strong>Droit d'opposition :</strong> vous opposer au traitement de vos données</li>
+                <li><strong>Droit de retrait du consentement :</strong> à tout moment</li>
+              </ul>
+              <p style={{marginTop: '15px'}}>Pour exercer vos droits : <strong>privacy@mymir.com</strong></p>
+            </div>
+          </div>
+
+          <div style={{marginBottom: '25px'}}>
+            <h4>5. Conservation des données</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+              <ul style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                <li><strong>Données de compte :</strong> durée de votre abonnement + 3 ans</li>
+                <li><strong>Analyses et documents :</strong> durée de votre abonnement + 1 an</li>
+                <li><strong>Données de facturation :</strong> 10 ans (obligation légale)</li>
+                <li><strong>Logs de connexion :</strong> 12 mois maximum</li>
+              </ul>
+            </div>
+          </div>
+
+          <div style={{marginBottom: '25px'}}>
+            <h4>6. Cookies et traceurs</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+              <p>Nous utilisons des cookies strictement nécessaires au fonctionnement du site :</p>
+              <ul style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)', marginTop: '10px'}}>
+                <li><strong>Cookies de session :</strong> authentification et sécurité</li>
+                <li><strong>Cookies de préférence :</strong> langue, paramètres d'affichage</li>
+              </ul>
+              <p style={{marginTop: '15px'}}>❌ <strong>Nous n'utilisons PAS de cookies publicitaires ou de tracking tiers</strong></p>
+            </div>
+          </div>
+
+          <div style={{padding: '15px', background: 'rgba(244, 178, 35, 0.1)', borderRadius: '10px', borderLeft: '4px solid #f4b223'}}>
+            <strong>📅 Dernière mise à jour :</strong> 17 novembre 2025<br/>
+            <strong>📧 Contact DPO :</strong> dpo@mymir.com
+          </div>
         </div>
       ),
+
       terms: (
         <div className="param-content">
-          <h3>CGU & CGV</h3>
-          <p>Conditions générales d'utilisation</p>
-          <p>Conditions générales de vente</p>
-          <p>Dernière mise à jour : 17/11/2025</p>
+          <h3>📋 Conditions Générales d'Utilisation & de Vente</h3>
+          
+          <div style={{marginBottom: '25px'}}>
+            <h4>CGU - Conditions Générales d'Utilisation</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+              <h5 style={{color: '#f4b223', marginTop: '15px'}}>Article 1 - Objet</h5>
+              <p style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                Les présentes Conditions Générales d'Utilisation (CGU) régissent l'utilisation de la plateforme MyMír, service SaaS d'analyse d'appels d'offres par intelligence artificielle.
+              </p>
+
+              <h5 style={{color: '#f4b223', marginTop: '20px'}}>Article 2 - Acceptation des CGU</h5>
+              <p style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                L'utilisation de MyMír implique l'acceptation pleine et entière des présentes CGU. Si vous n'acceptez pas ces conditions, vous ne devez pas utiliser le service.
+              </p>
+
+              <h5 style={{color: '#f4b223', marginTop: '20px'}}>Article 3 - Accès au service</h5>
+              <ul style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                <li>Création d'un compte personnel obligatoire</li>
+                <li>Informations d'inscription exactes et à jour</li>
+                <li>Confidentialité des identifiants de connexion</li>
+                <li>Notification immédiate en cas d'utilisation non autorisée</li>
+                <li>Interdiction de partage de compte</li>
+              </ul>
+
+              <h5 style={{color: '#f4b223', marginTop: '20px'}}>Article 4 - Utilisation du service</h5>
+              <p style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)', marginBottom: '10px'}}>
+                <strong>Vous vous engagez à :</strong>
+              </p>
+              <ul style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                <li>Utiliser le service de manière légale et éthique</li>
+                <li>Ne pas tenter de contourner les mesures de sécurité</li>
+                <li>Ne pas surcharger ou perturber le système</li>
+                <li>Respecter les droits de propriété intellectuelle</li>
+                <li>Ne pas uploader de contenu illégal ou malveillant</li>
+              </ul>
+
+              <h5 style={{color: '#f4b223', marginTop: '20px'}}>Article 5 - Propriété intellectuelle</h5>
+              <p style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                Tous les éléments de MyMír (code, design, algorithmes, base de données) sont protégés par le droit d'auteur. Vous conservez la propriété de vos documents uploadés. MyMír obtient une licence d'utilisation limitée pour fournir le service d'analyse.
+              </p>
+
+              <h5 style={{color: '#f4b223', marginTop: '20px'}}>Article 6 - Responsabilité</h5>
+              <p style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                MyMír fournit un outil d'aide à la décision. Les analyses générées ne constituent pas des conseils juridiques ou professionnels. L'utilisateur reste seul responsable des décisions prises sur la base des analyses fournies.
+              </p>
+
+              <h5 style={{color: '#f4b223', marginTop: '20px'}}>Article 7 - Disponibilité du service</h5>
+              <ul style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                <li>Objectif de disponibilité : 99,5% du temps</li>
+                <li>Maintenance programmée notifiée 48h à l'avance</li>
+                <li>Interruptions d'urgence possibles sans préavis</li>
+              </ul>
+            </div>
+          </div>
+
+          <div style={{marginBottom: '25px'}}>
+            <h4>CGV - Conditions Générales de Vente</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+              <h5 style={{color: '#f4b223', marginTop: '15px'}}>Article 1 - Offres et tarifs</h5>
+              <p style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                Les tarifs sont indiqués en euros TTC. MyMír se réserve le droit de modifier ses tarifs à tout moment, avec notification préalable de 30 jours pour les abonnements en cours.
+              </p>
+
+              <h5 style={{color: '#f4b223', marginTop: '20px'}}>Article 2 - Formules d'abonnement</h5>
+              <ul style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                <li><strong>Starter :</strong> 49€/mois - 10 analyses/mois</li>
+                <li><strong>Professional :</strong> 149€/mois - 50 analyses/mois</li>
+                <li><strong>Enterprise :</strong> Sur devis - analyses illimitées</li>
+              </ul>
+
+              <h5 style={{color: '#f4b223', marginTop: '20px'}}>Article 3 - Modalités de paiement</h5>
+              <ul style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                <li>Paiement mensuel ou annuel par carte bancaire</li>
+                <li>Prélèvement automatique le 1er de chaque mois</li>
+                <li>Facture envoyée par email sous 24h</li>
+                <li>Paiements sécurisés via Stripe</li>
+              </ul>
+
+              <h5 style={{color: '#f4b223', marginTop: '20px'}}>Article 4 - Droit de rétractation</h5>
+              <p style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                Conformément à l'article L221-28 du Code de la consommation, vous disposez d'un délai de 14 jours pour exercer votre droit de rétractation, sans avoir à justifier de motifs ni à payer de pénalités.
+              </p>
+
+              <h5 style={{color: '#f4b223', marginTop: '20px'}}>Article 5 - Résiliation</h5>
+              <ul style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                <li>Résiliation possible à tout moment depuis votre compte</li>
+                <li>Effective à la fin de la période en cours</li>
+                <li>Aucun remboursement au prorata</li>
+                <li>Conservation des données 30 jours après résiliation</li>
+              </ul>
+
+              <h5 style={{color: '#f4b223', marginTop: '20px'}}>Article 6 - Garanties</h5>
+              <p style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                MyMír garantit la conformité du service aux fonctionnalités décrites. En cas de non-conformité, vous disposez d'un recours auprès du service client dans un délai de 30 jours.
+              </p>
+
+              <h5 style={{color: '#f4b223', marginTop: '20px'}}>Article 7 - Facturation</h5>
+              <ul style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                <li>Facturation automatique chaque mois</li>
+                <li>Factures disponibles dans votre espace client</li>
+                <li>TVA applicable selon législation en vigueur</li>
+                <li>Numéro de TVA intracommunautaire accepté pour professionnels UE</li>
+              </ul>
+            </div>
+          </div>
+
+          <div style={{padding: '15px', background: 'rgba(244, 178, 35, 0.1)', borderRadius: '10px', borderLeft: '4px solid #f4b223'}}>
+            <strong>📅 Version :</strong> 2.1 - Dernière mise à jour : 17 novembre 2025<br/>
+            <strong>📧 Questions :</strong> legal@mymir.com
+          </div>
         </div>
       ),
+
       language: (
         <div className="param-content">
-          <h3>Langue</h3>
-          <select className="field-input">
-            <option>Français (France)</option>
-            <option>English (US)</option>
-            <option>Español</option>
-          </select>
+          <h3>🌐 Paramètres de langue</h3>
+          
+          <div style={{marginBottom: '25px'}}>
+            <h4>Langue de l'interface</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+              <p style={{marginBottom: '15px', color: 'rgba(255,255,255,0.8)'}}>
+                Sélectionnez la langue d'affichage de votre interface MyMír. Cette modification s'appliquera immédiatement à l'ensemble de l'application.
+              </p>
+              
+              <div style={{marginTop: '20px'}}>
+                <label className="field-label">Langue principale</label>
+                <select className="field-input" style={{width: '100%'}}>
+                  <option value="fr">🇫🇷 Français (France)</option>
+                  <option value="en">🇬🇧 English (United Kingdom)</option>
+                  <option value="en-us">🇺🇸 English (United States)</option>
+                  <option value="es">🇪🇸 Español (España)</option>
+                  <option value="de">🇩🇪 Deutsch (Deutschland)</option>
+                  <option value="it">🇮🇹 Italiano (Italia)</option>
+                  <option value="pt">🇵🇹 Português (Portugal)</option>
+                  <option value="nl">🇳🇱 Nederlands (Nederland)</option>
+                  <option value="pl">🇵🇱 Polski (Polska)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div style={{marginBottom: '25px'}}>
+            <h4>Langue des analyses IA</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+              <p style={{marginBottom: '15px', color: 'rgba(255,255,255,0.8)'}}>
+                Choisissez la langue dans laquelle les analyses d'appels d'offres seront générées.
+              </p>
+              
+              <div style={{marginTop: '20px'}}>
+                <label className="field-label">Langue des rapports</label>
+                <select className="field-input" style={{width: '100%'}}>
+                  <option value="fr">Français</option>
+                  <option value="en">English</option>
+                  <option value="es">Español</option>
+                  <option value="de">Deutsch</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div style={{marginBottom: '25px'}}>
+            <h4>Format régional</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+              <p style={{marginBottom: '15px', color: 'rgba(255,255,255,0.8)'}}>
+                Personnalisez les formats de date, heure et nombres selon vos préférences régionales.
+              </p>
+              
+              <div style={{display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px'}}>
+                <div>
+                  <label className="field-label">Format de date</label>
+                  <select className="field-input" style={{width: '100%'}}>
+                    <option>JJ/MM/AAAA (17/11/2025)</option>
+                    <option>MM/JJ/AAAA (11/17/2025)</option>
+                    <option>AAAA-MM-JJ (2025-11-17)</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="field-label">Format d'heure</label>
+                  <select className="field-input" style={{width: '100%'}}>
+                    <option>24 heures (14:30)</option>
+                    <option>12 heures (02:30 PM)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="field-label">Fuseau horaire</label>
+                  <select className="field-input" style={{width: '100%'}}>
+                    <option>Europe/Paris (UTC+1)</option>
+                    <option>Europe/London (UTC+0)</option>
+                    <option>America/New_York (UTC-5)</option>
+                    <option>Asia/Tokyo (UTC+9)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{marginBottom: '25px'}}>
+            <h4>Préférences de communication</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+              <div>
+                <label className="field-label">Langue des emails de notification</label>
+                <select className="field-input" style={{width: '100%'}}>
+                  <option>Identique à la langue de l'interface</option>
+                  <option>Français</option>
+                  <option>English</option>
+                  <option>Español</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div style={{display: 'flex', gap: '10px', marginTop: '20px'}}>
+            <button className="btn-primary">
+              💾 Enregistrer les modifications
+            </button>
+            <button className="btn-secondary">
+              Annuler
+            </button>
+          </div>
+
+          <div style={{padding: '15px', background: 'rgba(244, 178, 35, 0.1)', borderRadius: '10px', borderLeft: '4px solid #f4b223', marginTop: '20px'}}>
+            <strong>💡 Info :</strong> Les modifications de langue prendront effet immédiatement. Certaines pages peuvent nécessiter un rafraîchissement.
+          </div>
         </div>
       ),
+
       about: (
         <div className="param-content">
-          <h3>À propos de MyMír</h3>
-          <p>Version 1.0.0</p>
-          <p>© 2025 MyMír - Tous droits réservés</p>
-          <p>Plateforme d'analyse d'appels d'offres par IA</p>
+          <h3>ℹ️ À propos de MyMír</h3>
+          
+          <div style={{textAlign: 'center', marginBottom: '30px', padding: '30px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+            <div style={{fontSize: '64px', marginBottom: '15px'}}>🎯</div>
+            <h2 style={{color: '#f4b223', fontSize: '32px', marginBottom: '10px'}}>MyMír</h2>
+            <p style={{color: 'rgba(255,255,255,0.6)', fontSize: '18px'}}>
+              L'intelligence artificielle au service de vos appels d'offres
+            </p>
+            <p style={{marginTop: '10px', fontWeight: 'bold'}}>Version 1.0.0</p>
+          </div>
+
+          <div style={{marginBottom: '25px'}}>
+            <h4>Notre mission</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+              <p style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                MyMír révolutionne la réponse aux appels d'offres en combinant intelligence artificielle de pointe et expertise métier. Notre plateforme analyse automatiquement vos documents DCE, identifie les opportunités stratégiques, et vous aide à prendre des décisions éclairées en quelques secondes.
+              </p>
+              <p style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)', marginTop: '15px'}}>
+                Nous croyons que chaque entreprise, quelle que soit sa taille, mérite d'accéder aux mêmes outils d'analyse sophistiqués que les grandes corporations. C'est pourquoi nous avons créé MyMír : démocratiser l'analyse d'appels d'offres grâce à l'IA.
+              </p>
+            </div>
+          </div>
+
+          <div style={{marginBottom: '25px'}}>
+            <h4>Fonctionnalités principales</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+              <ul style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                <li>🤖 <strong>Analyse IA avancée :</strong> Extraction intelligente des critères clés</li>
+                <li>📊 <strong>Score de pertinence :</strong> Évaluation automatique de vos chances</li>
+                <li>⚡ <strong>Traitement instantané :</strong> Analyse complète en moins de 30 secondes</li>
+                <li>📄 <strong>Rapports PDF :</strong> Exports professionnels personnalisables</li>
+                <li>📚 <strong>Historique complet :</strong> Toutes vos analyses accessibles</li>
+                <li>🎯 <strong>Recommandations :</strong> Suggestions d'actions concrètes</li>
+                <li>🔒 <strong>Sécurité maximale :</strong> Données cryptées et conformité RGPD</li>
+              </ul>
+            </div>
+          </div>
+
+          <div style={{marginBottom: '25px'}}>
+            <h4>Technologies utilisées</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px'}}>
+                <div>
+                  <p><strong>🧠 Intelligence Artificielle</strong></p>
+                  <p style={{color: 'rgba(255,255,255,0.6)', fontSize: '14px'}}>GPT-4, Claude, modèles propriétaires</p>
+                </div>
+                <div>
+                  <p><strong>☁️ Cloud Infrastructure</strong></p>
+                  <p style={{color: 'rgba(255,255,255,0.6)', fontSize: '14px'}}>AWS, Render, architecture scalable</p>
+                </div>
+                <div>
+                  <p><strong>🔐 Sécurité</strong></p>
+                  <p style={{color: 'rgba(255,255,255,0.6)', fontSize: '14px'}}>SSL/TLS, JWT, encryption AES-256</p>
+                </div>
+                <div>
+                  <p><strong>⚛️ Frontend moderne</strong></p>
+                  <p style={{color: 'rgba(255,255,255,0.6)', fontSize: '14px'}}>React 18, design système premium</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{marginBottom: '25px'}}>
+            <h4>L'équipe MyMír</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+              <p style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                MyMír a été fondée en 2024 par une équipe d'experts en IA, développement logiciel et marchés publics. Notre équipe pluridisciplinaire combine expertise technique et connaissance approfondie des processus d'appels d'offres.
+              </p>
+              <p style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)', marginTop: '10px'}}>
+                Nous sommes basés à Paris et travaillons avec des clients dans toute l'Europe francophone.
+              </p>
+            </div>
+          </div>
+
+          <div style={{marginBottom: '25px'}}>
+            <h4>Statistiques de la plateforme</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', textAlign: 'center'}}>
+                <div>
+                  <div style={{fontSize: '32px', color: '#f4b223', fontWeight: 'bold'}}>15K+</div>
+                  <div style={{color: 'rgba(255,255,255,0.6)'}}>Analyses effectuées</div>
+                </div>
+                <div>
+                  <div style={{fontSize: '32px', color: '#f4b223', fontWeight: 'bold'}}>500+</div>
+                  <div style={{color: 'rgba(255,255,255,0.6)'}}>Entreprises clientes</div>
+                </div>
+                <div>
+                  <div style={{fontSize: '32px', color: '#f4b223', fontWeight: 'bold'}}>92%</div>
+                  <div style={{color: 'rgba(255,255,255,0.6)'}}>Taux de satisfaction</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{marginBottom: '25px'}}>
+            <h4>Informations légales</h4>
+            <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
+              <p style={{lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+                <strong>MyMír SAS</strong><br/>
+                Capital social : 50 000 €<br/>
+                SIRET : 123 456 789 00012<br/>
+                © 2024-2025 MyMír - Tous droits réservés
+              </p>
+            </div>
+          </div>
+
+          <div style={{display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '30px'}}>
+            <button className="btn-primary">
+              🌐 Visitez notre site web
+            </button>
+            <button className="btn-secondary">
+              📧 Nous contacter
+            </button>
+          </div>
+
+          <div style={{padding: '15px', background: 'rgba(244, 178, 35, 0.1)', borderRadius: '10px', borderLeft: '4px solid #f4b223', marginTop: '30px', textAlign: 'center'}}>
+            <strong>💙 Merci de faire confiance à MyMír pour vos appels d'offres !</strong>
+          </div>
         </div>
       )
     };
