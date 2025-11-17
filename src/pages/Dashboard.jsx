@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { userAPI, analysisAPI } from '../services/api';
 import '../styles/Dashboard.css';
+
+const API_URL = process.env.REACT_APP_API_URL || 'https://mymir.onrender.com';
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -50,11 +51,24 @@ const Dashboard = () => {
     setAnalysisResult(null);
 
     const formData = new FormData();
-    formData.append('document', file);
+    formData.append('file', file);
 
     try {
-      const response = await analysisAPI.uploadDocument(formData);
-      setAnalysisResult(response.data);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/analyze`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setAnalysisResult(data);
+      } else {
+        alert('❌ ' + (data.message || 'Erreur lors de l\'analyse'));
+      }
     } catch (error) {
       console.error('Erreur upload:', error);
       alert('❌ Erreur lors de l\'analyse');
@@ -68,6 +82,7 @@ const Dashboard = () => {
     setLoading(true);
 
     try {
+      const token = localStorage.getItem('token');
       const dataToSend = {
         companyName: profileData.companyName,
         country: profileData.country,
@@ -80,9 +95,23 @@ const Dashboard = () => {
         description: profileData.description
       };
 
-      await userAPI.updateProfile(dataToSend);
-      alert('✅ Profil mis à jour avec succès !');
-      setIsEditingProfile(false);
+      const response = await fetch(`${API_URL}/api/update-profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(dataToSend)
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        alert('✅ Profil mis à jour avec succès !');
+        setIsEditingProfile(false);
+      } else {
+        alert('❌ ' + (data.message || 'Erreur lors de la mise à jour'));
+      }
     } catch (error) {
       console.error('Erreur MAJ profil:', error);
       alert('❌ Erreur lors de la mise à jour');
@@ -110,12 +139,11 @@ const Dashboard = () => {
 
         <div className="user-profile-card">
           <div className="user-avatar">
-            <span>{(profileData.companyName || profileData.name || 'U').charAt(0).toUpperCase()}</span>
-            <div className="avatar-ring"></div>
+            <span>{(profileData.companyName || 'E').charAt(0).toUpperCase()}</span>
           </div>
           <div className="user-details">
-            <p className="user-name">{profileData.name}</p>
             <p className="user-company">{profileData.companyName || 'Entreprise'}</p>
+            <p className="user-name">{profileData.name}</p>
           </div>
         </div>
 
@@ -160,6 +188,14 @@ const Dashboard = () => {
             <span className="nav-text">Profil</span>
             <span className="nav-indicator"></span>
           </button>
+          <button
+            className={`nav-item ${activeSection === 'parametres' ? 'active' : ''}`}
+            onClick={() => setActiveSection('parametres')}
+          >
+            <span className="nav-icon">⚙️</span>
+            <span className="nav-text">Paramètres</span>
+            <span className="nav-indicator"></span>
+          </button>
         </nav>
 
         <div className="logout-section">
@@ -181,7 +217,7 @@ const Dashboard = () => {
                 <span className="wave-emoji">👋</span>
               </h1>
               <p className="hero-subtitle">
-                Optimisez vos appels d'offres avec l'intelligence artificielle
+                Optimisez vos appels d'offres avec MyMír, votre assistant intelligent.
               </p>
               <button className="cta-primary" onClick={() => setActiveSection('analyse')}>
                 <span>Nouvelle analyse</span>
@@ -232,7 +268,7 @@ const Dashboard = () => {
             <div className="section-header">
               <h2 className="section-title">Analyse d'opportunités</h2>
               <p className="section-description">
-                Importez un DCE et obtenez une analyse complète en quelques secondes
+                Importez un document d'appels d'offres et obtenez une analyse complète en quelques secondes
               </p>
             </div>
 
@@ -533,6 +569,72 @@ const Dashboard = () => {
                 </div>
               </div>
             </form>
+          </section>
+        )}
+
+        {/* PARAMÈTRES */}
+        {activeSection === 'parametres' && (
+          <section className="section">
+            <div className="section-header">
+              <h2 className="section-title">Paramètres et informations</h2>
+              <p className="section-description">Gérez vos préférences et accédez aux informations légales</p>
+            </div>
+
+            <div className="tools-grid">
+              <div className="tool-card">
+                <div className="tool-icon">📧</div>
+                <h3 className="tool-title">Support technique</h3>
+                <p className="tool-description">
+                  Besoin d'aide ? Contactez notre équipe support disponible 24/7
+                </p>
+                <button className="tool-btn">Contacter →</button>
+              </div>
+
+              <div className="tool-card">
+                <div className="tool-icon">📄</div>
+                <h3 className="tool-title">Mentions légales</h3>
+                <p className="tool-description">
+                  Consultez nos mentions légales et informations juridiques
+                </p>
+                <button className="tool-btn">Consulter →</button>
+              </div>
+
+              <div className="tool-card">
+                <div className="tool-icon">🔒</div>
+                <h3 className="tool-title">Confidentialité</h3>
+                <p className="tool-description">
+                  Politique de confidentialité et gestion de vos données personnelles
+                </p>
+                <button className="tool-btn">Lire →</button>
+              </div>
+
+              <div className="tool-card">
+                <div className="tool-icon">📋</div>
+                <h3 className="tool-title">CGU & CGV</h3>
+                <p className="tool-description">
+                  Conditions générales d'utilisation et de vente
+                </p>
+                <button className="tool-btn">Consulter →</button>
+              </div>
+
+              <div className="tool-card">
+                <div className="tool-icon">🌐</div>
+                <h3 className="tool-title">Langue</h3>
+                <p className="tool-description">
+                  Français (France) - Changer la langue de l'interface
+                </p>
+                <button className="tool-btn">Modifier →</button>
+              </div>
+
+              <div className="tool-card">
+                <div className="tool-icon">ℹ️</div>
+                <h3 className="tool-title">À propos</h3>
+                <p className="tool-description">
+                  Version 1.0.0 - En savoir plus sur MyMír
+                </p>
+                <button className="tool-btn">Découvrir →</button>
+              </div>
+            </div>
           </section>
         )}
       </main>

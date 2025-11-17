@@ -206,7 +206,6 @@ body {
   inset: -3px;
   border-radius: 50%;
   border: 2px solid rgba(59, 130, 246, 0.3);
-  animation: ringPulse 3s ease-in-out infinite;
 }
 
 @keyframes ringPulse {
@@ -219,9 +218,10 @@ body {
   min-width: 0;
 }
 
-.user-name {
-  font-size: 14px;
-  font-weight: 600;
+/* Entreprise en GRAS, personne en normal */
+.user-company {
+  font-size: 13px;
+  font-weight: 700; /* GRAS pour l'entreprise */
   color: rgba(255, 255, 255, 0.95);
   margin-bottom: 2px;
   white-space: nowrap;
@@ -229,9 +229,10 @@ body {
   text-overflow: ellipsis;
 }
 
-.user-company {
+.user-name {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400; /* Normal pour le nom */
+  color: rgba(255, 255, 255, 0.7);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
