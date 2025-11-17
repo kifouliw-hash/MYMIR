@@ -22,7 +22,7 @@ import { generatePdfFromAnalysis } from "./backend/pdf/generatePdf.js";
 
 
 console.log("🚀 Lancement serveur MyMír...");
-console.log("🔑 OpenAI Key:", process.env.***REMOVED*** ? "✅ détectée" : "❌ manquante");
+console.log("🔑 OpenAI Key:", process.env.OPENAI_API_KEY ? "✅ détectée" : "❌ manquante");
 console.log("🔒 JWT Secret:", process.env.JWT_SECRET ? "✅ détecté" : "❌ manquant");
 
 // ===================================================
