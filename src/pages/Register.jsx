@@ -32,12 +32,8 @@ const Register = () => {
     const { id, value } = e.target;
     setFormData(prev => ({ ...prev, [id]: value }));
 
-    if (id === 'sector') {
-      setShowSectorOther(value === 'Autre (à préciser)');
-    }
-    if (id === 'country') {
-      setShowCountryOther(value === 'Autre (à préciser)');
-    }
+    if (id === 'sector') setShowSectorOther(value === 'Autre (à préciser)');
+    if (id === 'country') setShowCountryOther(value === 'Autre (à préciser)');
   };
 
   const handleSubmit = async (e) => {
@@ -45,7 +41,6 @@ const Register = () => {
     setError('');
     setSuccess('');
 
-    // Validation
     if (!formData.companyName || !formData.email || !formData.password) {
       setError('Veuillez remplir tous les champs obligatoires.');
       return;
@@ -73,6 +68,7 @@ const Register = () => {
     }
   };
 
+  /* LISTES DÉROULANTES */
   const sectors = [
     'BTP / Travaux publics', 'Architecture / Ingénierie', 'Électricité / Éclairage public',
     'Plomberie / Chauffage / Climatisation', 'Peinture / Finitions', 'Menuiserie / Serrurerie',
@@ -103,35 +99,50 @@ const Register = () => {
     <div className="register-page">
       <div className="register-container">
         <div className="register-box">
-          <h1>Créer un compte <span>MyMír</span></h1>
-          <p className="subtitle">
-            ✨ En moins d'une minute, créez votre compte et laissez <strong>MyMír</strong> vous assister sur vos appels d'offres.
-          </p>
 
+          {/* TITRE CENTRÉ + SOUFFLE VISUEL */}
+          <div className="register-header">
+            <h1>Créer un compte <span>MyMír</span></h1>
+            <p className="subtitle">
+              ✨ En moins d'une minute, démarrez avec <strong>MyMír</strong> et optimisez vos appels d'offres.
+            </p>
+          </div>
+
+          {/* Messages d'erreur */}
           {error && <div className="error-message">{error}</div>}
           {success && <div className="success-message">{success}</div>}
 
+          {/* FORMULAIRE */}
           <form onSubmit={handleSubmit}>
-            <label>Nom de l'entreprise</label>
-            <input
-              type="text"
-              id="companyName"
-              value={formData.companyName}
-              onChange={handleChange}
-              placeholder="Ex : Atelier BTP Côte d'Azur"
-              required
-            />
 
-            <label>Nom du responsable</label>
-            <input
-              type="text"
-              id="managerName"
-              value={formData.managerName}
-              onChange={handleChange}
-              placeholder="Ex : Jean Dupont"
-              required
-            />
+            {/* Identité entreprise */}
+            <div className="row">
+              <div>
+                <label>Nom de l'entreprise</label>
+                <input
+                  type="text"
+                  id="companyName"
+                  value={formData.companyName}
+                  onChange={handleChange}
+                  placeholder="Ex : Atelier BTP Côte d'Azur"
+                  required
+                />
+              </div>
 
+              <div>
+                <label>Nom du responsable</label>
+                <input
+                  type="text"
+                  id="managerName"
+                  value={formData.managerName}
+                  onChange={handleChange}
+                  placeholder="Ex : Jean Dupont"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Email */}
             <label>Email professionnel</label>
             <input
               type="email"
@@ -142,6 +153,7 @@ const Register = () => {
               required
             />
 
+            {/* Secteur + Effectif */}
             <div className="row">
               <div>
                 <label>Secteur d'activité</label>
@@ -149,6 +161,7 @@ const Register = () => {
                   <option value="">Sélectionner un secteur</option>
                   {sectors.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
+
                 {showSectorOther && (
                   <input
                     type="text"
@@ -173,6 +186,7 @@ const Register = () => {
               </div>
             </div>
 
+            {/* Pays + Certifications */}
             <div className="row">
               <div>
                 <label>Pays / région principale</label>
@@ -180,6 +194,7 @@ const Register = () => {
                   <option value="">Sélectionner un pays</option>
                   {countries.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
+
                 {showCountryOther && (
                   <input
                     type="text"
@@ -203,18 +218,18 @@ const Register = () => {
               </div>
             </div>
 
-            <div>
-              <label>Chiffre d'affaires annuel</label>
-              <select id="revenue" value={formData.revenue} onChange={handleChange} required>
-                <option value="">Sélectionner</option>
-                <option>Moins de 100 000 €</option>
-                <option>100 000 € – 500 000 €</option>
-                <option>500 000 € – 2 000 000 €</option>
-                <option>2 000 000 € – 10 000 000 €</option>
-                <option>Plus de 10 000 000 €</option>
-              </select>
-            </div>
+            {/* CA */}
+            <label>Chiffre d'affaires annuel</label>
+            <select id="revenue" value={formData.revenue} onChange={handleChange} required>
+              <option value="">Sélectionner</option>
+              <option>Moins de 100 000 €</option>
+              <option>100 000 € – 500 000 €</option>
+              <option>500 000 € – 2 000 000 €</option>
+              <option>2 000 000 € – 10 000 000 €</option>
+              <option>Plus de 10 000 000 €</option>
+            </select>
 
+            {/* Description */}
             <label>Description de l'entreprise (optionnel)</label>
             <textarea
               id="description"
@@ -224,6 +239,7 @@ const Register = () => {
               placeholder="Présentez brièvement votre activité..."
             ></textarea>
 
+            {/* Mot de passe */}
             <label>Mot de passe</label>
             <input
               type="password"
@@ -234,11 +250,13 @@ const Register = () => {
               required
             />
 
+            {/* Bouton */}
             <button type="submit" disabled={loading}>
               {loading ? 'Création...' : 'Créer le compte'}
             </button>
           </form>
 
+          {/* Footer */}
           <p className="footer">
             Déjà un compte ? <Link to="/login">Se connecter</Link><br />
             <Link to="/">← Retour à l'accueil</Link>
