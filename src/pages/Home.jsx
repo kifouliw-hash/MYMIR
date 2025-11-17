@@ -72,7 +72,7 @@ const Home = () => {
       <section className="hero" id="accueil">
         <div className="hero-content">
           <h1>
-            Optimisez vos <span>appels d'offres</span> avec l'IA
+            Optimisez vos <span>appels d'offres</span> avec MyMír
           </h1>
           <p>
             MyMír analyse vos DCE en quelques secondes et vous guide pour maximiser 

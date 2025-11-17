@@ -1,6 +1,5 @@
 /* =========================================================
-   ✨ MYMIR LOGIN PAGE — DISPOSITION AMÉLIORÉE
-   Card plus grande, textes mieux visibles, disposition optimisée
+   ✨ MYMIR LOGIN PAGE — INPUTS GRANDS ET BIEN DISPOSÉS
    ========================================================= */
 
 .login-page {
@@ -11,10 +10,10 @@
   background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
   position: relative;
   overflow: hidden;
-  padding: 20px;
+  padding: 40px 20px;
 }
 
-/* Orbes flottants animés */
+/* Orbes flottants */
 .login-page::before {
   content: '';
   position: fixed;
@@ -45,10 +44,10 @@
   }
 }
 
-/* Login Container - Plus large */
+/* Container plus large */
 .login-container {
   width: 100%;
-  max-width: 520px;
+  max-width: 600px;
   position: relative;
   z-index: 1;
   animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
@@ -65,65 +64,63 @@
   }
 }
 
-/* Logo Section - Plus grand et visible */
+/* Logo */
 .login-logo {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 48px;
 }
 
 .login-logo-circle {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 24px;
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 28px;
   border-radius: 50%;
   background: linear-gradient(135deg, #fbbf24, #f59e0b);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40px;
+  font-size: 44px;
   font-weight: 800;
   color: #1f2937;
-  box-shadow: 0 10px 40px rgba(251, 191, 36, 0.4),
-              0 0 0 4px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 48px rgba(251, 191, 36, 0.4),
+              0 0 0 6px rgba(255, 255, 255, 0.12);
   animation: logoFloat 3s ease-in-out infinite;
 }
 
 @keyframes logoFloat {
   0%, 100% { 
     transform: translateY(0) rotate(0deg); 
-    box-shadow: 0 10px 40px rgba(251, 191, 36, 0.4),
-                0 0 0 4px rgba(255, 255, 255, 0.1);
   }
   50% { 
-    transform: translateY(-8px) rotate(5deg); 
-    box-shadow: 0 15px 50px rgba(251, 191, 36, 0.5),
-                0 0 0 6px rgba(255, 255, 255, 0.15);
+    transform: translateY(-10px) rotate(5deg); 
+    box-shadow: 0 18px 60px rgba(251, 191, 36, 0.5),
+                0 0 0 8px rgba(255, 255, 255, 0.15);
   }
 }
 
 .login-title {
-  font-size: 36px;
-  font-weight: 800;
+  font-size: 42px;
+  font-weight: 900;
   color: #ffffff;
-  margin-bottom: 12px;
-  letter-spacing: -0.5px;
-  text-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
+  margin-bottom: 14px;
+  letter-spacing: -0.8px;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
 .login-subtitle {
-  font-size: 17px;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.95);
   font-weight: 500;
 }
 
-/* Login Card - Plus spacieuse */
+/* Card spacieuse */
 .login-card {
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 24px;
-  padding: 52px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2),
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 28px;
+  padding: 56px;
+  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.25),
               0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   position: relative;
   overflow: hidden;
@@ -135,7 +132,7 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
+  height: 3px;
   background: linear-gradient(90deg, 
     transparent, 
     rgba(251, 191, 36, 0.8), 
@@ -146,13 +143,13 @@
 
 /* Error Message */
 .error-message {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 24px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 28px;
   color: #dc2626;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   text-align: center;
   animation: shake 0.4s ease;
@@ -168,32 +165,33 @@
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 32px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .form-label {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
-  color: #374151;
+  color: #1f2937;
   letter-spacing: 0.3px;
 }
 
 .form-input {
   width: 100%;
-  padding: 18px 20px;
+  padding: 20px 24px;
   background: #f9fafb;
   border: 2px solid #e5e7eb;
-  border-radius: 12px;
+  border-radius: 14px;
   color: #111827;
-  font-size: 16px;
+  font-size: 17px;
   font-family: inherit;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
+  font-weight: 500;
 }
 
 .form-input:hover {
@@ -205,11 +203,12 @@
   outline: none;
   border-color: #fbbf24;
   background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.1);
+  box-shadow: 0 0 0 5px rgba(251, 191, 36, 0.12);
 }
 
 .form-input::placeholder {
   color: #9ca3af;
+  font-weight: 400;
 }
 
 .form-input:disabled {
@@ -217,22 +216,23 @@
   cursor: not-allowed;
 }
 
-/* Submit Button - Plus grand */
+/* Submit Button - Gros et imposant */
 .submit-btn {
   width: 100%;
-  padding: 20px;
+  padding: 22px;
   background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   color: #1f2937;
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+  box-shadow: 0 6px 16px rgba(251, 191, 36, 0.35);
   position: relative;
   overflow: hidden;
   margin-top: 8px;
+  letter-spacing: 0.3px;
 }
 
 .submit-btn::before {
@@ -248,8 +248,8 @@
 }
 
 .submit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(251, 191, 36, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(251, 191, 36, 0.45);
 }
 
 .submit-btn:hover::before {
@@ -257,7 +257,7 @@
 }
 
 .submit-btn:active {
-  transform: translateY(0);
+  transform: translateY(-1px);
 }
 
 .submit-btn:disabled {
@@ -271,16 +271,16 @@
   z-index: 1;
 }
 
-/* Links - Mieux espacés */
+/* Links */
 .forgot-password {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 24px;
 }
 
 .forgot-password a {
   color: #6b7280;
   text-decoration: none;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   transition: color 0.2s ease;
 }
@@ -291,11 +291,11 @@
 
 .signup-link {
   text-align: center;
-  margin-top: 36px;
-  padding-top: 36px;
+  margin-top: 40px;
+  padding-top: 40px;
   border-top: 1px solid #e5e7eb;
   color: #6b7280;
-  font-size: 16px;
+  font-size: 17px;
 }
 
 .signup-link a {
@@ -310,79 +310,94 @@
   text-decoration: underline;
 }
 
-/* Back Link - Plus visible */
+/* Back Link */
 .back-link {
   text-align: center;
-  margin-top: 36px;
+  margin-top: 40px;
 }
 
 .back-link a {
   color: rgba(255, 255, 255, 0.95);
   text-decoration: none;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  transition: all 0.2s ease;
-  padding: 12px 24px;
-  border-radius: 10px;
+  transition: all 0.25s ease;
+  padding: 14px 28px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
 }
 
 .back-link a:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.22);
   transform: translateX(-4px);
   color: #ffffff;
 }
 
 /* Responsive */
-@media (max-width: 600px) {
+@media (max-width: 700px) {
   .login-container {
     max-width: 100%;
   }
 
   .login-card {
-    padding: 40px 28px;
-    border-radius: 20px;
+    padding: 44px 32px;
+    border-radius: 24px;
   }
 
   .login-title {
-    font-size: 30px;
+    font-size: 36px;
   }
 
   .login-subtitle {
-    font-size: 15px;
+    font-size: 16px;
   }
 
   .login-logo-circle {
-    width: 70px;
-    height: 70px;
-    font-size: 36px;
+    width: 76px;
+    height: 76px;
+    font-size: 38px;
+  }
+
+  .form-input {
+    padding: 18px 20px;
+    font-size: 16px;
+  }
+
+  .submit-btn {
+    padding: 20px;
+    font-size: 17px;
+  }
+
+  .form-label {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 500px) {
+  .login-card {
+    padding: 36px 24px;
+  }
+
+  .login-title {
+    font-size: 32px;
+  }
+
+  .login-logo-circle {
+    width: 68px;
+    height: 68px;
+    font-size: 34px;
   }
 
   .form-input {
     padding: 16px 18px;
-    font-size: 16px;
   }
 
   .submit-btn {
     padding: 18px;
     font-size: 16px;
-  }
-}
-
-@media (max-width: 400px) {
-  .login-card {
-    padding: 32px 20px;
-  }
-
-  .login-title {
-    font-size: 26px;
-  }
-
-  .form-label {
-    font-size: 14px;
   }
 }
