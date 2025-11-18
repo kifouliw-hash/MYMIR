@@ -933,38 +933,38 @@ const Dashboard = () => {
             )}
 
             {analysisResult && (
-              <div className="result-card">
-                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
-                  <h3 className="result-title">✅ Analyse terminée</h3>
-                  <div style={{display: 'flex', gap: '10px'}}>
-                    <button className="btn-primary" onClick={() => downloadPDF(analysisResult._id)}>
-                      📥 Télécharger PDF
-                    </button>
-                    <button className="btn-secondary" onClick={newAnalysis}>
-                      🔄 Nouvelle analyse
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="analysis-summary">
-                  <div className="summary-item">
-                    <strong>Marché :</strong> {analysisResult.analysis?.title || 'N/A'}
-                  </div>
-                  <div className="summary-item">
-                    <strong>Score :</strong> <span className="score-badge high">{analysisResult.analysis?.opportunity || 'N/A'}</span>
-                  </div>
-                  <div className="summary-item">
-                    <strong>Date limite :</strong> {analysisResult.analysis?.date_limite || 'N/A'}
-                  </div>
-                  <div className="summary-item">
-                    <strong>Contexte :</strong> {analysisResult.analysis?.contexte || 'N/A'}
-                  </div>
-                  <div className="summary-item">
-                    <strong>Recommandations :</strong> {analysisResult.analysis?.recommendations || 'N/A'}
-                  </div>
-                </div>
-              </div>
-            )}
+  <div className="result-card">
+    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+      <h3 className="result-title">✅ Analyse terminée</h3>
+      <div style={{display: 'flex', gap: '10px'}}>
+        <button className="btn-primary" onClick={() => downloadPDF(analysisResult._id)}>
+          📥 Télécharger PDF
+        </button>
+        <button className="btn-secondary" onClick={newAnalysis}>
+          🔄 Nouvelle analyse
+        </button>
+      </div>
+    </div>
+    
+    <div className="analysis-summary">
+      <div className="summary-item">
+        <strong>Marché :</strong> {analysisResult?.analysis?.title || analysisResult?.title || 'N/A'}
+      </div>
+      <div className="summary-item">
+        <strong>Score :</strong> <span className="score-badge high">{analysisResult?.analysis?.score || analysisResult?.score || 'N/A'}</span>
+      </div>
+      <div className="summary-item">
+        <strong>Date limite :</strong> {analysisResult?.analysis?.date_limite || 'N/A'}
+      </div>
+      <div className="summary-item">
+        <strong>Contexte :</strong> {analysisResult?.analysis?.contexte || 'N/A'}
+      </div>
+      <div className="summary-item">
+        <strong>Recommandations :</strong> {analysisResult?.analysis?.recommendations || 'N/A'}
+      </div>
+    </div>
+  </div>
+)}
           </section>
         )}
 
