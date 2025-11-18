@@ -62,39 +62,47 @@ const Dashboard = () => {
   };
 
   const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const file = e.target.files[0];
+  if (!file) return;
 
-    setUploadProgress(true);
-    setAnalysisResult(null);
+  setUploadProgress(true);
+  setAnalysisResult(null);
 
-    const formData = new FormData();
-    formData.append('file', file);
+  const formData = new FormData();
+  formData.append('file', file);
 
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/analyze`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/analyze`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
 
-      const data = await response.json();
-      if (response.ok) {
-        setAnalysisResult(data);
-        loadHistory();
-      } else {
-        alert('❌ ' + (data.message || 'Erreur lors de l\'analyse'));
+    const data = await response.json();
+    if (response.ok) {
+      // 🔥 Parser l'analysis si c'est une string
+      if (data.analysis && typeof data.analysis === 'string') {
+        try {
+          data.analysis = JSON.parse(data.analysis);
+        } catch (e) {
+          console.error('Erreur parsing analysis:', e);
+        }
       }
-    } catch (error) {
-      console.error('Erreur upload:', error);
-      alert('❌ Erreur lors de l\'analyse');
-    } finally {
-      setUploadProgress(false);
+      setAnalysisResult(data);
+      loadHistory();
+    } else {
+      alert('❌ ' + (data.message || 'Erreur lors de l\'analyse'));
     }
-  };
+  } catch (error) {
+    console.error('Erreur upload:', error);
+    alert('❌ Erreur lors de l\'analyse');
+  } finally {
+    setUploadProgress(false);
+  }
+};
 
   const downloadPDF = async (analysisId) => {
     try {
@@ -253,7 +261,7 @@ const Dashboard = () => {
           <div style={{marginBottom: '25px'}}>
             <h4>Direction de la publication</h4>
             <div style={{padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px'}}>
-              <p><strong>Directeur de la publication :</strong> Jean Dupont</p>
+              <p><strong>Directeur de la publication :</strong> Williams Kifouli</p>
               <p><strong>Fonction :</strong> Président</p>
               <p><strong>Contact :</strong> direction@mymir.com</p>
             </div>
