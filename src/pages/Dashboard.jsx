@@ -982,7 +982,17 @@ const Dashboard = () => {
           {analysisResult.analysis?.contexte || 'N/A'}
         </div>
       </div>
-      
+
+         {/* NOUVELLE SECTION : Analyse du profil */}
+      {analysisResult.analysis?.analyse_profil && (
+        <div className="summary-item" style={{background: 'rgba(244, 178, 35, 0.1)', padding: '20px', borderRadius: '10px'}}>
+          <strong>🎯 Analyse de votre profil :</strong>
+          <div style={{marginTop: '15px', lineHeight: '1.8', color: 'rgba(255,255,255,0.9)'}}>
+            {analysisResult.analysis.analyse_profil}
+          </div>
+        </div>
+      )}
+
       {analysisResult.analysis?.documents_requis && analysisResult.analysis.documents_requis.length > 0 && (
         <div className="summary-item">
           <strong>📄 Documents requis :</strong>
@@ -1062,40 +1072,52 @@ const Dashboard = () => {
         )}
 
         {activeSection === 'historique' && (
-          <section className="section">
-            <div className="section-header">
-              <h2 className="section-title">Historique des analyses</h2>
-              <p className="section-description">Consultez vos analyses précédentes</p>
-            </div>
+  <section className="section">
+    <div className="section-header">
+      <h2 className="section-title">Historique des analyses</h2>
+      <p className="section-description">Consultez vos analyses précédentes</p>
+    </div>
 
-            <div className="table-card">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Marché</th>
-                    <th>Score</th>
-                    <th>Statut</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {history.map((item) => (
-                    <tr key={item._id}>
-                      <td className="table-date">{new Date(item.generated_at).toLocaleDateString('fr-FR')}</td>
-                      <td className="table-title">{item.analysis?.title || 'Sans titre'}</td>
-                      <td><span className="score-badge high">{item.analysis?.opportunity || 'N/A'}</span></td>
-                      <td><span className="status-badge success">Terminé</span></td>
-                      <td className="table-actions">
-                        <button className="action-btn" onClick={() => downloadPDF(item._id)}>📥</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        )}
+    {history.length === 0 ? (
+      <div style={{textAlign: 'center', padding: '60px', color: 'rgba(255,255,255,0.6)'}}>
+        <div style={{fontSize: '48px', marginBottom: '20px'}}>📊</div>
+        <p>Aucune analyse pour le moment</p>
+        <button className="btn-primary" onClick={() => setActiveSection('analyse')} style={{marginTop: '20px'}}>
+          Créer une analyse
+        </button>
+      </div>
+    ) : (
+      <div className="table-card">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Marché</th>
+              <th>Score</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {history.map((item) => (
+              <tr key={item._id}>
+                <td className="table-date">{new Date(item.generated_at).toLocaleDateString('fr-FR')}</td>
+                <td className="table-title">{item.analysis?.title || item.analysis?.titre || 'Sans titre'}</td>
+                <td><span className="score-badge high">{item.analysis?.score || 'N/A'}</span></td>
+                <td><span className="status-badge success">Terminé</span></td>
+                <td className="table-actions">
+                  <button className="action-btn" onClick={() => downloadPDF(item._id)} title="Télécharger PDF">
+                    📥
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </section>
+)}
 
         {activeSection === 'profil' && (
           <section className="section">
