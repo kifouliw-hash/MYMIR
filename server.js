@@ -176,11 +176,10 @@ app.post("/login", async (req, res) => {
 
     // ⬇️ CRITIQUE : on RENVOIE le token dans la réponse JSON
     const token = jwt.sign(
-      { id: user.id, email: user.email },
-      process.env.JWT_SECRET || "fallbackSecret",
-      { expiresIn: "2h" }
-    );
-
+  { id: user.id, email: user.email },
+  process.env.JWT_SECRET || "fallbackSecret",
+  { expiresIn: "24h" } // ⬅️ Change de "2h" à "24h"
+);
     return res.json({
       success: true,
       message: "Connexion réussie",
