@@ -983,15 +983,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-         {/* NOUVELLE SECTION : Analyse du profil */}
-      {analysisResult.analysis?.analyse_profil && (
-        <div className="summary-item" style={{background: 'rgba(244, 178, 35, 0.1)', padding: '20px', borderRadius: '10px'}}>
-          <strong>🎯 Analyse de votre profil :</strong>
-          <div style={{marginTop: '15px', lineHeight: '1.8', color: 'rgba(255,255,255,0.9)'}}>
-            {analysisResult.analysis.analyse_profil}
-          </div>
-        </div>
-      )}
 
       {analysisResult.analysis?.documents_requis && analysisResult.analysis.documents_requis.length > 0 && (
         <div className="summary-item">
