@@ -937,9 +937,11 @@ const Dashboard = () => {
     <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
       <h3 className="result-title">✅ Analyse terminée</h3>
       <div style={{display: 'flex', gap: '10px'}}>
-        <button className="btn-primary" onClick={() => downloadPDF(analysisResult._id)}>
-          📥 Télécharger PDF
-        </button>
+        {analysisResult._id && (
+          <button className="btn-primary" onClick={() => downloadPDF(analysisResult._id)}>
+            📥 Télécharger PDF
+          </button>
+        )}
         <button className="btn-secondary" onClick={newAnalysis}>
           🔄 Nouvelle analyse
         </button>
@@ -948,19 +950,36 @@ const Dashboard = () => {
     
     <div className="analysis-summary">
       <div className="summary-item">
-        <strong>Marché :</strong> {analysisResult?.analysis?.title || analysisResult?.title || 'N/A'}
+        <strong>Marché :</strong> {
+          (analysisResult.analysis && analysisResult.analysis.title) || 
+          analysisResult.title || 
+          'Non disponible'
+        }
       </div>
       <div className="summary-item">
-        <strong>Score :</strong> <span className="score-badge high">{analysisResult?.analysis?.score || analysisResult?.score || 'N/A'}</span>
+        <strong>Score :</strong> <span className="score-badge high">{
+          (analysisResult.analysis && analysisResult.analysis.score) || 
+          analysisResult.score || 
+          'N/A'
+        }</span>
       </div>
       <div className="summary-item">
-        <strong>Date limite :</strong> {analysisResult?.analysis?.date_limite || 'N/A'}
+        <strong>Date limite :</strong> {
+          (analysisResult.analysis && analysisResult.analysis.date_limite) || 
+          'Non précisée'
+        }
       </div>
       <div className="summary-item">
-        <strong>Contexte :</strong> {analysisResult?.analysis?.contexte || 'N/A'}
+        <strong>Contexte :</strong> {
+          (analysisResult.analysis && analysisResult.analysis.contexte) || 
+          'Non disponible'
+        }
       </div>
       <div className="summary-item">
-        <strong>Recommandations :</strong> {analysisResult?.analysis?.recommendations || 'N/A'}
+        <strong>Recommandations :</strong> {
+          (analysisResult.analysis && analysisResult.analysis.recommendations) || 
+          'Aucune recommandation'
+        }
       </div>
     </div>
   </div>
