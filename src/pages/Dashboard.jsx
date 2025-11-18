@@ -949,45 +949,17 @@ const Dashboard = () => {
     </div>
     
     <div className="analysis-summary">
-      <div className="summary-item">
-        <strong>Marché :</strong> {
-          (analysisResult.analysis && analysisResult.analysis.title) || 
-          analysisResult.title || 
-          'Non disponible'
-        }
-      </div>
-      <div className="summary-item">
-        <strong>Score :</strong> <span className="score-badge high">{
-          (analysisResult.analysis && analysisResult.analysis.score) || 
-          analysisResult.score || 
-          'N/A'
-        }</span>
-      </div>
-      <div className="summary-item">
-        <strong>Date limite :</strong> {
-          (analysisResult.analysis && analysisResult.analysis.date_limite) || 
-          'Non précisée'
-        }
-      </div>
-      <div className="summary-item">
-        <strong>Contexte :</strong> {
-          (analysisResult.analysis && analysisResult.analysis.contexte) || 
-          'Non disponible'
-        }
-      </div>
-     <div className="summary-item">
-  <strong>Recommandations :</strong> {
-    (() => {
-      const reco = analysisResult.analysis?.recommendations;
-      if (!reco) return 'Aucune recommandation';
-      if (typeof reco === 'string') return reco;
-      if (typeof reco === 'object') {
-        return Object.values(reco).filter(v => v).join(' • ');
-      }
-      return 'N/A';
-    })()
-  }
-</div>
+      <pre style={{
+        whiteSpace: 'pre-wrap', 
+        wordWrap: 'break-word',
+        background: 'rgba(0,0,0,0.2)',
+        padding: '20px',
+        borderRadius: '8px',
+        maxHeight: '500px',
+        overflow: 'auto'
+      }}>
+        {JSON.stringify(analysisResult.analysis, null, 2)}
+      </pre>
     </div>
   </div>
 )}
