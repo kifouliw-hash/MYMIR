@@ -105,29 +105,35 @@ const Dashboard = () => {
 };
 
   const downloadPDF = async (analysisId) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/api/analyses/${analysisId}/pdf`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `analyse-${analysisId}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      }
-    } catch (error) {
-      console.error('Erreur téléchargement PDF:', error);
+  console.log('🔍 ID pour PDF:', analysisId);
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/api/analyses/${analysisId}/pdf`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    console.log('📄 Réponse PDF:', response.status);
+    
+    if (response.ok) {
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `analyse-${analysisId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } else {
+      const error = await response.text();
+      console.error('❌ Erreur PDF:', error);
       alert('❌ Erreur lors du téléchargement');
     }
-  };
-
+  } catch (error) {
+    console.error('❌ Erreur téléchargement PDF:', error);
+    alert('❌ Erreur lors du téléchargement');
+  }
+};
   const newAnalysis = () => {
     setAnalysisResult(null);
     document.getElementById('fileInput').value = '';
@@ -932,7 +938,7 @@ const Dashboard = () => {
               </div>
             )}
 
-            {analysisResult && (
+      {analysisResult && (
   <div className="result-card">
     <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
       <h3 className="result-title">✅ Analyse terminée</h3>
@@ -949,17 +955,66 @@ const Dashboard = () => {
     </div>
     
     <div className="analysis-summary">
-      <pre style={{
-        whiteSpace: 'pre-wrap', 
-        wordWrap: 'break-word',
-        background: 'rgba(0,0,0,0.2)',
-        padding: '20px',
-        borderRadius: '8px',
-        maxHeight: '500px',
-        overflow: 'auto'
-      }}>
-        {JSON.stringify(analysisResult.analysis, null, 2)}
-      </pre>
+      <div className="summary-item">
+        <strong>📋 Marché :</strong> {analysisResult.analysis?.title || analysisResult.analysis?.titre || 'N/A'}
+      </div>
+      
+      <div className="summary-item">
+        <strong>🏛️ Autorité :</strong> {analysisResult.analysis?.autorite || 'N/A'}
+      </div>
+      
+      <div className="summary-item">
+        <strong>📅 Date limite :</strong> {analysisResult.analysis?.date_limite || 'N/A'}
+      </div>
+      
+      <div className="summary-item">
+        <strong>📊 Score :</strong> 
+        <span className="score-badge high">{analysisResult.analysis?.score || 'N/A'}/100</span>
+      </div>
+      
+      <div className="summary-item">
+        <strong>💡 Opportunité :</strong> {analysisResult.analysis?.opportunity || analysisResult.analysis?.opportunite || 'N/A'}
+      </div>
+      
+      <div className="summary-item">
+        <strong>📝 Contexte :</strong>
+        <div style={{marginTop: '10px', lineHeight: '1.6', color: 'rgba(255,255,255,0.8)'}}>
+          {analysisResult.analysis?.contexte || 'N/A'}
+        </div>
+      </div>
+      
+      {analysisResult.analysis?.documents_requis && analysisResult.analysis.documents_requis.length > 0 && (
+        <div className="summary-item">
+          <strong>📄 Documents requis :</strong>
+          <ul style={{marginTop: '10px', paddingLeft: '20px', lineHeight: '1.8'}}>
+            {analysisResult.analysis.documents_requis.map((doc, i) => (
+              <li key={i}>{doc}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      
+      {analysisResult.analysis?.plan_de_depot && analysisResult.analysis.plan_de_depot.length > 0 && (
+        <div className="summary-item">
+          <strong>📌 Plan de dépôt :</strong>
+          <ol style={{marginTop: '10px', paddingLeft: '20px', lineHeight: '1.8'}}>
+            {analysisResult.analysis.plan_de_depot.map((etape, i) => (
+              <li key={i}>{etape}</li>
+            ))}
+          </ol>
+        </div>
+      )}
+      
+      {analysisResult.analysis?.checklist && analysisResult.analysis.checklist.length > 0 && (
+        <div className="summary-item">
+          <strong>✅ Checklist :</strong>
+          <ul style={{marginTop: '10px', paddingLeft: '20px', lineHeight: '1.8'}}>
+            {analysisResult.analysis.checklist.map((item, i) => (
+              <li key={i}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   </div>
 )}
