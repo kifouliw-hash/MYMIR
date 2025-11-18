@@ -983,6 +983,71 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* ANALYSE DU PROFIL */}
+{analysisResult.analysis?.analyse_profil && (
+  <div className="summary-item" style={{background: 'rgba(244, 178, 35, 0.1)', padding: '20px', borderRadius: '10px', borderLeft: '4px solid #f4b223'}}>
+    <strong>🎯 Analyse de votre profil</strong>
+    
+    {typeof analysisResult.analysis.analyse_profil === 'string' ? (
+      <div style={{marginTop: '15px', lineHeight: '1.8', color: 'rgba(255,255,255,0.9)'}}>
+        {analysisResult.analysis.analyse_profil}
+      </div>
+    ) : (
+      <>
+        {analysisResult.analysis.analyse_profil.points_forts && (
+          <div style={{marginTop: '15px'}}>
+            <strong style={{color: '#4ade80'}}>✅ Points forts :</strong>
+            <ul style={{marginTop: '10px', paddingLeft: '20px', lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+              {Array.isArray(analysisResult.analysis.analyse_profil.points_forts) 
+                ? analysisResult.analysis.analyse_profil.points_forts.map((point, i) => (
+                    <li key={i}>{point}</li>
+                  ))
+                : <li>{analysisResult.analysis.analyse_profil.points_forts}</li>
+              }
+            </ul>
+          </div>
+        )}
+        
+        {analysisResult.analysis.analyse_profil.points_faibles && (
+          <div style={{marginTop: '15px'}}>
+            <strong style={{color: '#f87171'}}>⚠️ Points faibles :</strong>
+            <ul style={{marginTop: '10px', paddingLeft: '20px', lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+              {Array.isArray(analysisResult.analysis.analyse_profil.points_faibles) 
+                ? analysisResult.analysis.analyse_profil.points_faibles.map((point, i) => (
+                    <li key={i}>{point}</li>
+                  ))
+                : <li>{analysisResult.analysis.analyse_profil.points_faibles}</li>
+              }
+            </ul>
+          </div>
+        )}
+        
+        {analysisResult.analysis.analyse_profil.ressources_a_mobiliser && (
+          <div style={{marginTop: '15px'}}>
+            <strong style={{color: '#60a5fa'}}>💼 Ressources à mobiliser :</strong>
+            <ul style={{marginTop: '10px', paddingLeft: '20px', lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+              {Array.isArray(analysisResult.analysis.analyse_profil.ressources_a_mobiliser) 
+                ? analysisResult.analysis.analyse_profil.ressources_a_mobiliser.map((point, i) => (
+                    <li key={i}>{point}</li>
+                  ))
+                : <li>{analysisResult.analysis.analyse_profil.ressources_a_mobiliser}</li>
+              }
+            </ul>
+          </div>
+        )}
+        
+        {analysisResult.analysis.analyse_profil.compatibilite && (
+          <div style={{marginTop: '15px', padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px'}}>
+            <strong>🎯 Compatibilité :</strong>
+            <p style={{marginTop: '10px', lineHeight: '1.8', color: 'rgba(255,255,255,0.8)'}}>
+              {analysisResult.analysis.analyse_profil.compatibilite}
+            </p>
+          </div>
+        )}
+      </>
+    )}
+  </div>
+)}
 
       {analysisResult.analysis?.documents_requis && analysisResult.analysis.documents_requis.length > 0 && (
         <div className="summary-item">
