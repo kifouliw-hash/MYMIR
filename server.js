@@ -350,36 +350,44 @@ app.get("/api/analyses/:id/pdf", async (req, res) => {
 // ===================================================
 // 📜 HISTORIQUE DES ANALYSES (liste par utilisateur)
 // ===================================================
-app.get("/api/analyses", async (req, res) => {
+app.get("/api/analyses", authenticateToken, async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token)
-      return res.status(401).json({ success: false, message: "Token manquant" });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
-    const userId = decoded.id;
-
-    const { rows } = await pool.query(
-      "SELECT id, title, score, analysis, created_at FROM analyses WHERE user_id = $1 ORDER BY created_at DESC",
-      [userId]
+    const analyses = await db.query(
+      "SELECT * FROM analyses WHERE user_id = $1 ORDER BY generated_at DESC",
+      [req.user.id]
     );
-
-    // Parse l'objet analysis pour chaque ligne
-    const analyses = rows.map(row => ({
-      _id: row.id,
-      title: row.title,
-      score: row.score,
-      analysis: typeof row.analysis === 'string' ? JSON.parse(row.analysis) : row.analysis,
-      generated_at: row.created_at
-    }));
-
-    res.json(analyses);
-  } catch (err) {
-    console.error("❌ Erreur /api/analyses :", err);
-    res.status(500).json({ success: false, message: "Erreur lors du chargement des analyses." });
+    
+    // 🔥 Nettoyer les analyses
+    const cleanedAnalyses = analyses.rows.map(row => {
+      let analysisJson = row.analysis_json;
+      
+      // Si c'est une string avec des backticks, nettoyer
+      if (typeof analysisJson === 'string') {
+        analysisJson = analysisJson
+          .replace(/```json\n?/g, '')
+          .replace(/```\n?/g, '')
+          .trim();
+        
+        try {
+          analysisJson = JSON.parse(analysisJson);
+        } catch (e) {
+          console.error('Erreur parsing JSON:', e);
+        }
+      }
+      
+      return {
+        ...row,
+        analysis: analysisJson,
+        analysis_json: analysisJson
+      };
+    });
+    
+    res.json(cleanedAnalyses);
+  } catch (error) {
+    console.error("❌ Erreur /api/analyses :", error);
+    res.status(500).json({ success: false, message: "Erreur serveur" });
   }
 });
-
 // ===================================================
 // 🧩 MISE À JOUR DU PROFIL UTILISATEUR
 // ===================================================
