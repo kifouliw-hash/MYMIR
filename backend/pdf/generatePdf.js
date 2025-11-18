@@ -14,11 +14,10 @@ export function generatePdfFromAnalysis(res, analysisData) {
     const { title, score, analysis_json, profilEntreprise } = analysisData;
 
     const doc = new PDFDocument({
-      autoFirstPage: false, // <-- IMPORTANT
+      autoFirstPage: false,
       margins: { top: 60, bottom: 50, left: 55, right: 55 }
     });
 
-    // Police
     const fontPath = path.join(__dirname, "fonts", "Inter", "static", "Inter_24pt-Regular.ttf");
 
     res.setHeader("Content-Type", "application/pdf");
@@ -29,16 +28,11 @@ export function generatePdfFromAnalysis(res, analysisData) {
 
     doc.pipe(res);
 
-    // =====================================================
-    // FOOTER AUTOMATIQUE PAR PAGE
-    // =====================================================
     const addFooterToCurrentPage = () => {
       const y = doc.page.height - 40;
-
       doc.fontSize(10)
         .fillColor("#6b7280")
         .text("MyMír — Rapport confidentiel © 2025", 55, y, { align: "left" });
-
       doc.text(`Page ${doc.pageNumber}`, -55, y, { align: "right" });
     };
 
@@ -47,41 +41,30 @@ export function generatePdfFromAnalysis(res, analysisData) {
       addFooterToCurrentPage();
     });
 
-    // =====================================================
     // PAGE 1
-    // =====================================================
     doc.addPage();
     doc.font(fontPath);
-
     doc.fontSize(28).fillColor(GOLD).text("MyMír", { align: "center" });
     doc.moveDown(2);
-
-    doc.fontSize(20).fillColor(DARK).text("Rapport d’analyse d’appel d’offres", { align: "center" });
-
+    doc.fontSize(20).fillColor(DARK).text("Rapport d'analyse d'appel d'offres", { align: "center" });
     doc.moveDown(2);
     doc.fontSize(16).fillColor(TEXT).text(`📌 ${title || "Sans titre"}`, { align: "center" });
-
     doc.moveDown(1);
     doc.fontSize(12).fillColor(TEXT).text(
       `🕒 Généré le : ${new Date().toLocaleString("fr-FR")}`,
       { align: "center" }
     );
-
     doc.moveDown(2);
     doc.fontSize(26)
       .fillColor(score >= 70 ? "#16a34a" : score >= 40 ? "#facc15" : "#dc2626")
       .text(`Score : ${score || "--"} / 100`, { align: "center" });
-
     doc.moveDown(2);
     doc.strokeColor(GOLD).lineWidth(2).moveTo(50, doc.y).lineTo(545, doc.y).stroke();
 
-    // =====================================================
     // PAGE 2 - PROFIL
-    // =====================================================
     doc.addPage();
-    doc.fontSize(18).fillColor(GOLD).text("📂 Profil de l’entreprise");
+    doc.fontSize(18).fillColor(GOLD).text("📂 Profil de l'entreprise");
     doc.moveDown(1);
-
     doc.fontSize(12).fillColor(TEXT);
 
     if (profilEntreprise) {
@@ -92,16 +75,14 @@ export function generatePdfFromAnalysis(res, analysisData) {
       doc.text("—");
     }
 
-    // =====================================================
-    // UTILITAIRE
-    // =====================================================
+    // FONCTION SECTION AMÉLIORÉE
     const section = (titre, contenu) => {
       doc.moveDown(1);
       doc.fontSize(16).fillColor(GOLD).text(titre);
       doc.moveDown(0.5);
       doc.fontSize(12).fillColor(TEXT);
 
-      if (!contenu || contenu.length === 0) {
+      if (!contenu || (Array.isArray(contenu) && contenu.length === 0)) {
         doc.text("—");
         return;
       }
@@ -109,16 +90,33 @@ export function generatePdfFromAnalysis(res, analysisData) {
       if (Array.isArray(contenu)) {
         contenu.forEach((item) => doc.text(`• ${item}`));
       } else if (typeof contenu === "object") {
-        Object.entries(contenu).forEach(([k, v]) => doc.text(`• ${k} : ${v}`));
+        renderObject(contenu);
       } else {
         doc.text(String(contenu));
       }
     };
 
-    // =====================================================
-    // SECTIONS JSON
-    // =====================================================
+    const renderObject = (obj, indent = 0) => {
+      Object.entries(obj).forEach(([key, value]) => {
+        const prefix = "  ".repeat(indent);
+        
+        if (value === null || value === undefined) {
+          return;
+        }
 
+        if (Array.isArray(value)) {
+          doc.text(`${prefix}${key} :`);
+          value.forEach((item) => doc.text(`${prefix}  • ${item}`));
+        } else if (typeof value === "object") {
+          doc.text(`${prefix}${key} :`);
+          renderObject(value, indent + 1);
+        } else {
+          doc.text(`${prefix}• ${key} : ${value}`);
+        }
+      });
+    };
+
+    // SECTIONS
     section("🏛️ Identité du marché", {
       "Type de marché": analysis_json.type_marche,
       "Autorité": analysis_json.autorite,
@@ -128,18 +126,27 @@ export function generatePdfFromAnalysis(res, analysisData) {
 
     section("📑 Documents requis", analysis_json.documents_requis);
     section("📊 Analyse du profil entreprise", analysis_json.analyse_profil);
-    section("💡 Recommandations", analysis_json.recommandations);
+    
+    // Recommandations - gérer objet ou array
+    if (analysis_json.recommandations) {
+      if (typeof analysis_json.recommandations === 'object' && !Array.isArray(analysis_json.recommandations)) {
+        section("💡 Recommandations", Object.values(analysis_json.recommandations).filter(v => v));
+      } else {
+        section("💡 Recommandations", analysis_json.recommandations);
+      }
+    }
+
     section("📅 Plan de dépôt", analysis_json.plan_de_depot);
     section("📝 Checklist finale", analysis_json.checklist);
     section("🎯 Score final", `${analysis_json.score || "--"} / 100`);
+    section("💡 Opportunité", analysis_json.opportunity || analysis_json.opportunite);
 
-    // =====================================================
-    // FIN
-    // =====================================================
     doc.end();
 
   } catch (err) {
     console.error("❌ Erreur PDF :", err);
-    res.status(500).json({ success: false, message: "Erreur génération PDF" });
+    if (!res.headersSent) {
+      res.status(500).json({ success: false, message: "Erreur génération PDF" });
+    }
   }
 }
