@@ -348,18 +348,38 @@ app.get("/api/analyses/:id/pdf", async (req, res) => {
 
 
 // ===================================================
+// 🔐 MIDDLEWARE AUTH
+// ===================================================
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ success: false, message: 'Token manquant' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET || 'fallbackSecret', (err, user) => {
+    if (err) {
+      return res.status(403).json({ success: false, message: 'Token invalide' });
+    }
+    req.user = user;
+    next();
+  });
+}
+
+// ===================================================
 // 📜 HISTORIQUE DES ANALYSES (liste par utilisateur)
 // ===================================================
 app.get("/api/analyses", authenticateToken, async (req, res) => {
   try {
-    const analyses = await db.query(
-      "SELECT * FROM analyses WHERE user_id = $1 ORDER BY generated_at DESC",
+    const { rows } = await pool.query(
+      "SELECT * FROM analyses WHERE user_id = $1 ORDER BY created_at DESC",
       [req.user.id]
     );
     
     // 🔥 Nettoyer les analyses
-    const cleanedAnalyses = analyses.rows.map(row => {
-      let analysisJson = row.analysis_json;
+    const cleanedAnalyses = rows.map(row => {
+      let analysisJson = row.analysis;
       
       // Si c'est une string avec des backticks, nettoyer
       if (typeof analysisJson === 'string') {
@@ -376,9 +396,9 @@ app.get("/api/analyses", authenticateToken, async (req, res) => {
       }
       
       return {
-        ...row,
-        analysis: analysisJson,
-        analysis_json: analysisJson
+        _id: row.id,
+        generated_at: row.created_at,
+        analysis: analysisJson
       };
     });
     
