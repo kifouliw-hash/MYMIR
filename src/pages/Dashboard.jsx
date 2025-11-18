@@ -975,12 +975,19 @@ const Dashboard = () => {
           'Non disponible'
         }
       </div>
-      <div className="summary-item">
-        <strong>Recommandations :</strong> {
-          (analysisResult.analysis && analysisResult.analysis.recommendations) || 
-          'Aucune recommandation'
-        }
-      </div>
+     <div className="summary-item">
+  <strong>Recommandations :</strong> {
+    (() => {
+      const reco = analysisResult.analysis?.recommendations;
+      if (!reco) return 'Aucune recommandation';
+      if (typeof reco === 'string') return reco;
+      if (typeof reco === 'object') {
+        return Object.values(reco).filter(v => v).join(' • ');
+      }
+      return 'N/A';
+    })()
+  }
+</div>
     </div>
   </div>
 )}
