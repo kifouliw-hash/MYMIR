@@ -25,7 +25,7 @@ async function extractTextFromPDF(filePath) {
 }
 
 // --------------------------------------------------
-// 🧠 ANALYSE COMPLÈTE (avec profil réel utilisateur)
+// 🧠 ANALYSE COMPLÈTE (avec sauvegarde automatique)
 // --------------------------------------------------
 export async function analyzeTender(filePath, token) {
   try {
@@ -41,10 +41,12 @@ export async function analyzeTender(filePath, token) {
       certifications: "Aucune"
     };
 
+    let userId = null;
+
     if (token) {
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
-        const userId = decoded.id;
+        userId = decoded.id;
 
         const { rows } = await pool.query(
           "SELECT metadata FROM users WHERE id = $1",
@@ -61,14 +63,11 @@ export async function analyzeTender(filePath, token) {
 
     console.log("🧩 Profil utilisé :", profilEntreprise);
 
-    // --------------------------------------------------
-    // 🧠 TON PROMPT COMPLET — VERSION CORRIGÉE
-    // --------------------------------------------------
     const prompt = `
-Tu es MyMír, un assistant expert en appels d’offres publics et privés.
-Ta mission est d’analyser le document fourni et de produire une synthèse complète, claire et exploitable.
+Tu es MyMír, un assistant expert en appels d'offres publics et privés.
+Ta mission est d'analyser le document fourni et de produire une synthèse complète, claire et exploitable.
 
-Voici le **profil réel de l’entreprise** candidate :
+Voici le **profil réel de l'entreprise** candidate :
 ${JSON.stringify(profilEntreprise, null, 2)}
 
 Analyse selon les axes suivants :
@@ -76,8 +75,8 @@ Analyse selon les axes suivants :
 1️⃣ IDENTIFICATION DU MARCHÉ
 - Type de marché (public, privé, secteur, sous-secteur…)
 - Objet du marché et finalité du projet
-- Lieu ou zone géographique d’exécution
-- Montant estimatif s’il est mentionné
+- Lieu ou zone géographique d'exécution
+- Montant estimatif s'il est mentionné
 - Date limite de dépôt
 - Autorité contractante
 
@@ -88,7 +87,7 @@ Analyse selon les axes suivants :
 - Certifications demandées (Qualibat, ISO, etc.)
 
 3️⃣ COMPARAISON AVEC LE PROFIL ENTREPRISE
-Analyse la correspondance entre l’appel d’offre et le profil ci-dessus :
+Analyse la correspondance entre l'appel d'offre et le profil ci-dessus :
 - Points forts spécifiques de CETTE entreprise
 - Points faibles ou risques
 - Ressources à mobiliser
@@ -111,8 +110,8 @@ Analyse la correspondance entre l’appel d’offre et le profil ci-dessus :
 - Erreurs à éviter
 
 6️⃣ PLAN DE DÉPÔT ET SUIVI
-- Étapes à suivre jusqu’au dépôt final
-- Portail ou site s’il est mentionné
+- Étapes à suivre jusqu'au dépôt final
+- Portail ou site s'il est mentionné
 - Actions administratives
 - Format des documents
 - Points de vérification
@@ -125,7 +124,7 @@ ${extractedText.slice(0, 15000)}
 
 RENVOIE UNIQUEMENT DU JSON VALIDE :
 {
-  "titre": "",
+  "title": "",
   "type_marche": "",
   "autorite": "",
   "date_limite": "",
@@ -133,8 +132,8 @@ RENVOIE UNIQUEMENT DU JSON VALIDE :
   "documents_requis": [],
   "analyse_profil": "",
   "score": 0,
-  "opportunite": "",
-  "recommandations": [],
+  "opportunity": "",
+  "recommendations": "",
   "plan_de_depot": [],
   "checklist": []
 }
@@ -152,13 +151,56 @@ RENVOIE UNIQUEMENT DU JSON VALIDE :
       ],
     });
 
-    const analysis = completion.choices?.[0]?.message?.content || "{}";
+    let analysisText = completion.choices?.[0]?.message?.content || "{}";
+    
+    // Nettoyer le JSON (enlever les backticks markdown si présents)
+    analysisText = analysisText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+
+    let analysisJson = {};
+    try {
+      analysisJson = JSON.parse(analysisText);
+    } catch (e) {
+      console.error("❌ Erreur parsing JSON:", e);
+      analysisJson = { title: "Erreur parsing", score: 0, contexte: analysisText };
+    }
 
     fs.unlinkSync(filePath);
 
+    // 💾 SAUVEGARDE AUTOMATIQUE EN BASE
+    if (userId) {
+      try {
+        const { rows } = await pool.query(
+          `INSERT INTO analyses (user_id, title, score, summary, analysis, created_at)
+           VALUES ($1, $2, $3, $4, $5, NOW())
+           RETURNING id`,
+          [
+            userId,
+            analysisJson.title || "Sans titre",
+            analysisJson.score || 0,
+            analysisJson.contexte || "",
+            JSON.stringify(analysisJson)
+          ]
+        );
+
+        const savedId = rows[0].id;
+        console.log(`✅ Analyse sauvegardée automatiquement - ID: ${savedId}`);
+
+        return {
+          success: true,
+          _id: savedId,
+          analysis: analysisJson,
+          generated_at: new Date().toISOString(),
+        };
+
+      } catch (dbErr) {
+        console.error("❌ Erreur sauvegarde DB:", dbErr);
+      }
+    }
+
+    // Si pas de userId ou erreur DB, retourner quand même l'analyse
     return {
       success: true,
-      analysis,
+      analysis: analysisJson,
       generated_at: new Date().toISOString(),
     };
 
