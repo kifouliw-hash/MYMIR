@@ -295,54 +295,125 @@ app.post("/api/save-analysis", async (req, res) => {
 });
 
 // ===================================================
-// 📄 Téléchargement du rapport PDF — Version premium stylisée MyMír
+// 📄 Téléchargement du rapport PDF
 // ===================================================
 app.get("/api/analyses/:id/pdf", async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
-    if (!token)
+    if (!token) {
       return res.status(401).json({ success: false, message: "Token manquant" });
+    }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
     const userId = decoded.id;
-
     const analysisId = req.params.id;
 
+    console.log(`📄 Génération PDF pour analyse ${analysisId}`);
+
+    // Récupérer l'analyse
     const { rows } = await pool.query(
       "SELECT * FROM analyses WHERE id = $1 AND user_id = $2",
       [analysisId, userId]
     );
 
-    if (rows.length === 0)
+    if (rows.length === 0) {
       return res.status(404).json({ success: false, message: "Analyse introuvable" });
+    }
 
     const analysis = rows[0];
-
-    let clean = {};
-    try { clean = JSON.parse(analysis.analysis); } catch {}
-
-    // Charger profil entreprise
-    let profilEntreprise = {};
-    const userRes = await pool.query("SELECT metadata FROM users WHERE id = $1", [userId]);
-    if (userRes.rows.length > 0) profilEntreprise = userRes.rows[0].metadata;
-
-    const data = {
+    console.log('📊 Analyse brute récupérée:', {
+      id: analysis.id,
       title: analysis.title,
       score: analysis.score,
-      summary: analysis.summary,
-      analysis_json: clean,
-      profilEntreprise
+      analysisType: typeof analysis.analysis,
+      analysisPreview: typeof analysis.analysis === 'string' ? analysis.analysis.substring(0, 200) : 'objet'
+    });
+
+    // Parser l'analyse JSON - NETTOYAGE AGRESSIF
+    let analysisJson = {};
+    try {
+      let rawAnalysis = analysis.analysis;
+
+      // Si c'est déjà un objet, on le garde
+      if (typeof rawAnalysis === 'object' && rawAnalysis !== null) {
+        analysisJson = rawAnalysis;
+      } 
+      // Si c'est une string, on nettoie
+      else if (typeof rawAnalysis === 'string') {
+        // Retirer les backticks markdown
+        let cleaned = rawAnalysis
+          .replace(/```json\n?/gi, '')
+          .replace(/```\n?/g, '')
+          .trim();
+
+        // Si ça commence par ### (markdown), extraire le JSON s'il existe
+        if (cleaned.startsWith('###') || cleaned.startsWith('#')) {
+          console.log('⚠️ Détection de Markdown dans analysis, tentative extraction JSON...');
+          
+          // Chercher un bloc JSON dans le texte
+          const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            cleaned = jsonMatch[0];
+            console.log('✅ JSON extrait du markdown');
+          } else {
+            console.log('❌ Aucun JSON trouvé dans le markdown');
+            // Créer un JSON de base
+            analysisJson = {
+              title: analysis.title || "Analyse",
+              score: analysis.score || 0,
+              summary: analysis.summary || cleaned.substring(0, 500)
+            };
+            throw new Error('Pas de JSON valide');
+          }
+        }
+
+        // Tenter le parse
+        analysisJson = JSON.parse(cleaned);
+        console.log('✅ JSON parsé avec succès');
+      }
+    } catch (e) {
+      console.error('❌ Erreur parsing JSON:', e.message);
+      console.log('📋 Utilisation des données de base de la DB');
+      
+      // Fallback : utiliser les données de base
+      analysisJson = {
+        title: analysis.title || "Sans titre",
+        score: analysis.score || 0,
+        summary: analysis.summary || "Analyse non disponible"
+      };
+    }
+
+    // Récupérer le profil entreprise
+    const userRes = await pool.query("SELECT metadata FROM users WHERE id = $1", [userId]);
+    const profilEntreprise = userRes.rows.length > 0 ? userRes.rows[0].metadata : {};
+
+    // Préparer les données pour le PDF
+    const pdfData = {
+      title: analysisJson.title || analysis.title || "Sans titre",
+      score: analysisJson.score || analysis.score || 0,
+      summary: analysisJson.summary || analysis.summary || "",
+      analysis_json: analysisJson,
+      profilEntreprise: profilEntreprise
     };
 
-    // 🔥 IMPORTANT : RETURN sinon Express écrit 2 fois
-    return generatePdfFromAnalysis(res, data);
+    console.log('📋 Données PDF préparées:', {
+      title: pdfData.title,
+      score: pdfData.score,
+      hasSummary: !!pdfData.summary,
+      hasAnalysisData: Object.keys(pdfData.analysis_json).length > 0
+    });
+
+    // Générer le PDF
+    return generatePdfFromAnalysis(res, pdfData);
 
   } catch (err) {
-    console.error("❌ PDF ERROR :", err);
-    return res.status(500).json({
-      success: false,
-      message: "Erreur génération PDF"
-    });
+    console.error("❌ Erreur PDF complète:", err);
+    if (!res.headersSent) {
+      return res.status(500).json({
+        success: false,
+        message: "Erreur génération PDF"
+      });
+    }
   }
 });
 
