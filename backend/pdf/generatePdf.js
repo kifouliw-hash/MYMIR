@@ -28,7 +28,7 @@ export function generatePdfFromAnalysis(res, analysisData) {
     }
 
     const doc = new PDFDocument({
-      margins: { top: 50, bottom: 50, left: 60, right: 60 },
+      margins: { top: 50, bottom: 60, left: 60, right: 60 },
       size: 'A4'
     });
 
@@ -38,6 +38,23 @@ export function generatePdfFromAnalysis(res, analysisData) {
     res.setHeader("Content-Disposition", `attachment; filename="Rapport-${fileName}.pdf"`);
 
     doc.pipe(res);
+
+    // Fonction pour ajouter le footer à la page courante
+    const addFooter = () => {
+      doc.fontSize(9).fillColor(GRAY);
+      doc.text(
+        `MyMír — Rapport confidentiel © 2025`,
+        60,
+        doc.page.height - 40,
+        { align: "left", lineBreak: false }
+      );
+      doc.text(
+        `Page ${doc.bufferedPageRange().start + 1}`,
+        60,
+        doc.page.height - 40,
+        { align: "right", lineBreak: false }
+      );
+    };
 
     // ================== PAGE 1 - COUVERTURE ==================
     doc.fontSize(32).fillColor(GOLD).text("MyMír", { align: "center" });
@@ -73,9 +90,10 @@ export function generatePdfFromAnalysis(res, analysisData) {
       if (profilEntreprise.revenue) doc.text(`• Chiffre d'affaires : ${profilEntreprise.revenue}`);
       if (profilEntreprise.country) doc.text(`• Pays : ${profilEntreprise.country}`);
     }
-    doc.moveDown(2);
 
-    // ================== DÉTAILS DU MARCHÉ ==================
+    addFooter();
+
+    // ================== PAGE 2 - DÉTAILS DU MARCHÉ ==================
     doc.addPage();
     doc.fontSize(18).fillColor(GOLD).text("Détails du Marché", { underline: true });
     doc.moveDown(1);
@@ -98,10 +116,11 @@ export function generatePdfFromAnalysis(res, analysisData) {
       parsedAnalysis.documents_requis.forEach(doc_item => {
         doc.text(`  • ${doc_item}`, { indent: 10 });
       });
-      doc.moveDown(2);
     }
 
-    // ================== ANALYSE PROFIL ==================
+    addFooter();
+
+    // ================== PAGE 3 - ANALYSE PROFIL ==================
     if (parsedAnalysis.analyse_profil) {
       doc.addPage();
       doc.fontSize(18).fillColor(GOLD).text("Analyse du Profil", { underline: true });
@@ -148,9 +167,11 @@ export function generatePdfFromAnalysis(res, analysisData) {
         if (comp.technique) doc.text(`  • Technique : ${comp.technique}`, { indent: 10 });
         if (comp.financiere) doc.text(`  • Financière : ${comp.financiere}`, { indent: 10 });
       }
+
+      addFooter();
     }
 
-    // ================== RECOMMANDATIONS ==================
+    // ================== PAGE 4 - RECOMMANDATIONS ==================
     if (parsedAnalysis.recommendations) {
       doc.addPage();
       doc.fontSize(18).fillColor(GOLD).text("Recommandations", { underline: true });
@@ -163,30 +184,24 @@ export function generatePdfFromAnalysis(res, analysisData) {
       if (reco.points_a_valoriser) doc.text(`• Points à valoriser : ${reco.points_a_valoriser}`, { align: "justify" });
       if (reco.erreurs_a_eviter) doc.text(`• Erreurs à éviter : ${reco.erreurs_a_eviter}`, { align: "justify" });
       doc.moveDown(2);
-    }
 
-    // ================== PLAN DE DÉPÔT ==================
-    if (parsedAnalysis.plan_de_depot && Array.isArray(parsedAnalysis.plan_de_depot)) {
-      doc.fontSize(16).fillColor(GOLD).text("Plan de Dépôt", { underline: true });
-      doc.moveDown(0.8);
-      doc.fontSize(11).fillColor(TEXT);
-      parsedAnalysis.plan_de_depot.forEach((step, index) => {
-        doc.text(`${index + 1}. ${step}`);
-      });
-    }
+      // ================== PLAN DE DÉPÔT ==================
+      if (parsedAnalysis.plan_de_depot && Array.isArray(parsedAnalysis.plan_de_depot)) {
+        doc.fontSize(16).fillColor(GOLD).text("Plan de Dépôt", { underline: true });
+        doc.moveDown(0.8);
+        doc.fontSize(11).fillColor(TEXT);
+        parsedAnalysis.plan_de_depot.forEach((step, index) => {
+          doc.text(`${index + 1}. ${step}`);
+        });
+      }
 
-    // ================== FOOTER ==================
-    const pageCount = doc.bufferedPageRange().count;
-    for (let i = 0; i < pageCount; i++) {
-      doc.switchToPage(i);
-      doc.fontSize(9).fillColor(GRAY)
-        .text(`MyMír — Rapport confidentiel © 2025`, 60, doc.page.height - 40, { align: "left" })
-        .text(`Page ${i + 1}`, doc.page.width - 100, doc.page.height - 40, { align: "right" });
+      addFooter();
     }
 
     doc.end();
+
   } catch (error) {
-    console.error("Erreur génération PDF:", error);
+    console.error("❌ Erreur génération PDF:", error);
     if (!res.headersSent) {
       res.status(500).json({ error: "Erreur lors de la génération du PDF" });
     }
