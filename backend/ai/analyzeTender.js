@@ -1,52 +1,12 @@
 // backend/ai/analyzeTender.js
-import fs from "fs";
-import OpenAI from "openai";
-import mammoth from "mammoth";
-import pdfjsLib from "pdfjs-dist/legacy/build/pdf.js";
-import jwt from "jsonwebtoken";
-import pool from "../../db.js";
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-// Extraction PDF (GARDER TEL QUEL)
-async function extractTextFromPDF(filePath) {
-  const data = new Uint8Array(fs.readFileSync(filePath));
-  const loadingTask = pdfjsLib.getDocument({ data });
-  const pdf = await loadingTask.promise;
-
-  let text = "";
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    text += content.items.map((item) => item.str).join(" ") + "\n";
-  }
-  return text.trim();
-}
-
-// Extraction DOCX (GARDER TEL QUEL)
-async function extractTextFromDOCX(filePath) {
-  const result = await mammoth.extractRawText({ path: filePath });
-  return result.value;
-}
-
-// Extraction générique (GARDER TEL QUEL)
-async function extractText(filePath) {
-  const ext = filePath.toLowerCase();
-  if (ext.endsWith('.pdf')) {
-    return await extractTextFromPDF(filePath);
-  } else if (ext.endsWith('.docx') || ext.endsWith('.doc')) {
-    return await extractTextFromDOCX(filePath);
-  } else {
-    throw new Error("Format non supporté. Utilisez PDF ou DOCX.");
-  }
-}
+// ... (garder imports et fonctions d'extraction identiques)
 
 export async function analyzeTender(filePath, token) {
   try {
     const extractedText = await extractText(filePath);
     const docLength = extractedText.length;
 
-    // Charger profil utilisateur
+    // Charger profil utilisateur (identique)
     let profilEntreprise = {
       companyName: "Non renseigné",
       sector: "Non précisé",
@@ -62,10 +22,7 @@ export async function analyzeTender(filePath, token) {
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
         userId = decoded.id;
-        const { rows } = await pool.query(
-          "SELECT metadata FROM users WHERE id = $1",
-          [userId]
-        );
+        const { rows } = await pool.query("SELECT metadata FROM users WHERE id = $1", [userId]);
         if (rows.length > 0 && rows[0].metadata) {
           profilEntreprise = { ...profilEntreprise, ...rows[0].metadata };
         }
@@ -75,12 +32,12 @@ export async function analyzeTender(filePath, token) {
     }
 
     console.log(`📄 Document: ${docLength} caractères`);
-    console.log("🧩 Profil:", profilEntreprise);
+    console.log("🧩 Profil utilisé:", profilEntreprise);
 
-    // PROMPT AMÉLIORÉ
-    const prompt = `Tu es MyMír, expert en analyse stratégique d'appels d'offres pour PME françaises.
+    // ========== PROMPT ULTRA-COMPLET POUR PME ==========
+    const prompt = `Tu es MyMír, expert en analyse d'appels d'offres SPÉCIALISÉ dans l'accompagnement des PME, TPE et startups françaises.
 
-🎯 MISSION : Évaluer HONNÊTEMENT si l'entreprise doit candidater.
+🎯 MISSION : Transformer une analyse d'appel d'offres en PLAN D'ACTION CONCRET et RÉALISTE pour une petite structure.
 
 👤 PROFIL ENTREPRISE
 ${JSON.stringify(profilEntreprise, null, 2)}
@@ -220,7 +177,87 @@ Extrais précisément :
 **Erreurs éviter** : [pièges critiques]
 
 ═══════════════════════════════════════════
-1️⃣1️⃣ PLAN DÉPÔT
+1️⃣1️⃣ 🎯 STRATÉGIE DE CANDIDATURE ADAPTÉE
+═══════════════════════════════════════════
+
+**SI score < 60/100**, fournis une stratégie détaillée et réaliste :
+
+**Opportunités à valoriser** :
+- Avantages spécifiques de CE marché (allotissement, durée, SAD, etc.)
+- Points d'entrée possibles (lots accessibles, catégories spécifiques)
+- Possibilités sous-traitance/partenariats
+- Critères non-bloquants travaillables
+
+**Stratégie recommandée** :
+✅ **À FAIRE** : [2-4 actions stratégiques concrètes]
+❌ **À NE PAS FAIRE** : [2-3 pièges à éviter absolument]
+⚠️ **Conditions préalables** : [ce qu'il FAUT avoir AVANT de candidater]
+
+**Feuille de route suggérée** (si score 40-59) :
+- **Court terme (0-3 mois)** : [actions immédiates réalisables]
+- **Moyen terme (3-12 mois)** : [développements requis]
+- **Long terme (12+ mois)** : [positionnement stratégique]
+
+**SI score ≥ 70/100**, stratégie allégée suffit.
+
+═══════════════════════════════════════════
+1️⃣2️⃣ 📋 PRÉPARATION DU DOSSIER
+═══════════════════════════════════════════
+
+**Complexité dossier** : Simple/Moyenne/Élevée
+
+**Temps préparation estimé** :
+- Rassemblement documents administratifs : [X jours]
+- Rédaction mémoire technique : [X jours]
+- Chiffrage/réponse financière : [X jours]
+- **TOTAL estimé** : [X jours]
+
+**Coûts préparation estimés** (si applicable) :
+- Certifications manquantes : [montant ou N/A]
+- Assurances complémentaires : [montant ou N/A]
+- Conseils externes (avocat, consultant) : [montant estimé ou N/A]
+- **TOTAL estimé** : [montant ou "Préparation interne possible"]
+
+**Documents types à préparer en priorité** :
+1. [Document 1 + où le trouver/comment le faire]
+2. [Document 2 + où le trouver/comment le faire]
+3. [Document 3 + où le trouver/comment le faire]
+
+═══════════════════════════════════════════
+1️⃣3️⃣ 📅 CALENDRIER DÉTAILLÉ
+═══════════════════════════════════════════
+
+Établis un rétro-planning depuis la date limite :
+
+**J-[X] ([date])** : Date limite dépôt offres
+**J-[X]** : Deadline interne (marge sécurité)
+**J-[X]** : Finalisation et relecture
+**J-[X]** : Rédaction mémoire technique
+**J-[X]** : Chiffrage finalisé
+**J-[X]** : Rassemblement documents admin
+**AUJOURD'HUI** : [Date génération rapport]
+
+**⚠️ Temps disponible** : [X jours] - [Court/Raisonnable/Confortable]
+
+═══════════════════════════════════════════
+1️⃣4️⃣ 🆘 AIDES & ACCOMPAGNEMENTS
+═══════════════════════════════════════════
+
+**Organismes d'aide aux PME** (selon secteur/localisation) :
+- CCI locale : Accompagnement marchés publics
+- BPI France : Garanties financières
+- Régions : Aides sectorielles
+- Fédérations professionnelles : Conseils métier
+
+**Plateformes utiles** :
+- Chorus Pro (facturation)
+- PLACE (dépôt dématérialisé)
+- data.gouv.fr (données marchés)
+
+**Si besoin avocat/consultant** : [Oui/Non] + justification
+
+═══════════════════════════════════════════
+1️⃣5️⃣ PLAN DÉPÔT
 ═══════════════════════════════════════════
 1. [Étape 1]
 2. [Étape 2]
@@ -228,14 +265,14 @@ Extrais précisément :
 etc.
 
 ═══════════════════════════════════════════
-1️⃣2️⃣ CHECKLIST FINALE
+1️⃣6️⃣ CHECKLIST FINALE
 ═══════════════════════════════════════════
 ☐ [Point 1]
 ☐ [Point 2]
 etc.
 
 ═══════════════════════════════════════════
-1️⃣3️⃣ ALERTES & SIGNAUX
+1️⃣7️⃣ ALERTES & SIGNAUX
 ═══════════════════════════════════════════
 [Liste alertes identifiées ou []]
 
@@ -255,21 +292,26 @@ etc.
   "duree": "Durée ou N/A",
   "reference": "Ref AO",
   "plateforme": "Portail dépôt",
+  
   "incompatibilite_critique": {
     "detectee": true/false,
     "secteur_entreprise": "Secteur profil",
     "secteur_marche": "Secteur AO",
     "justification": "Pourquoi incompatible"
   },
+  
   "contexte": "Synthèse 3-4 phrases",
+  
   "criteres_attribution": [
     {"nom": "Prix", "ponderation": "60%"},
     {"nom": "Technique", "ponderation": "40%"}
   ],
+  
   "documents_requis": ["Doc1", "Doc2"],
   "certifications_requises": ["Cert1"] ou [],
   "references_clients_requises": "Description",
   "garanties_financieres": "Montants ou N/A",
+  
   "analyse_profil": {
     "points_forts": ["Point1", "Point2"],
     "points_faibles": ["Point1", "Point2"],
@@ -281,12 +323,14 @@ etc.
       "temporelle": "Compatible/Moyen/Incompatible - détail"
     }
   },
+  
   "analyse_concurrence": {
     "niveau": "Faible/Moyen/Fort",
     "profils_concurrents": "Description",
     "barrieres_entree": ["Barrière1", "Barrière2"],
     "avantages_differenciation": ["Avantage1"]
   },
+  
   "risques_juridiques_financiers": {
     "clauses_penalites": "Détail ou N/A",
     "garantie_decennale": "Oui/Non",
@@ -295,15 +339,74 @@ etc.
     "avance_versee": "Oui/Non %",
     "risque_contentieux": "Faible/Moyen/Élevé"
   },
-  "score": 12,
-  "opportunity": "INCOMPATIBLE",
+  
+  "score": 45,
+  "opportunity": "Risqué",
   "justification_score": "Explication claire",
+  
   "recommendations": {
     "renforcer_dossier": "Conseil",
     "ameliorer_profil": "Conseil",
     "points_a_valoriser": "Points",
     "erreurs_a_eviter": "Erreurs"
   },
+  
+  "strategie_candidature": {
+    "opportunites_a_valoriser": ["Opportunité 1", "Opportunité 2"],
+    "actions_recommandees": {
+      "a_faire": ["Action 1", "Action 2"],
+      "a_ne_pas_faire": ["Piège 1", "Piège 2"],
+      "conditions_prealables": ["Condition 1", "Condition 2"]
+    },
+    "feuille_de_route": {
+      "court_terme": ["Action 0-3 mois", "Action 2"],
+      "moyen_terme": ["Action 3-12 mois", "Action 2"],
+      "long_terme": ["Action 12+ mois", "Action 2"]
+    }
+  },
+  
+  "preparation_dossier": {
+    "complexite": "Simple/Moyenne/Élevée",
+    "temps_preparation": {
+      "documents_admin": "X jours",
+      "memoire_technique": "X jours",
+      "chiffrage": "X jours",
+      "total": "X jours"
+    },
+    "couts_preparation": {
+      "certifications": "Montant ou N/A",
+      "assurances": "Montant ou N/A",
+      "conseils_externes": "Montant ou N/A",
+      "total": "Montant ou 'Préparation interne possible'"
+    },
+    "documents_prioritaires": [
+      "Document 1 + conseil obtention",
+      "Document 2 + conseil obtention"
+    ]
+  },
+  
+  "calendrier": {
+    "date_limite": "JJ/MM/AAAA",
+    "deadline_interne_recommandee": "JJ/MM/AAAA",
+    "temps_disponible_jours": 45,
+    "appreciation_delai": "Court/Raisonnable/Confortable",
+    "retro_planning": [
+      {"date": "JJ/MM", "action": "Dépôt offre"},
+      {"date": "JJ/MM", "action": "Finalisation"},
+      {"date": "JJ/MM", "action": "Rédaction"},
+      {"date": "JJ/MM", "action": "Début préparation"}
+    ]
+  },
+  
+  "aides_accompagnements": {
+    "organismes_utiles": [
+      "CCI locale - Accompagnement marchés publics",
+      "BPI France - Garanties financières"
+    ],
+    "plateformes": ["Chorus Pro", "PLACE"],
+    "besoin_conseil_externe": "Oui/Non + justification"
+  },
+  
   "plan_de_depot": ["Étape1", "Étape2"],
   "checklist": ["Point1", "Point2"],
   "alertes": ["Alerte1"] ou []
@@ -319,7 +422,7 @@ etc.
       messages: [
         { 
           role: "system", 
-          content: "Tu es MyMír, expert analyse appels d'offres. Honnête et pragmatique. Détectes incompatibilités sectorielles. JSON uniquement." 
+          content: "Tu es MyMír, expert en accompagnement des PME/TPE pour les marchés publics. Tu fournis des analyses pragmatiques, honnêtes et ACTIONNABLES. Tu transformes l'analyse en plan d'action concret. JSON uniquement." 
         },
         { role: "user", content: prompt }
       ],
@@ -352,12 +455,18 @@ etc.
     analysisJson.documents_requis = analysisJson.documents_requis || [];
     analysisJson.criteres_attribution = analysisJson.criteres_attribution || [];
     
+    // Valeurs par défaut pour nouvelles sections
     if (!analysisJson.analyse_profil) {
       analysisJson.analyse_profil = {
         points_forts: [],
         points_faibles: [],
         ressources_a_mobiliser: [],
-        compatibilite: { geographique: "N/A", technique: "N/A", financiere: "N/A", temporelle: "N/A" }
+        compatibilite: { 
+          geographique: "N/A", 
+          technique: "N/A", 
+          financiere: "N/A", 
+          temporelle: "N/A" 
+        }
       };
     }
     
@@ -378,6 +487,59 @@ etc.
         delais_paiement: "N/A",
         avance_versee: "N/A",
         risque_contentieux: "N/A"
+      };
+    }
+    
+    if (!analysisJson.strategie_candidature) {
+      analysisJson.strategie_candidature = {
+        opportunites_a_valoriser: [],
+        actions_recommandees: {
+          a_faire: [],
+          a_ne_pas_faire: [],
+          conditions_prealables: []
+        },
+        feuille_de_route: {
+          court_terme: [],
+          moyen_terme: [],
+          long_terme: []
+        }
+      };
+    }
+    
+    if (!analysisJson.preparation_dossier) {
+      analysisJson.preparation_dossier = {
+        complexite: "Non évaluée",
+        temps_preparation: {
+          documents_admin: "N/A",
+          memoire_technique: "N/A",
+          chiffrage: "N/A",
+          total: "N/A"
+        },
+        couts_preparation: {
+          certifications: "N/A",
+          assurances: "N/A",
+          conseils_externes: "N/A",
+          total: "N/A"
+        },
+        documents_prioritaires: []
+      };
+    }
+    
+    if (!analysisJson.calendrier) {
+      analysisJson.calendrier = {
+        date_limite: "N/A",
+        deadline_interne_recommandee: "N/A",
+        temps_disponible_jours: 0,
+        appreciation_delai: "Non évalué",
+        retro_planning: []
+      };
+    }
+    
+    if (!analysisJson.aides_accompagnements) {
+      analysisJson.aides_accompagnements = {
+        organismes_utiles: [],
+        plateformes: [],
+        besoin_conseil_externe: "Non évalué"
       };
     }
     
