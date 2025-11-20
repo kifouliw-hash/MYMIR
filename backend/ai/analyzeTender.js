@@ -1,52 +1,12 @@
 // backend/ai/analyzeTender.js
-import fs from "fs";
-import OpenAI from "openai";
-import mammoth from "mammoth";
-import pdfjsLib from "pdfjs-dist/legacy/build/pdf.js";
-import jwt from "jsonwebtoken";
-import pool from "../../db.js";
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-// Extraction PDF
-async function extractTextFromPDF(filePath) {
-  const data = new Uint8Array(fs.readFileSync(filePath));
-  const loadingTask = pdfjsLib.getDocument({ data });
-  const pdf = await loadingTask.promise;
-
-  let text = "";
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    text += content.items.map((item) => item.str).join(" ") + "\n";
-  }
-  return text.trim();
-}
-
-// Extraction DOCX
-async function extractTextFromDOCX(filePath) {
-  const result = await mammoth.extractRawText({ path: filePath });
-  return result.value;
-}
-
-// Extraction générique
-async function extractText(filePath) {
-  const ext = filePath.toLowerCase();
-  if (ext.endsWith('.pdf')) {
-    return await extractTextFromPDF(filePath);
-  } else if (ext.endsWith('.docx') || ext.endsWith('.doc')) {
-    return await extractTextFromDOCX(filePath);
-  } else {
-    throw new Error("Format non supporté. Utilisez PDF ou DOCX.");
-  }
-}
+// ... (garder imports et fonctions d'extraction identiques)
 
 export async function analyzeTender(filePath, token) {
   try {
     const extractedText = await extractText(filePath);
     const docLength = extractedText.length;
 
-    // Charger le profil réel utilisateur
+    // Charger profil utilisateur (identique)
     let profilEntreprise = {
       companyName: "Non renseigné",
       sector: "Non précisé",
@@ -62,12 +22,7 @@ export async function analyzeTender(filePath, token) {
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
         userId = decoded.id;
-
-        const { rows } = await pool.query(
-          "SELECT metadata FROM users WHERE id = $1",
-          [userId]
-        );
-
+        const { rows } = await pool.query("SELECT metadata FROM users WHERE id = $1", [userId]);
         if (rows.length > 0 && rows[0].metadata) {
           profilEntreprise = { ...profilEntreprise, ...rows[0].metadata };
         }
@@ -79,221 +34,249 @@ export async function analyzeTender(filePath, token) {
     console.log(`📄 Document: ${docLength} caractères`);
     console.log("🧩 Profil utilisé:", profilEntreprise);
 
-    // PROMPT ULTRA-ROBUSTE ET ADAPTATIF
-    const prompt = `Tu es MyMír, expert en analyse stratégique d'appels d'offres pour PME, ETI et startups françaises.
+    // ========== PROMPT AMÉLIORÉ ==========
+    const prompt = `Tu es MyMír, expert en analyse stratégique d'appels d'offres pour PME françaises.
 
-🎯 CONTEXTE DE LA MISSION
-Une entreprise souhaite évaluer rapidement et précisément si elle doit candidater à un appel d'offres.
-Tu dois analyser le document fourni avec rigueur, pragmatisme et honnêteté intellectuelle.
+🎯 MISSION : Évaluer HONNÊTEMENT si l'entreprise doit candidater.
 
-👤 PROFIL DE L'ENTREPRISE CANDIDATE
+👤 PROFIL ENTREPRISE
 ${JSON.stringify(profilEntreprise, null, 2)}
 
-📊 DOCUMENT À ANALYSER (${docLength} caractères)
+📄 DOCUMENT (${docLength} car.)
 ${extractedText.slice(0, 30000)}
 
-⚠️ RÈGLES FONDAMENTALES
-1. **Adaptabilité** : Le document peut être complet (20+ pages) ou minimal (1 page). Adapte ton niveau de détail.
-2. **Honnêteté** : Si une info n'existe PAS dans le document, indique "N/A" ou "Non précisé". N'invente RIEN.
-3. **Pragmatisme** : Analyse selon le profil réel fourni, pas un profil idéal.
-4. **Réalisme** : Un score de 50-60 est normal. Ne surestime pas, ne sous-estime pas.
-5. **Clarté** : Sois concis et actionnable. Pas de jargon inutile.
+⚠️ RÈGLES SCORING STRICTES
+- **Incompatibilité sectorielle = score MAX 15/100**
+  Ex: Entreprise IT candidatant à marché BTP/terrassement/construction
+- **Chiffre d'affaires < 10% du montant marché = score MAX 30/100**
+- **Absence certification obligatoire = -25 points**
+- **Localisation hors zone > 200km = -15 points**
 
 🔍 ANALYSE OBLIGATOIRE
 
 ═══════════════════════════════════════════
-1️⃣ IDENTIFICATION DU MARCHÉ
+1️⃣ IDENTIFICATION MARCHÉ
 ═══════════════════════════════════════════
-
-Extrais PRÉCISÉMENT (si disponible) :
-✓ Titre exact de l'appel d'offres
-✓ Type de marché : Public/Privé + secteur (IT, BTP, Conseil, Fournitures, Services, Santé, etc.)
-✓ Sous-secteur ou domaine spécifique
-✓ Autorité contractante : nom exact, ville, type (Mairie, Ministère, Entreprise privée, etc.)
-✓ Lieu d'exécution : ville(s), région(s), national/international
-✓ Montant estimé ou fourchette budgétaire
-✓ Date limite de dépôt des offres (format exact)
-✓ Date de démarrage prévue
-✓ Durée du marché
-✓ Référence de l'appel d'offres
-✓ Modalités de consultation : plateforme, portail, contact
-
-═══════════════════════════════════════════
-2️⃣ CONTEXTE ET OBJECTIFS
-═══════════════════════════════════════════
-
-Synthétise en 3-4 phrases maximum :
-✓ Pourquoi cet appel d'offres existe (contexte, problème à résoudre)
-✓ Objectifs principaux du projet
-✓ Enjeux stratégiques pour l'acheteur
-✓ Particularités ou contraintes majeures
+✓ Titre exact
+✓ Type marché (Public/Privé)
+✓ Secteur précis (IT, BTP, Conseil, Fournitures, Services, Santé, Travaux, etc.)
+✓ Sous-secteur détaillé
+✓ Autorité contractante
+✓ Lieu exécution
+✓ Montant estimé
+✓ Date limite dépôt
+✓ Date démarrage
+✓ Durée marché
+✓ Référence AO
+✓ Plateforme/portail
 
 ═══════════════════════════════════════════
-3️⃣ EXIGENCES ET DOCUMENTS
+2️⃣ DÉTECTION INCOMPATIBILITÉ CRITIQUE
 ═══════════════════════════════════════════
+**AVANT TOUT** : Compare secteur entreprise vs secteur marché
 
-Liste EXHAUSTIVE de :
-✓ Documents administratifs obligatoires (DC1, DC2, KBIS, attestations fiscales/sociales, assurances, bilans, etc.)
-✓ Documents techniques requis (mémoire technique, méthodologie, planning, CV, etc.)
-✓ Certifications/qualifications exigées (ISO, Qualibat, RGE, Qualiopi, etc.)
-✓ Références clients similaires demandées (nombre, type, date)
-✓ Garanties financières ou cautions
-✓ Conditions d'éligibilité (CA minimum, effectif, ancienneté, etc.)
+Si **INCOMPATIBILITÉ SECTORIELLE TOTALE** détectée :
+- Secteur entreprise : [secteur profil]
+- Secteur marché : [secteur AO]
+- Verdict : INCOMPATIBLE
+- Justification : [pourquoi]
+- ⚠️ Score forcé : 5-15/100
+- ⚠️ Recommendation : NE PAS CANDIDATER
+
+Exemples incompatibilités :
+- Informatique → Travaux BTP/Terrassement
+- Commerce → Prestations médicales
+- Restauration → Développement logiciel
+- Services → Fabrication industrielle
 
 ═══════════════════════════════════════════
-4️⃣ ANALYSE PROFIL ENTREPRISE
+3️⃣ CONTEXTE & OBJECTIFS
 ═══════════════════════════════════════════
+Synthèse 3-4 phrases : pourquoi cet AO, objectifs, enjeux
 
-Compare OBJECTIVEMENT le profil fourni avec les exigences :
+═══════════════════════════════════════════
+4️⃣ CRITÈRES D'ATTRIBUTION
+═══════════════════════════════════════════
+Extrais précisément :
+- Critère 1 : [nom] - Pondération [X%]
+- Critère 2 : [nom] - Pondération [X%]
+- Sous-critères éventuels
+- Mode évaluation (notation, classement, etc.)
 
-**Points forts** (2-4 éléments) :
-- Compétences/expertises qui matchent parfaitement
-- Atouts spécifiques pour CE marché
-- Avantages concurrentiels
+═══════════════════════════════════════════
+5️⃣ EXIGENCES & DOCUMENTS
+═══════════════════════════════════════════
+**Documents administratifs** : [liste]
+**Documents techniques** : [liste]
+**Certifications obligatoires** : [liste]
+**Références clients** : [nombre, type, période]
+**Garanties financières** : [montants]
+**Conditions éligibilité** : CA min, effectif, etc.
 
-**Points faibles** (2-4 éléments) :
-- Manques ou lacunes identifiés
-- Risques potentiels
-- Contraintes à gérer
-
-**Ressources à mobiliser** :
-- Humaines (profils, nombre)
-- Techniques (équipements, outils)
-- Financières (trésorerie, caution)
-- Partenariats éventuels
+═══════════════════════════════════════════
+6️⃣ ANALYSE PROFIL ENTREPRISE
+═══════════════════════════════════════════
+**Points forts** (2-4) : atouts réels pour CE marché
+**Points faibles** (2-4) : manques identifiés
+**Ressources mobiliser** : humaines, techniques, financières, partenariats
 
 **Compatibilité détaillée** :
-- **Géographique** : Compatible / Moyen / Incompatible + explication (distance, implantation, etc.)
-- **Technique** : Compatible / Moyen / Incompatible + explication (compétences, équipements, etc.)
-- **Financière** : Compatible / Moyen / Incompatible + explication (CA vs montant, trésorerie, caution, etc.)
-- **Temporelle** : Compatible / Moyen / Incompatible + explication (disponibilité, délai, etc.)
+- **Géographique** : Compatible/Moyen/Incompatible + distance réelle
+- **Technique** : Compatible/Moyen/Incompatible + compétences précises
+- **Financière** : Compatible/Moyen/Incompatible + ratio CA/montant
+- **Temporelle** : Compatible/Moyen/Incompatible + disponibilité
 
 ═══════════════════════════════════════════
-5️⃣ SCORE ET OPPORTUNITÉ
+7️⃣ ANALYSE CONCURRENCE
 ═══════════════════════════════════════════
-
-**Score de compatibilité sur 100** basé sur :
-- Correspondance sectorielle (25 points)
-- Capacité technique (25 points)
-- Capacité financière (20 points)
-- Localisation (15 points)
-- Timing et disponibilité (15 points)
-
-**Barème d'interprétation** :
-- 0-39 : ❌ Non recommandé - Trop de risques ou incompatibilités majeures
-- 40-59 : ⚠️ Faisable mais demande gros efforts - Nécessite renforcements importants
-- 60-74 : ✅ Bonne opportunité - Préparation sérieuse requise
-- 75-89 : ✅✅ Très compatible - Recommandé de candidater
-- 90-100 : 🎯 Parfaitement aligné - Candidature prioritaire
-
-**Niveau d'opportunité** :
-Choisis parmi : "Excellente opportunité" / "Bonne opportunité" / "Opportunité moyenne" / "Faisable avec ajustements" / "Risqué" / "Non recommandé"
-
-**Justification du score** (2-3 phrases) :
-Explique CLAIREMENT pourquoi ce score, en citant les facteurs clés.
+- **Niveau concurrence estimé** : Faible/Moyen/Fort
+- **Profils concurrents typiques** : [description]
+- **Barrières entrée** : [liste obstacles]
+- **Avantages différenciation possibles** : [liste]
 
 ═══════════════════════════════════════════
-6️⃣ RECOMMANDATIONS STRATÉGIQUES
+8️⃣ RISQUES JURIDIQUES & FINANCIERS
 ═══════════════════════════════════════════
-
-**Pour renforcer le dossier** :
-Conseils concrets et actionnables (priorité 1)
-
-**Pour améliorer le profil** :
-Actions à moyen terme pour mieux se positionner
-
-**Points à valoriser** :
-Atouts à mettre en avant dans la candidature
-
-**Erreurs à éviter absolument** :
-Pièges classiques et erreurs rédhibitoires
+- **Clauses pénalités** : [oui/non, montants]
+- **Garantie décennale** : [requise oui/non]
+- **Assurance responsabilité** : [montants min]
+- **Délais paiement** : [30j, 60j, etc.]
+- **Avance versée** : [oui/non, %]
+- **Risque contentieux** : [Faible/Moyen/Élevé]
 
 ═══════════════════════════════════════════
-7️⃣ PLAN DE DÉPÔT
+9️⃣ SCORE & OPPORTUNITÉ
 ═══════════════════════════════════════════
+**Calcul score /100** basé sur :
+- Correspondance sectorielle (30 pts) - BLOQUANT si incompatible
+- Capacité technique (25 pts)
+- Capacité financière (20 pts)
+- Localisation (10 pts)
+- Timing (10 pts)
+- Certifications (5 pts)
 
-Liste séquentielle des étapes :
-1. Action 1
-2. Action 2
-3. Action 3
-etc.
+**Barème** :
+- 0-20 : ❌❌ INCOMPATIBILITÉ MAJEURE - Ne pas candidater
+- 21-39 : ❌ Non recommandé - Trop de risques
+- 40-54 : ⚠️ Risqué - Gros efforts requis
+- 55-69 : ⚠️ Faisable - Préparation sérieuse
+- 70-79 : ✅ Bonne opportunité
+- 80-89 : ✅✅ Très compatible
+- 90-100 : 🎯 Parfait - Priorité absolue
 
-Include : recherche docs, rédaction, relecture, soumission, plateforme à utiliser
+**Niveau opportunité** : [Excellente/Bonne/Moyenne/Faisable/Risqué/Non recommandé/INCOMPATIBLE]
+
+**Justification score** (2-3 phrases claires)
 
 ═══════════════════════════════════════════
-8️⃣ CHECKLIST FINALE
+🔟 RECOMMANDATIONS STRATÉGIQUES
 ═══════════════════════════════════════════
+**Renforcer dossier** : [actions concrètes priorité 1]
+**Améliorer profil** : [actions moyen terme]
+**Points valoriser** : [atouts à mettre en avant]
+**Erreurs éviter** : [pièges critiques]
 
-Liste de vérification avant soumission (5-8 points) :
-☐ Point 1
-☐ Point 2
+═══════════════════════════════════════════
+1️⃣1️⃣ PLAN DÉPÔT
+═══════════════════════════════════════════
+1. [Étape 1]
+2. [Étape 2]
+3. [Étape 3]
 etc.
 
 ═══════════════════════════════════════════
-9️⃣ ALERTES ET RISQUES
+1️⃣2️⃣ CHECKLIST FINALE
 ═══════════════════════════════════════════
-
-Identifie les signaux d'alerte s'ils existent :
-- Délais très courts
-- Exigences disproportionnées
-- Cautions importantes
-- Clauses pénalisantes
-- Concurrence intense attendue
+☐ [Point 1]
+☐ [Point 2]
+etc.
 
 ═══════════════════════════════════════════
+1️⃣3️⃣ ALERTES & SIGNAUX
+═══════════════════════════════════════════
+[Liste alertes identifiées ou []]
 
-🎯 FORMAT DE RÉPONSE
+═══════════════════════════════════════════
 
-RÉPONDS **UNIQUEMENT** EN JSON VALIDE, SANS MARKDOWN, SANS TEXTE AVANT/APRÈS :
+🎯 FORMAT RÉPONSE : JSON UNIQUEMENT, PAS DE MARKDOWN
 
 {
-  "title": "Titre exact du marché",
-  "type_marche": "Type précis (ex: Marché public de services informatiques)",
-  "secteur": "Secteur (IT, BTP, Conseil, etc.)",
-  "autorite": "Nom exact de l'autorité contractante",
-  "lieu": "Ville(s) ou région(s)",
-  "date_limite": "Date format JJ/MM/AAAA ou N/A",
+  "title": "Titre exact",
+  "type_marche": "Type précis",
+  "secteur": "Secteur principal",
+  "sous_secteur": "Sous-secteur détaillé",
+  "autorite": "Nom autorité",
+  "lieu": "Ville/région",
+  "date_limite": "JJ/MM/AAAA",
   "montant_estime": "Budget ou N/A",
-  "duree": "Durée du marché ou N/A",
-  "reference": "Référence AO ou N/A",
+  "duree": "Durée ou N/A",
+  "reference": "Ref AO",
+  "plateforme": "Portail dépôt",
+  
+  "incompatibilite_critique": {
+    "detectee": true/false,
+    "secteur_entreprise": "Secteur profil",
+    "secteur_marche": "Secteur AO",
+    "justification": "Pourquoi incompatible"
+  },
+  
   "contexte": "Synthèse 3-4 phrases",
-  "documents_requis": ["Doc 1", "Doc 2", "etc."],
-  "certifications_requises": ["Cert 1", "Cert 2"] ou [],
-  "references_clients_requises": "Description ou N/A",
+  
+  "criteres_attribution": [
+    {"nom": "Prix", "ponderation": "60%"},
+    {"nom": "Technique", "ponderation": "40%"}
+  ],
+  
+  "documents_requis": ["Doc1", "Doc2"],
+  "certifications_requises": ["Cert1"] ou [],
+  "references_clients_requises": "Description",
+  "garanties_financieres": "Montants ou N/A",
+  
   "analyse_profil": {
-    "points_forts": ["Point 1", "Point 2", "Point 3"],
-    "points_faibles": ["Point 1", "Point 2"],
-    "ressources_a_mobiliser": ["Ressource 1", "Ressource 2"],
+    "points_forts": ["Point1", "Point2"],
+    "points_faibles": ["Point1", "Point2"],
+    "ressources_a_mobiliser": ["Ress1", "Ress2"],
     "compatibilite": {
-      "geographique": "Compatible/Moyen/Incompatible - explication",
-      "technique": "Compatible/Moyen/Incompatible - explication",
-      "financiere": "Compatible/Moyen/Incompatible - explication",
-      "temporelle": "Compatible/Moyen/Incompatible - explication"
+      "geographique": "Compatible/Moyen/Incompatible - détail",
+      "technique": "Compatible/Moyen/Incompatible - détail",
+      "financiere": "Compatible/Moyen/Incompatible - détail",
+      "temporelle": "Compatible/Moyen/Incompatible - détail"
     }
   },
-  "score": 65,
-  "opportunity": "Bonne opportunité",
-  "justification_score": "Explication claire du score",
-  "recommendations": {
-    "renforcer_dossier": "Conseil principal",
-    "ameliorer_profil": "Conseil amélioration",
-    "points_a_valoriser": "Points à mettre en avant",
-    "erreurs_a_eviter": "Erreurs à éviter"
+  
+  "analyse_concurrence": {
+    "niveau": "Faible/Moyen/Fort",
+    "profils_concurrents": "Description",
+    "barrieres_entree": ["Barrière1", "Barrière2"],
+    "avantages_differenciation": ["Avantage1"]
   },
-  "plan_de_depot": [
-    "Étape 1",
-    "Étape 2",
-    "Étape 3"
-  ],
-  "checklist": [
-    "Point vérif 1",
-    "Point vérif 2",
-    "Point vérif 3"
-  ],
-  "alertes": ["Alerte 1", "Alerte 2"] ou []
+  
+  "risques_juridiques_financiers": {
+    "clauses_penalites": "Détail ou N/A",
+    "garantie_decennale": "Oui/Non",
+    "assurance_responsabilite": "Montant min ou N/A",
+    "delais_paiement": "Jours",
+    "avance_versee": "Oui/Non %",
+    "risque_contentieux": "Faible/Moyen/Élevé"
+  },
+  
+  "score": 12,
+  "opportunity": "INCOMPATIBLE" ou autre niveau,
+  "justification_score": "Explication claire",
+  
+  "recommendations": {
+    "renforcer_dossier": "Conseil",
+    "ameliorer_profil": "Conseil",
+    "points_a_valoriser": "Points",
+    "erreurs_a_eviter": "Erreurs"
+  },
+  
+  "plan_de_depot": ["Étape1", "Étape2"],
+  "checklist": ["Point1", "Point2"],
+  "alertes": ["Alerte1"] ou []
 }
 
-⚡ RAPPEL CRITIQUE : JSON uniquement, pas de markdown (\`\`\`), pas de texte explicatif.`;
+⚡ JSON uniquement, pas de markdown, pas de texte.`;
 
     console.log("🤖 Envoi à OpenAI (gpt-4o)...");
 
@@ -303,7 +286,7 @@ RÉPONDS **UNIQUEMENT** EN JSON VALIDE, SANS MARKDOWN, SANS TEXTE AVANT/APRÈS :
       messages: [
         { 
           role: "system", 
-          content: "Tu es MyMír, expert en analyse d'appels d'offres. Tu produis des analyses pragmatiques, honnêtes et actionnables. Tu réponds UNIQUEMENT en JSON valide, sans markdown ni texte supplémentaire." 
+          content: "Tu es MyMír, expert en analyse d'appels d'offres. Tu es HONNÊTE et PRAGMATIQUE. Tu détectes les incompatibilités sectorielles. Tu réponds UNIQUEMENT en JSON valide." 
         },
         { role: "user", content: prompt }
       ],
@@ -311,7 +294,7 @@ RÉPONDS **UNIQUEMENT** EN JSON VALIDE, SANS MARKDOWN, SANS TEXTE AVANT/APRÈS :
 
     let analysisText = completion.choices?.[0]?.message?.content || "{}";
     
-    // Nettoyage ultra-robuste
+    // Nettoyage
     analysisText = analysisText
       .replace(/```json\n?/g, "")
       .replace(/```\n?/g, "")
@@ -325,17 +308,27 @@ RÉPONDS **UNIQUEMENT** EN JSON VALIDE, SANS MARKDOWN, SANS TEXTE AVANT/APRÈS :
     try {
       analysisJson = JSON.parse(analysisText);
       
-      // Validation et normalisation
+      // Validation
       analysisJson.title = analysisJson.title || "Document analysé";
       analysisJson.score = Math.max(0, Math.min(100, parseInt(analysisJson.score) || 50));
+      
+      // Si incompatibilité détectée, forcer score bas
+      if (analysisJson.incompatibilite_critique?.detectee) {
+        analysisJson.score = Math.min(analysisJson.score, 15);
+        analysisJson.opportunity = "INCOMPATIBLE - Ne pas candidater";
+      }
+      
+      // Normalisation champs
       analysisJson.type_marche = analysisJson.type_marche || "Non précisé";
       analysisJson.autorite = analysisJson.autorite || "N/A";
       analysisJson.date_limite = analysisJson.date_limite || "N/A";
       analysisJson.contexte = analysisJson.contexte || "Analyse effectuée";
       analysisJson.documents_requis = analysisJson.documents_requis || [];
       analysisJson.certifications_requises = analysisJson.certifications_requises || [];
+      analysisJson.criteres_attribution = analysisJson.criteres_attribution || [];
       
-      if (!analysisJson.analyse_profil || typeof analysisJson.analyse_profil !== 'object') {
+      // Analyse profil par défaut
+      if (!analysisJson.analyse_profil) {
         analysisJson.analyse_profil = {
           points_forts: [],
           points_faibles: [],
@@ -349,12 +342,33 @@ RÉPONDS **UNIQUEMENT** EN JSON VALIDE, SANS MARKDOWN, SANS TEXTE AVANT/APRÈS :
         };
       }
       
-      console.log("✅ JSON validé");
+      // Nouvelles sections par défaut
+      if (!analysisJson.analyse_concurrence) {
+        analysisJson.analyse_concurrence = {
+          niveau: "Non évalué",
+          profils_concurrents: "N/A",
+          barrieres_entree: [],
+          avantages_differenciation: []
+        };
+      }
+      
+      if (!analysisJson.risques_juridiques_financiers) {
+        analysisJson.risques_juridiques_financiers = {
+          clauses_penalites: "N/A",
+          garantie_decennale: "N/A",
+          assurance_responsabilite: "N/A",
+          delais_paiement: "N/A",
+          avance_versee: "N/A",
+          risque_contentieux: "Non évalué"
+        };
+      }
+      
+      console.log("✅ JSON validé - Score:", analysisJson.score);
       
     } catch (parseError) {
       console.error("❌ Erreur parsing:", parseError.message);
       
-      // Fallback robuste
+      // Fallback
       analysisJson = {
         title: "Analyse partielle",
         type_marche: "Non déterminé",
@@ -363,7 +377,9 @@ RÉPONDS **UNIQUEMENT** EN JSON VALIDE, SANS MARKDOWN, SANS TEXTE AVANT/APRÈS :
         lieu: "N/A",
         date_limite: "N/A",
         montant_estime: "N/A",
-        contexte: "Le document a été partiellement analysé. Certaines informations n'ont pas pu être extraites automatiquement.",
+        contexte: "Analyse partielle - vérification manuelle recommandée",
+        incompatibilite_critique: { detectee: false },
+        criteres_attribution: [],
         documents_requis: [],
         certifications_requises: [],
         analyse_profil: {
@@ -371,34 +387,48 @@ RÉPONDS **UNIQUEMENT** EN JSON VALIDE, SANS MARKDOWN, SANS TEXTE AVANT/APRÈS :
           points_faibles: ["Données incomplètes"],
           ressources_a_mobiliser: ["À déterminer"],
           compatibilite: {
-            geographique: "À vérifier manuellement",
-            technique: "À vérifier manuellement",
-            financiere: "À vérifier manuellement",
-            temporelle: "À vérifier manuellement"
+            geographique: "À vérifier",
+            technique: "À vérifier",
+            financiere: "À vérifier",
+            temporelle: "À vérifier"
           }
+        },
+        analyse_concurrence: {
+          niveau: "Non évalué",
+          profils_concurrents: "N/A",
+          barrieres_entree: [],
+          avantages_differenciation: []
+        },
+        risques_juridiques_financiers: {
+          clauses_penalites: "N/A",
+          garantie_decennale: "N/A",
+          assurance_responsabilite: "N/A",
+          delais_paiement: "N/A",
+          avance_versee: "N/A",
+          risque_contentieux: "Non évalué"
         },
         score: 50,
         opportunity: "Analyse à compléter",
-        justification_score: "Score neutre - analyse incomplète",
+        justification_score: "Extraction incomplète",
         recommendations: {
-          renforcer_dossier: "Relire le document source",
-          ameliorer_profil: "Compléter les informations",
+          renforcer_dossier: "Relire document",
+          ameliorer_profil: "Compléter infos",
           points_a_valoriser: "À déterminer",
           erreurs_a_eviter: "Vérifier manuellement"
         },
-        plan_de_depot: ["Relire document", "Vérifier exigences", "Préparer dossier"],
-        checklist: ["Document lu", "Exigences identifiées", "Dossier préparé"],
-        alertes: ["Extraction automatique partielle - Vérification manuelle recommandée"]
+        plan_de_depot: ["Relire document", "Vérifier exigences"],
+        checklist: ["Document lu", "Exigences identifiées"],
+        alertes: ["Extraction automatique partielle"]
       };
     }
 
-    // Suppression fichier temporaire
+    // Suppression fichier
     try {
       fs.unlinkSync(filePath);
       console.log("🗑️ Fichier temporaire supprimé");
     } catch {}
 
-    // Sauvegarde en base
+    // Sauvegarde DB
     if (userId) {
       try {
         const { rows } = await pool.query(
@@ -414,12 +444,11 @@ RÉPONDS **UNIQUEMENT** EN JSON VALIDE, SANS MARKDOWN, SANS TEXTE AVANT/APRÈS :
           ]
         );
 
-        const savedId = rows[0].id;
-        console.log(`💾 Analyse sauvegardée - ID: ${savedId}`);
+        console.log(`💾 Analyse sauvegardée - ID: ${rows[0].id}`);
 
         return {
           success: true,
-          _id: savedId,
+          _id: rows[0].id,
           analysis: analysisJson,
           profilEntreprise,
           generated_at: new Date().toISOString(),
@@ -445,7 +474,7 @@ RÉPONDS **UNIQUEMENT** EN JSON VALIDE, SANS MARKDOWN, SANS TEXTE AVANT/APRÈS :
       analysis: {
         title: "Erreur d'analyse",
         score: 0,
-        contexte: `Erreur technique: ${err.message}`
+        contexte: `Erreur: ${err.message}`
       }
     };
   }
