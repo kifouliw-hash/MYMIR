@@ -1,12 +1,52 @@
 // backend/ai/analyzeTender.js
-// ... (garder imports et fonctions d'extraction identiques)
+import fs from "fs";
+import OpenAI from "openai";
+import mammoth from "mammoth";
+import pdfjsLib from "pdfjs-dist/legacy/build/pdf.js";
+import jwt from "jsonwebtoken";
+import pool from "../../db.js";
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// Extraction PDF (GARDER TEL QUEL)
+async function extractTextFromPDF(filePath) {
+  const data = new Uint8Array(fs.readFileSync(filePath));
+  const loadingTask = pdfjsLib.getDocument({ data });
+  const pdf = await loadingTask.promise;
+
+  let text = "";
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map((item) => item.str).join(" ") + "\n";
+  }
+  return text.trim();
+}
+
+// Extraction DOCX (GARDER TEL QUEL)
+async function extractTextFromDOCX(filePath) {
+  const result = await mammoth.extractRawText({ path: filePath });
+  return result.value;
+}
+
+// Extraction générique (GARDER TEL QUEL)
+async function extractText(filePath) {
+  const ext = filePath.toLowerCase();
+  if (ext.endsWith('.pdf')) {
+    return await extractTextFromPDF(filePath);
+  } else if (ext.endsWith('.docx') || ext.endsWith('.doc')) {
+    return await extractTextFromDOCX(filePath);
+  } else {
+    throw new Error("Format non supporté. Utilisez PDF ou DOCX.");
+  }
+}
 
 export async function analyzeTender(filePath, token) {
   try {
     const extractedText = await extractText(filePath);
     const docLength = extractedText.length;
 
-    // Charger profil utilisateur (identique)
+    // Charger profil utilisateur
     let profilEntreprise = {
       companyName: "Non renseigné",
       sector: "Non précisé",
@@ -22,7 +62,10 @@ export async function analyzeTender(filePath, token) {
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbackSecret");
         userId = decoded.id;
-        const { rows } = await pool.query("SELECT metadata FROM users WHERE id = $1", [userId]);
+        const { rows } = await pool.query(
+          "SELECT metadata FROM users WHERE id = $1",
+          [userId]
+        );
         if (rows.length > 0 && rows[0].metadata) {
           profilEntreprise = { ...profilEntreprise, ...rows[0].metadata };
         }
@@ -32,9 +75,9 @@ export async function analyzeTender(filePath, token) {
     }
 
     console.log(`📄 Document: ${docLength} caractères`);
-    console.log("🧩 Profil utilisé:", profilEntreprise);
+    console.log("🧩 Profil:", profilEntreprise);
 
-    // ========== PROMPT AMÉLIORÉ ==========
+    // PROMPT AMÉLIORÉ
     const prompt = `Tu es MyMír, expert en analyse stratégique d'appels d'offres pour PME françaises.
 
 🎯 MISSION : Évaluer HONNÊTEMENT si l'entreprise doit candidater.
@@ -212,26 +255,21 @@ etc.
   "duree": "Durée ou N/A",
   "reference": "Ref AO",
   "plateforme": "Portail dépôt",
-  
   "incompatibilite_critique": {
     "detectee": true/false,
     "secteur_entreprise": "Secteur profil",
     "secteur_marche": "Secteur AO",
     "justification": "Pourquoi incompatible"
   },
-  
   "contexte": "Synthèse 3-4 phrases",
-  
   "criteres_attribution": [
     {"nom": "Prix", "ponderation": "60%"},
     {"nom": "Technique", "ponderation": "40%"}
   ],
-  
   "documents_requis": ["Doc1", "Doc2"],
   "certifications_requises": ["Cert1"] ou [],
   "references_clients_requises": "Description",
   "garanties_financieres": "Montants ou N/A",
-  
   "analyse_profil": {
     "points_forts": ["Point1", "Point2"],
     "points_faibles": ["Point1", "Point2"],
@@ -243,14 +281,12 @@ etc.
       "temporelle": "Compatible/Moyen/Incompatible - détail"
     }
   },
-  
   "analyse_concurrence": {
     "niveau": "Faible/Moyen/Fort",
     "profils_concurrents": "Description",
     "barrieres_entree": ["Barrière1", "Barrière2"],
     "avantages_differenciation": ["Avantage1"]
   },
-  
   "risques_juridiques_financiers": {
     "clauses_penalites": "Détail ou N/A",
     "garantie_decennale": "Oui/Non",
@@ -259,18 +295,15 @@ etc.
     "avance_versee": "Oui/Non %",
     "risque_contentieux": "Faible/Moyen/Élevé"
   },
-  
   "score": 12,
-  "opportunity": "INCOMPATIBLE" ou autre niveau,
+  "opportunity": "INCOMPATIBLE",
   "justification_score": "Explication claire",
-  
   "recommendations": {
     "renforcer_dossier": "Conseil",
     "ameliorer_profil": "Conseil",
     "points_a_valoriser": "Points",
     "erreurs_a_eviter": "Erreurs"
   },
-  
   "plan_de_depot": ["Étape1", "Étape2"],
   "checklist": ["Point1", "Point2"],
   "alertes": ["Alerte1"] ou []
@@ -278,7 +311,7 @@ etc.
 
 ⚡ JSON uniquement, pas de markdown, pas de texte.`;
 
-    console.log("🤖 Envoi à OpenAI (gpt-4o)...");
+    console.log("🤖 Envoi OpenAI...");
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -286,7 +319,7 @@ etc.
       messages: [
         { 
           role: "system", 
-          content: "Tu es MyMír, expert en analyse d'appels d'offres. Tu es HONNÊTE et PRAGMATIQUE. Tu détectes les incompatibilités sectorielles. Tu réponds UNIQUEMENT en JSON valide." 
+          content: "Tu es MyMír, expert analyse appels d'offres. Honnête et pragmatique. Détectes incompatibilités sectorielles. JSON uniquement." 
         },
         { role: "user", content: prompt }
       ],
@@ -294,7 +327,6 @@ etc.
 
     let analysisText = completion.choices?.[0]?.message?.content || "{}";
     
-    // Nettoyage
     analysisText = analysisText
       .replace(/```json\n?/g, "")
       .replace(/```\n?/g, "")
@@ -302,150 +334,67 @@ etc.
       .replace(/[^}]*$/, "")
       .trim();
 
-    console.log("📝 JSON reçu:", analysisText.slice(0, 300) + "...");
+    console.log("📝 JSON reçu:", analysisText.slice(0, 200));
 
-    let analysisJson;
-    try {
-      analysisJson = JSON.parse(analysisText);
-      
-      // Validation
-      analysisJson.title = analysisJson.title || "Document analysé";
-      analysisJson.score = Math.max(0, Math.min(100, parseInt(analysisJson.score) || 50));
-      
-      // Si incompatibilité détectée, forcer score bas
-      if (analysisJson.incompatibilite_critique?.detectee) {
-        analysisJson.score = Math.min(analysisJson.score, 15);
-        analysisJson.opportunity = "INCOMPATIBLE - Ne pas candidater";
-      }
-      
-      // Normalisation champs
-      analysisJson.type_marche = analysisJson.type_marche || "Non précisé";
-      analysisJson.autorite = analysisJson.autorite || "N/A";
-      analysisJson.date_limite = analysisJson.date_limite || "N/A";
-      analysisJson.contexte = analysisJson.contexte || "Analyse effectuée";
-      analysisJson.documents_requis = analysisJson.documents_requis || [];
-      analysisJson.certifications_requises = analysisJson.certifications_requises || [];
-      analysisJson.criteres_attribution = analysisJson.criteres_attribution || [];
-      
-      // Analyse profil par défaut
-      if (!analysisJson.analyse_profil) {
-        analysisJson.analyse_profil = {
-          points_forts: [],
-          points_faibles: [],
-          ressources_a_mobiliser: [],
-          compatibilite: {
-            geographique: "À vérifier",
-            technique: "À vérifier",
-            financiere: "À vérifier",
-            temporelle: "À vérifier"
-          }
-        };
-      }
-      
-      // Nouvelles sections par défaut
-      if (!analysisJson.analyse_concurrence) {
-        analysisJson.analyse_concurrence = {
-          niveau: "Non évalué",
-          profils_concurrents: "N/A",
-          barrieres_entree: [],
-          avantages_differenciation: []
-        };
-      }
-      
-      if (!analysisJson.risques_juridiques_financiers) {
-        analysisJson.risques_juridiques_financiers = {
-          clauses_penalites: "N/A",
-          garantie_decennale: "N/A",
-          assurance_responsabilite: "N/A",
-          delais_paiement: "N/A",
-          avance_versee: "N/A",
-          risque_contentieux: "Non évalué"
-        };
-      }
-      
-      console.log("✅ JSON validé - Score:", analysisJson.score);
-      
-    } catch (parseError) {
-      console.error("❌ Erreur parsing:", parseError.message);
-      
-      // Fallback
-      analysisJson = {
-        title: "Analyse partielle",
-        type_marche: "Non déterminé",
-        secteur: "Non déterminé",
-        autorite: "N/A",
-        lieu: "N/A",
-        date_limite: "N/A",
-        montant_estime: "N/A",
-        contexte: "Analyse partielle - vérification manuelle recommandée",
-        incompatibilite_critique: { detectee: false },
-        criteres_attribution: [],
-        documents_requis: [],
-        certifications_requises: [],
-        analyse_profil: {
-          points_forts: ["Analyse en cours"],
-          points_faibles: ["Données incomplètes"],
-          ressources_a_mobiliser: ["À déterminer"],
-          compatibilite: {
-            geographique: "À vérifier",
-            technique: "À vérifier",
-            financiere: "À vérifier",
-            temporelle: "À vérifier"
-          }
-        },
-        analyse_concurrence: {
-          niveau: "Non évalué",
-          profils_concurrents: "N/A",
-          barrieres_entree: [],
-          avantages_differenciation: []
-        },
-        risques_juridiques_financiers: {
-          clauses_penalites: "N/A",
-          garantie_decennale: "N/A",
-          assurance_responsabilite: "N/A",
-          delais_paiement: "N/A",
-          avance_versee: "N/A",
-          risque_contentieux: "Non évalué"
-        },
-        score: 50,
-        opportunity: "Analyse à compléter",
-        justification_score: "Extraction incomplète",
-        recommendations: {
-          renforcer_dossier: "Relire document",
-          ameliorer_profil: "Compléter infos",
-          points_a_valoriser: "À déterminer",
-          erreurs_a_eviter: "Vérifier manuellement"
-        },
-        plan_de_depot: ["Relire document", "Vérifier exigences"],
-        checklist: ["Document lu", "Exigences identifiées"],
-        alertes: ["Extraction automatique partielle"]
+    let analysisJson = JSON.parse(analysisText);
+    
+    // Normalisation
+    analysisJson.title = analysisJson.title || "Analyse effectuée";
+    analysisJson.score = Math.max(0, Math.min(100, parseInt(analysisJson.score) || 50));
+    
+    if (analysisJson.incompatibilite_critique?.detectee) {
+      analysisJson.score = Math.min(analysisJson.score, 15);
+      analysisJson.opportunity = "INCOMPATIBLE - Ne pas candidater";
+    }
+    
+    analysisJson.type_marche = analysisJson.type_marche || "Non précisé";
+    analysisJson.contexte = analysisJson.contexte || "Analyse terminée";
+    analysisJson.documents_requis = analysisJson.documents_requis || [];
+    analysisJson.criteres_attribution = analysisJson.criteres_attribution || [];
+    
+    if (!analysisJson.analyse_profil) {
+      analysisJson.analyse_profil = {
+        points_forts: [],
+        points_faibles: [],
+        ressources_a_mobiliser: [],
+        compatibilite: { geographique: "N/A", technique: "N/A", financiere: "N/A", temporelle: "N/A" }
       };
     }
+    
+    if (!analysisJson.analyse_concurrence) {
+      analysisJson.analyse_concurrence = {
+        niveau: "Non évalué",
+        profils_concurrents: "N/A",
+        barrieres_entree: [],
+        avantages_differenciation: []
+      };
+    }
+    
+    if (!analysisJson.risques_juridiques_financiers) {
+      analysisJson.risques_juridiques_financiers = {
+        clauses_penalites: "N/A",
+        garantie_decennale: "N/A",
+        assurance_responsabilite: "N/A",
+        delais_paiement: "N/A",
+        avance_versee: "N/A",
+        risque_contentieux: "N/A"
+      };
+    }
+    
+    console.log("✅ Score:", analysisJson.score);
 
-    // Suppression fichier
     try {
       fs.unlinkSync(filePath);
-      console.log("🗑️ Fichier temporaire supprimé");
     } catch {}
 
-    // Sauvegarde DB
     if (userId) {
       try {
         const { rows } = await pool.query(
           `INSERT INTO analyses (user_id, title, score, summary, analysis, created_at)
-           VALUES ($1, $2, $3, $4, $5, NOW())
-           RETURNING id`,
-          [
-            userId,
-            analysisJson.title,
-            analysisJson.score,
-            analysisJson.contexte || "",
-            JSON.stringify(analysisJson)
-          ]
+           VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING id`,
+          [userId, analysisJson.title, analysisJson.score, analysisJson.contexte, JSON.stringify(analysisJson)]
         );
-
-        console.log(`💾 Analyse sauvegardée - ID: ${rows[0].id}`);
-
+        console.log(`💾 Sauvegardé ID: ${rows[0].id}`);
         return {
           success: true,
           _id: rows[0].id,
@@ -453,9 +402,8 @@ etc.
           profilEntreprise,
           generated_at: new Date().toISOString(),
         };
-
       } catch (dbErr) {
-        console.error("❌ Erreur DB:", dbErr.message);
+        console.error("❌ DB:", dbErr.message);
       }
     }
 
@@ -467,15 +415,11 @@ etc.
     };
 
   } catch (err) {
-    console.error("❌ Erreur globale:", err);
+    console.error("❌ Erreur:", err);
     return { 
       success: false, 
       message: err.message,
-      analysis: {
-        title: "Erreur d'analyse",
-        score: 0,
-        contexte: `Erreur: ${err.message}`
-      }
+      analysis: { title: "Erreur", score: 0, contexte: err.message }
     };
   }
 }
